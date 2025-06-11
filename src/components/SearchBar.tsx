@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MapPin } from 'lucide-react';
 import { categories } from '@/data/categories';
+import { upCities } from '@/data/up-locations';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -24,27 +25,25 @@ const SearchBar = ({
   setSelectedLocation,
   onSearch
 }: SearchBarProps) => {
-  const locations = ['All Cities', 'Delhi', 'Mumbai', 'Jaipur', 'Pune', 'Bangalore', 'Chennai'];
-
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg border border-orange-200">
+    <div className="bg-white p-6 rounded-xl shadow-xl border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 w-4 h-4 text-orange-500" />
           <Input
-            placeholder="Search mistri by name..."
+            placeholder="मिस्त्री का नाम खोजें..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-orange-200 focus:border-orange-400"
+            className="pl-10 border-orange-300 focus:border-orange-500 bg-white shadow-sm"
           />
         </div>
         
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="border-orange-200 focus:border-orange-400">
-            <SelectValue placeholder="Select category" />
+          <SelectTrigger className="border-orange-300 focus:border-orange-500 bg-white shadow-sm">
+            <SelectValue placeholder="काम की श्रेणी चुनें" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+          <SelectContent className="bg-white">
+            <SelectItem value="all">सभी श्रेणियां</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name} ({category.nameHindi})
@@ -54,15 +53,16 @@ const SearchBar = ({
         </Select>
         
         <div className="relative">
-          <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <MapPin className="absolute left-3 top-3 w-4 h-4 text-orange-500" />
           <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="pl-10 border-orange-200 focus:border-orange-400">
-              <SelectValue placeholder="Select location" />
+            <SelectTrigger className="pl-10 border-orange-300 focus:border-orange-500 bg-white shadow-sm">
+              <SelectValue placeholder="शहर चुनें" />
             </SelectTrigger>
-            <SelectContent>
-              {locations.map((location) => (
-                <SelectItem key={location} value={location.toLowerCase()}>
-                  {location}
+            <SelectContent className="bg-white max-h-48 overflow-y-auto">
+              <SelectItem value="all cities">सभी शहर</SelectItem>
+              {upCities.map((city) => (
+                <SelectItem key={city} value={city.toLowerCase()}>
+                  {city}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -71,10 +71,10 @@ const SearchBar = ({
         
         <Button 
           onClick={onSearch}
-          className="bg-orange-600 hover:bg-orange-700 w-full"
+          className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
         >
           <Search className="w-4 h-4 mr-2" />
-          Search
+          खोजें
         </Button>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
@@ -10,7 +9,7 @@ import { categories } from '@/data/categories';
 import { sampleMistris } from '@/data/sample-mistris';
 import { Mistri } from '@/types/mistri';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Star, Users, MapPin, Award } from 'lucide-react';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<'home' | 'search' | 'category'>('home');
@@ -57,14 +56,44 @@ const Index = () => {
   };
 
   const renderHomeView = () => (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-800">
-          MistriAdda में आपका स्वागत है
-        </h1>
-        <p className="text-lg text-gray-600">
-          सभी प्रकार के मिस्त्री एक ही जगह • आसान खोज • विश्वसनीय सेवा
+    <div className="space-y-12">
+      {/* Hero Section */}
+      <div className="text-center space-y-6 py-8">
+        <div className="relative">
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent mb-4">
+            MistriAdda में आपका स्वागत है
+          </h1>
+          <div className="absolute -top-4 -right-4 animate-bounce">
+            <Star className="w-8 h-8 text-yellow-500" />
+          </div>
+        </div>
+        <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-4xl mx-auto">
+          🔧 सभी प्रकार के मिस्त्री एक ही जगह • 🔍 आसान खोज • ✅ विश्वसनीय सेवा
         </p>
+        
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+            <Users className="w-8 h-8 mx-auto mb-2" />
+            <div className="text-2xl font-bold">1000+</div>
+            <div className="text-sm">मिस्त्री</div>
+          </div>
+          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+            <MapPin className="w-8 h-8 mx-auto mb-2" />
+            <div className="text-2xl font-bold">75+</div>
+            <div className="text-sm">शहर</div>
+          </div>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+            <Award className="w-8 h-8 mx-auto mb-2" />
+            <div className="text-2xl font-bold">12+</div>
+            <div className="text-sm">श्रेणियां</div>
+          </div>
+          <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
+            <Star className="w-8 h-8 mx-auto mb-2" />
+            <div className="text-2xl font-bold">4.8★</div>
+            <div className="text-sm">रेटिंग</div>
+          </div>
+        </div>
       </div>
       
       <SearchBar
@@ -78,32 +107,36 @@ const Index = () => {
       />
       
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          मिस्त्री की श्रेणियां
+        <h2 className="text-3xl font-bold text-center mb-8">
+          <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            मिस्त्री की श्रेणियां
+          </span>
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categories.map((category) => (
             <CategoryCard
               key={category.id}
               category={category}
               onClick={handleCategoryClick}
+              className="transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
             />
           ))}
         </div>
       </div>
       
-      <div className="text-center bg-orange-50 p-8 rounded-lg">
-        <h3 className="text-2xl font-bold text-gray-800 mb-4">
+      {/* CTA Section */}
+      <div className="text-center bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white p-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300">
+        <h3 className="text-3xl font-bold mb-4">
           क्या आप मिस्त्री हैं?
         </h3>
-        <p className="text-gray-600 mb-6">
-          अपनी प्रोफाइल बनाएं और अधिक काम पाएं
+        <p className="text-xl mb-8 opacity-90">
+          अपनी प्रोफाइल बनाएं और अधिक काम पाएं • फोटो और वीडियो के साथ
         </p>
         <Button 
           onClick={() => setShowCreateDialog(true)}
-          className="bg-orange-600 hover:bg-orange-700 text-lg px-8 py-3"
+          className="bg-white text-orange-600 hover:bg-gray-100 text-xl px-12 py-4 rounded-full font-bold shadow-lg transform hover:scale-105 transition-all duration-200"
         >
-          मिस्त्री के रूप में जुड़ें
+          🚀 मिस्त्री के रूप में जुड़ें
         </Button>
       </div>
     </div>
@@ -193,7 +226,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50">
       <Header onCreateProfile={() => setShowCreateDialog(true)} />
       
       <main className="container mx-auto px-4 py-8">
