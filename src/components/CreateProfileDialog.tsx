@@ -10,13 +10,15 @@ import { categories } from '@/data/categories';
 import { upCities } from '@/data/up-locations';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Video, Upload } from 'lucide-react';
+import { Mistri } from '@/types/mistri';
 
 interface CreateProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onProfileCreated: (profile: Mistri) => void;
 }
 
-const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
+const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfileDialogProps) => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -27,42 +29,121 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
   });
   const [photo, setPhoto] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    if (!formData.name || !formData.category || !formData.location || !formData.mobile || !formData.experience) {
+    console.log('Form data before validation:', formData);
+    
+    // Validate required fields
+    if (!formData.name.trim()) {
       toast({
-        title: "Error",
-        description: "कृपया सभी आवश्यक फील्ड भरें",
+        title: "त्रुटि",
+        description: "कृपया अपना नाम भरें",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
-    // Here you would typically save the profile to a database
-    toast({
-      title: "Success",
-      description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
-    });
+    if (!formData.category) {
+      toast({
+        title: "त्रुटि",
+        description: "कृपया काम का प्रकार चुनें",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
-    setFormData({
-      name: '',
-      category: '',
-      location: '',
-      mobile: '',
-      experience: '',
-      description: ''
-    });
-    setPhoto(null);
-    setVideo(null);
+    if (!formData.location) {
+      toast({
+        title: "त्रुटि",
+        description: "कृपया अपना शहर चुनें",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
-    onClose();
+    if (!formData.mobile.trim() || formData.mobile.length !== 10) {
+      toast({
+        title: "त्रुटि",
+        description: "कृपया 10 अंकों का सही मोबाइल नंबर भरें",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!formData.experience.trim() || parseInt(formData.experience) < 0) {
+      toast({
+        title: "त्रुटि",
+        description: "कृपया अनुभव भरें",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // Create new mistri profile
+      const newProfile: Mistri = {
+        id: `mistri_${Date.now()}`,
+        name: formData.name.trim(),
+        category: formData.category,
+        location: formData.location,
+        mobile: formData.mobile.trim(),
+        experience: parseInt(formData.experience),
+        rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
+        description: formData.description.trim() || undefined
+      };
+
+      console.log('New profile created:', newProfile);
+      
+      // Call the callback to add profile to the list
+      onProfileCreated(newProfile);
+      
+      toast({
+        title: "सफलता! 🎉",
+        description: `${formData.name} जी, आपकी प्रोफाइल सफलतापूर्वक बन गई है!`,
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        category: '',
+        location: '',
+        mobile: '',
+        experience: '',
+        description: ''
+      });
+      setPhoto(null);
+      setVideo(null);
+      
+      // Close dialog after showing success
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Profile creation error:', error);
+      toast({
+        title: "त्रुटि",
+        description: "प्रोफाइल बनाने में समस्या हुई। कृपया दोबारा कोशिश करें।",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
+    console.log(`Updating ${field} with value:`, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -70,6 +151,10 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
     const file = e.target.files?.[0];
     if (file) {
       setPhoto(file);
+      toast({
+        title: "फोटो चुनी गई",
+        description: file.name,
+      });
     }
   };
 
@@ -78,13 +163,17 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
     if (file) {
       if (file.size > 50 * 1024 * 1024) { // 50MB limit
         toast({
-          title: "Error",
+          title: "त्रुटि",
           description: "वीडियो का साइज़ 50MB से कम होना चाहिए",
           variant: "destructive"
         });
         return;
       }
       setVideo(file);
+      toast({
+        title: "वीडियो चुना गया",
+        description: file.name,
+      });
     }
   };
 
@@ -105,15 +194,20 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="अपना नाम लिखें"
+              placeholder="जैसे: राम कुमार"
               className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
               required
+              disabled={isSubmitting}
             />
           </div>
           
           <div>
             <Label htmlFor="category" className="text-orange-800 font-semibold">काम का प्रकार *</Label>
-            <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+            <Select 
+              value={formData.category} 
+              onValueChange={(value) => handleInputChange('category', value)}
+              disabled={isSubmitting}
+            >
               <SelectTrigger className="border-orange-300 focus:border-orange-500 bg-white shadow-sm">
                 <SelectValue placeholder="अपना काम चुनें" />
               </SelectTrigger>
@@ -129,7 +223,11 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
           
           <div>
             <Label htmlFor="location" className="text-orange-800 font-semibold">शहर *</Label>
-            <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
+            <Select 
+              value={formData.location} 
+              onValueChange={(value) => handleInputChange('location', value)}
+              disabled={isSubmitting}
+            >
               <SelectTrigger className="border-orange-300 focus:border-orange-500 bg-white shadow-sm">
                 <SelectValue placeholder="अपना शहर चुनें" />
               </SelectTrigger>
@@ -149,12 +247,19 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
               id="mobile"
               type="tel"
               value={formData.mobile}
-              onChange={(e) => handleInputChange('mobile', e.target.value)}
-              placeholder="10 अंकों का नंबर"
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                if (value.length <= 10) {
+                  handleInputChange('mobile', value);
+                }
+              }}
+              placeholder="9876543210"
               className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
               maxLength={10}
               required
+              disabled={isSubmitting}
             />
+            <p className="text-xs text-gray-500 mt-1">10 अंकों का नंबर (बिना +91 के)</p>
           </div>
           
           <div>
@@ -164,11 +269,12 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
               type="number"
               value={formData.experience}
               onChange={(e) => handleInputChange('experience', e.target.value)}
-              placeholder="कितने साल का अनुभव है"
+              placeholder="जैसे: 5"
               className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
               min="0"
               max="50"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -182,12 +288,14 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
                 accept="image/*"
                 onChange={handlePhotoChange}
                 className="hidden"
+                disabled={isSubmitting}
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => document.getElementById('photo')?.click()}
                 className="w-full border-orange-300 hover:bg-orange-50 border-2 border-dashed"
+                disabled={isSubmitting}
               >
                 <Camera className="w-4 h-4 mr-2" />
                 {photo ? photo.name : 'अपनी फोटो चुनें'}
@@ -205,12 +313,14 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
                 accept="video/*"
                 onChange={handleVideoChange}
                 className="hidden"
+                disabled={isSubmitting}
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => document.getElementById('video')?.click()}
                 className="w-full border-orange-300 hover:bg-orange-50 border-2 border-dashed"
+                disabled={isSubmitting}
               >
                 <Video className="w-4 h-4 mr-2" />
                 {video ? video.name : 'अपना काम दिखाने वाला वीडियो चुनें'}
@@ -228,6 +338,7 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
               placeholder="अपने काम के बारे में बताएं..."
               className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
               rows={3}
+              disabled={isSubmitting}
             />
           </div>
           
@@ -237,15 +348,17 @@ const CreateProfileDialog = ({ isOpen, onClose }: CreateProfileDialogProps) => {
               variant="outline" 
               onClick={onClose}
               className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+              disabled={isSubmitting}
             >
               रद्द करें
             </Button>
             <Button 
               type="submit"
               className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
+              disabled={isSubmitting}
             >
               <Upload className="w-4 h-4 mr-2" />
-              प्रोफाइल बनाएं
+              {isSubmitting ? 'बनाई जा रही है...' : 'प्रोफाइल बनाएं'}
             </Button>
           </div>
         </form>

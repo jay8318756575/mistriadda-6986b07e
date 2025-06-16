@@ -19,9 +19,15 @@ const Index = () => {
   const [selectedMistri, setSelectedMistri] = useState<Mistri | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentCategoryFilter, setCurrentCategoryFilter] = useState<string>('');
+  const [allMistris, setAllMistris] = useState<Mistri[]>(sampleMistris);
+
+  const handleProfileCreated = (newProfile: Mistri) => {
+    console.log('Adding new profile to list:', newProfile);
+    setAllMistris(prev => [...prev, newProfile]);
+  };
 
   const filteredMistris = useMemo(() => {
-    return sampleMistris.filter(mistri => {
+    return allMistris.filter(mistri => {
       const matchesSearch = searchQuery === '' || 
         mistri.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mistri.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -36,7 +42,7 @@ const Index = () => {
       
       return matchesSearch && matchesCategory && matchesLocation;
     });
-  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter]);
+  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris]);
 
   const handleCategoryClick = (categoryId: string) => {
     setCurrentCategoryFilter(categoryId);
@@ -75,7 +81,7 @@ const Index = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
             <Users className="w-8 h-8 mx-auto mb-2" />
-            <div className="text-2xl font-bold">1000+</div>
+            <div className="text-2xl font-bold">{allMistris.length}+</div>
             <div className="text-sm">मिस्त्री</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
@@ -244,6 +250,7 @@ const Index = () => {
       <CreateProfileDialog
         isOpen={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
+        onProfileCreated={handleProfileCreated}
       />
     </div>
   );
