@@ -12,6 +12,8 @@ import {
 import { Search, MapPin, Sparkles, Target, Zap, Globe } from 'lucide-react';
 import { categories } from '@/data/categories';
 import { indiaStates, majorCities } from '@/data/india-locations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from './LanguageSelector';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -32,6 +34,7 @@ const SearchBar = ({
   setSelectedLocation,
   onSearch
 }: SearchBarProps) => {
+  const { t } = useLanguage();
   const [selectedState, setSelectedState] = useState<string>("all");
   const [selectedCity, setSelectedCity] = useState<string>("all cities");
   
@@ -64,6 +67,13 @@ const SearchBar = ({
     }
   };
 
+  const popularSearchTerms = [
+    { hi: 'प्लंबर', en: 'Plumber' },
+    { hi: 'इलेक्ट्रिशियन', en: 'Electrician' },
+    { hi: 'कारपेंटर', en: 'Carpenter' },
+    { hi: 'पेंटर', en: 'Painter' }
+  ];
+
   return (
     <div className="relative overflow-hidden">
       {/* Animated background */}
@@ -76,14 +86,19 @@ const SearchBar = ({
       <div className="absolute bottom-6 left-12 w-1 h-1 bg-red-600 rounded-full animate-pulse"></div>
       
       <div className="relative bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border-2 border-orange-200/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.01]">
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-6">
           <h3 className="text-2xl font-black bg-gradient-to-r from-orange-700 via-red-600 to-orange-800 bg-clip-text text-transparent flex items-center justify-center">
             <Sparkles className="w-6 h-6 mr-2 text-orange-600 animate-pulse" />
-            अपना परफेक्ट मिस्त्री खोजें
+            {t('search.header')}
             <Sparkles className="w-6 h-6 ml-2 text-red-600 animate-pulse" />
           </h3>
-          <p className="text-gray-700 font-medium mt-2">बेहतरीन सेवा के लिए सबसे अच्छे मिस्त्री चुनें</p>
+          <p className="text-gray-700 font-medium mt-2">{t('search.subtitle')}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -93,7 +108,7 @@ const SearchBar = ({
             <div className="relative">
               <Search className="absolute left-4 top-4 w-5 h-5 text-orange-600 animate-pulse" />
               <Input
-                placeholder="🔍 मिस्त्री का नाम खोजें..."
+                placeholder={`🔍 ${t('search.placeholder')}`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12 pr-4 py-4 text-lg border-2 border-orange-300 focus:border-orange-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium"
@@ -108,10 +123,10 @@ const SearchBar = ({
               <Target className="absolute left-4 top-4 w-5 h-5 text-red-600 z-10 pointer-events-none" />
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="pl-12 py-4 text-lg border-2 border-red-300 focus:border-red-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
-                  <SelectValue placeholder="⚡ काम की श्रेणी चुनें" />
+                  <SelectValue placeholder={`⚡ ${t('search.category')}`} />
                 </SelectTrigger>
                 <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-red-200 shadow-2xl rounded-xl z-50">
-                  <SelectItem value="all" className="font-medium py-3">🌟 सभी श्रेणियां</SelectItem>
+                  <SelectItem value="all" className="font-medium py-3">🌟 {t('search.allCategories')}</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id} className="font-medium py-3">
                       {category.name} ({category.nameHindi})
@@ -129,10 +144,10 @@ const SearchBar = ({
               <Globe className="absolute left-4 top-4 w-5 h-5 text-purple-600 z-10 pointer-events-none" />
               <Select value={selectedState} onValueChange={handleStateChange}>
                 <SelectTrigger className="pl-12 py-4 text-lg border-2 border-purple-300 focus:border-purple-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
-                  <SelectValue placeholder="🗺️ राज्य चुनें" />
+                  <SelectValue placeholder={`🗺️ ${t('search.state')}`} />
                 </SelectTrigger>
                 <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-purple-200 shadow-2xl rounded-xl z-50 max-h-60">
-                  <SelectItem value="all" className="font-medium py-3">🇮🇳 सभी राज्य</SelectItem>
+                  <SelectItem value="all" className="font-medium py-3">🇮🇳 {t('search.allStates')}</SelectItem>
                   {indiaStates.map((state) => (
                     <SelectItem key={state} value={state} className="font-medium py-3">
                       {state}
@@ -150,10 +165,10 @@ const SearchBar = ({
               <MapPin className="absolute left-4 top-4 w-5 h-5 text-orange-600 z-10 pointer-events-none" />
               <Select value={selectedCity} onValueChange={handleCityChange}>
                 <SelectTrigger className="pl-12 py-4 text-lg border-2 border-orange-400 focus:border-orange-600 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
-                  <SelectValue placeholder="🏙️ शहर चुनें" />
+                  <SelectValue placeholder={`🏙️ ${t('search.city')}`} />
                 </SelectTrigger>
                 <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-orange-200 shadow-2xl rounded-xl z-50 max-h-60">
-                  <SelectItem value="all cities" className="font-medium py-3">🌟 सभी शहर</SelectItem>
+                  <SelectItem value="all cities" className="font-medium py-3">🌟 {t('search.allCities')}</SelectItem>
                   {availableCities.map((city) => (
                     <SelectItem key={city} value={city} className="font-medium py-3">
                       📍 {city}
@@ -172,22 +187,22 @@ const SearchBar = ({
               className="relative w-full bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-black text-lg py-4 shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
             >
               <Zap className="w-5 h-5 mr-3 animate-pulse" />
-              🚀 खोजें
+              🚀 {t('search.button')}
             </Button>
           </div>
         </div>
         
         {/* Quick suggestions */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-700 mb-3 font-medium">🔥 पॉपुलर सर्च:</p>
+          <p className="text-sm text-gray-700 mb-3 font-medium">🔥 {t('search.popular')}</p>
           <div className="flex flex-wrap justify-center gap-2">
-            {['प्लंबर', 'इलेक्ट्रिशियन', 'कारपेंटर', 'पेंटर'].map((term) => (
+            {popularSearchTerms.map((term, index) => (
               <button
-                key={term}
-                onClick={() => setSearchQuery(term)}
+                key={index}
+                onClick={() => setSearchQuery(term.hi)}
                 className="px-4 py-2 bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-800 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 border border-orange-300 hover:border-orange-400"
               >
-                {term}
+                {term.hi} / {term.en}
               </button>
             ))}
           </div>

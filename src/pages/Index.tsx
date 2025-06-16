@@ -10,8 +10,10 @@ import { sampleMistris } from '@/data/sample-mistris';
 import { Mistri } from '@/types/mistri';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Star, Users, MapPin, Award } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
+  const { t } = useLanguage();
   const [currentView, setCurrentView] = useState<'home' | 'search' | 'category'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -88,22 +90,22 @@ const Index = () => {
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
             <Users className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">{allMistris.length}+</div>
-            <div className="text-sm">मिस्त्री</div>
+            <div className="text-sm">{t('mistri.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
             <MapPin className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">75+</div>
-            <div className="text-sm">शहर</div>
+            <div className="text-sm">{t('city.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
             <Award className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">12+</div>
-            <div className="text-sm">श्रेणियां</div>
+            <div className="text-sm">{t('category.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
             <Star className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">4.8★</div>
-            <div className="text-sm">रेटिंग</div>
+            <div className="text-sm">{t('rating')}</div>
           </div>
         </div>
       </div>
