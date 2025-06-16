@@ -51,50 +51,50 @@ const SearchBar = ({
   return (
     <div className="relative overflow-hidden">
       {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-100 via-blue-100 to-pink-100 opacity-80"></div>
-      <div className="absolute -top-10 -left-10 w-40 h-40 bg-gradient-to-r from-purple-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-ping"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-orange-300 to-red-200 opacity-90"></div>
+      <div className="absolute -top-10 -left-10 w-40 h-40 bg-gradient-to-r from-orange-500/40 to-red-500/40 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-gradient-to-r from-red-500/40 to-orange-500/40 rounded-full blur-3xl animate-ping"></div>
       
       {/* Floating elements */}
-      <div className="absolute top-4 right-8 w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-      <div className="absolute bottom-6 left-12 w-1 h-1 bg-pink-400 rounded-full animate-pulse"></div>
+      <div className="absolute top-4 right-8 w-2 h-2 bg-orange-600 rounded-full animate-bounce"></div>
+      <div className="absolute bottom-6 left-12 w-1 h-1 bg-red-600 rounded-full animate-pulse"></div>
       
-      <div className="relative bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border-2 border-white/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.01]">
+      <div className="relative bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border-2 border-orange-200/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.01]">
         {/* Header */}
         <div className="text-center mb-6">
-          <h3 className="text-2xl font-black bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center">
-            <Sparkles className="w-6 h-6 mr-2 text-purple-500 animate-pulse" />
+          <h3 className="text-2xl font-black bg-gradient-to-r from-orange-700 via-red-600 to-orange-800 bg-clip-text text-transparent flex items-center justify-center">
+            <Sparkles className="w-6 h-6 mr-2 text-orange-600 animate-pulse" />
             अपना परफेक्ट मिस्त्री खोजें
-            <Sparkles className="w-6 h-6 ml-2 text-pink-500 animate-pulse" />
+            <Sparkles className="w-6 h-6 ml-2 text-red-600 animate-pulse" />
           </h3>
-          <p className="text-gray-600 font-medium mt-2">बेहतरीन सेवा के लिए सबसे अच्छे मिस्त्री चुनें</p>
+          <p className="text-gray-700 font-medium mt-2">बेहतरीन सेवा के लिए सबसे अच्छे मिस्त्री चुनें</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Search Input */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
             <div className="relative">
-              <Search className="absolute left-4 top-4 w-5 h-5 text-purple-500 animate-pulse" />
+              <Search className="absolute left-4 top-4 w-5 h-5 text-orange-600 animate-pulse" />
               <Input
                 placeholder="🔍 मिस्त्री का नाम खोजें..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-4 text-lg border-2 border-purple-300 focus:border-purple-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium"
+                className="pl-12 pr-4 py-4 text-lg border-2 border-orange-300 focus:border-orange-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium"
               />
             </div>
           </div>
           
           {/* Category Select */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
             <div className="relative">
-              <Target className="absolute left-4 top-4 w-5 h-5 text-blue-500 z-10 pointer-events-none" />
+              <Target className="absolute left-4 top-4 w-5 h-5 text-red-600 z-10 pointer-events-none" />
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="pl-12 py-4 text-lg border-2 border-blue-300 focus:border-blue-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
+                <SelectTrigger className="pl-12 py-4 text-lg border-2 border-red-300 focus:border-red-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
                   <SelectValue placeholder="⚡ काम की श्रेणी चुनें" />
                 </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-blue-200 shadow-2xl rounded-xl">
+                <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-red-200 shadow-2xl rounded-xl z-50">
                   <SelectItem value="all" className="font-medium py-3">🌟 सभी श्रेणियां</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id} className="font-medium py-3">
@@ -108,29 +108,29 @@ const SearchBar = ({
           
           {/* Location Select */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
             <div className="relative">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="w-full border-2 border-green-300 focus:border-green-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 flex justify-between pl-12 relative py-4 text-lg font-medium"
+                    className="w-full border-2 border-orange-400 focus:border-orange-600 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 flex justify-between pl-12 relative py-4 text-lg font-medium"
                   >
-                    <MapPin className="absolute left-4 top-4 w-5 h-5 text-green-500" />
+                    <MapPin className="absolute left-4 top-4 w-5 h-5 text-orange-600" />
                     <span className="text-left flex-grow truncate">
                       {selectedLocation === "all cities" ? "🏙️ सभी शहर चुनें" : `📍 ${selectedLocation}`}
                     </span>
                     <MapPinned className="ml-2 h-5 w-5 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 bg-white/95 backdrop-blur-lg border-2 border-green-200 shadow-2xl rounded-xl" align="start">
+                <PopoverContent className="w-80 p-0 bg-white/95 backdrop-blur-lg border-2 border-orange-200 shadow-2xl rounded-xl z-50" align="start">
                   <div className="grid grid-cols-1 gap-1">
-                    <div className="p-3 border-b border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="p-3 border-b border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
                       <Select value={selectedState} onValueChange={setSelectedState}>
-                        <SelectTrigger className="border-green-200 bg-white/80 rounded-xl font-medium">
+                        <SelectTrigger className="border-orange-200 bg-white/80 rounded-xl font-medium">
                           <SelectValue placeholder="🗺️ राज्य चुनें" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60 bg-white/95 backdrop-blur-sm">
+                        <SelectContent className="max-h-60 bg-white/95 backdrop-blur-sm z-50">
                           <SelectItem value="all">🇮🇳 सभी राज्य</SelectItem>
                           {indiaStates.map((state) => (
                             <SelectItem key={state} value={state} className="font-medium">
@@ -142,23 +142,23 @@ const SearchBar = ({
                     </div>
                     <div className="max-h-56 overflow-y-auto p-1">
                       <div 
-                        className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all duration-200 font-medium"
+                        className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 rounded-xl transition-all duration-200 font-medium"
                         onClick={() => {
                           setSelectedLocation("all cities");
                         }}
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="flex items-center">
-                            <Sparkles className="w-4 h-4 mr-2 text-green-500" />
+                            <Sparkles className="w-4 h-4 mr-2 text-orange-600" />
                             सभी शहर
                           </span>
-                          {selectedLocation === "all cities" && <Check className="h-5 w-5 text-green-600" />}
+                          {selectedLocation === "all cities" && <Check className="h-5 w-5 text-orange-600" />}
                         </div>
                       </div>
                       {availableLocations.map((location) => (
                         <div 
                           key={location}
-                          className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all duration-200 font-medium"
+                          className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 rounded-xl transition-all duration-200 font-medium"
                           onClick={() => {
                             setSelectedLocation(location.toLowerCase());
                           }}
@@ -168,7 +168,7 @@ const SearchBar = ({
                               <MapPin className="w-4 h-4 mr-2 text-gray-500" />
                               {location}
                             </span>
-                            {selectedLocation === location.toLowerCase() && <Check className="h-5 w-5 text-green-600" />}
+                            {selectedLocation === location.toLowerCase() && <Check className="h-5 w-5 text-orange-600" />}
                           </div>
                         </div>
                       ))}
@@ -181,10 +181,10 @@ const SearchBar = ({
           
           {/* Search Button */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur opacity-60 group-hover:opacity-90 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-600 to-red-700 rounded-2xl blur opacity-60 group-hover:opacity-90 transition-opacity"></div>
             <Button 
               onClick={onSearch}
-              className="relative w-full bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 hover:from-pink-600 hover:via-purple-700 hover:to-blue-700 text-white font-black text-lg py-4 shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
+              className="relative w-full bg-gradient-to-r from-red-600 via-orange-600 to-red-700 hover:from-red-700 hover:via-orange-700 hover:to-red-800 text-white font-black text-lg py-4 shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
             >
               <Zap className="w-5 h-5 mr-3 animate-pulse" />
               🚀 खोजें
@@ -194,13 +194,13 @@ const SearchBar = ({
         
         {/* Quick suggestions */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 mb-3 font-medium">🔥 पॉपुलर सर्च:</p>
+          <p className="text-sm text-gray-700 mb-3 font-medium">🔥 पॉपुलर सर्च:</p>
           <div className="flex flex-wrap justify-center gap-2">
             {['प्लंबर', 'इलेक्ट्रिशियन', 'कारपेंटर', 'पेंटर'].map((term) => (
               <button
                 key={term}
                 onClick={() => setSearchQuery(term)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 text-purple-700 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 border border-purple-200 hover:border-purple-300"
+                className="px-4 py-2 bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-800 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 border border-orange-300 hover:border-orange-400"
               >
                 {term}
               </button>

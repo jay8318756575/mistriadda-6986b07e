@@ -23,7 +23,13 @@ const Index = () => {
 
   const handleProfileCreated = (newProfile: Mistri) => {
     console.log('Adding new profile to list:', newProfile);
-    setAllMistris(prev => [...prev, newProfile]);
+    setAllMistris(prev => {
+      const updatedList = [...prev, newProfile];
+      console.log('Updated mistris list:', updatedList);
+      return updatedList;
+    });
+    // Automatically switch to search view to show the new profile
+    setCurrentView('search');
   };
 
   const filteredMistris = useMemo(() => {
@@ -232,7 +238,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600">
       <Header onCreateProfile={() => setShowCreateDialog(true)} />
       
       <main className="container mx-auto px-4 py-8">
