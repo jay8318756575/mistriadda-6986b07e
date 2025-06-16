@@ -9,14 +9,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Search, MapPin, MapPinned, Check, Sparkles, Target, Zap } from 'lucide-react';
+import { Search, MapPin, Sparkles, Target, Zap, Globe } from 'lucide-react';
 import { categories } from '@/data/categories';
-import { indiaStates, stateDistricts, majorCities } from '@/data/india-locations';
+import { indiaStates, majorCities } from '@/data/india-locations';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -38,8 +33,9 @@ const SearchBar = ({
   onSearch
 }: SearchBarProps) => {
   const [selectedState, setSelectedState] = useState<string>("all");
+  const [selectedCity, setSelectedCity] = useState<string>("all cities");
   
-  const availableLocations = useMemo(() => {
+  const availableCities = useMemo(() => {
     if (selectedState === "all") {
       return Object.values(majorCities).flat();
     } else if (selectedState && majorCities[selectedState]) {
@@ -47,6 +43,26 @@ const SearchBar = ({
     }
     return [];
   }, [selectedState]);
+
+  // Update the combined location when state or city changes
+  const handleStateChange = (state: string) => {
+    setSelectedState(state);
+    setSelectedCity("all cities");
+    if (state === "all") {
+      setSelectedLocation("all cities");
+    } else {
+      setSelectedLocation(state.toLowerCase());
+    }
+  };
+
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+    if (city === "all cities") {
+      setSelectedLocation(selectedState === "all" ? "all cities" : selectedState.toLowerCase());
+    } else {
+      setSelectedLocation(city.toLowerCase());
+    }
+  };
 
   return (
     <div className="relative overflow-hidden">
@@ -70,7 +86,7 @@ const SearchBar = ({
           <p className="text-gray-700 font-medium mt-2">बेहतरीन सेवा के लिए सबसे अच्छे मिस्त्री चुनें</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           {/* Search Input */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
@@ -106,76 +122,45 @@ const SearchBar = ({
             </div>
           </div>
           
-          {/* Location Select */}
+          {/* State Select */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-orange-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div className="relative">
+              <Globe className="absolute left-4 top-4 w-5 h-5 text-purple-600 z-10 pointer-events-none" />
+              <Select value={selectedState} onValueChange={handleStateChange}>
+                <SelectTrigger className="pl-12 py-4 text-lg border-2 border-purple-300 focus:border-purple-500 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
+                  <SelectValue placeholder="🗺️ राज्य चुनें" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-purple-200 shadow-2xl rounded-xl z-50 max-h-60">
+                  <SelectItem value="all" className="font-medium py-3">🇮🇳 सभी राज्य</SelectItem>
+                  {indiaStates.map((state) => (
+                    <SelectItem key={state} value={state} className="font-medium py-3">
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* City Select */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
             <div className="relative">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-2 border-orange-400 focus:border-orange-600 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 flex justify-between pl-12 relative py-4 text-lg font-medium"
-                  >
-                    <MapPin className="absolute left-4 top-4 w-5 h-5 text-orange-600" />
-                    <span className="text-left flex-grow truncate">
-                      {selectedLocation === "all cities" ? "🏙️ सभी शहर चुनें" : `📍 ${selectedLocation}`}
-                    </span>
-                    <MapPinned className="ml-2 h-5 w-5 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0 bg-white/95 backdrop-blur-lg border-2 border-orange-200 shadow-2xl rounded-xl z-50" align="start">
-                  <div className="grid grid-cols-1 gap-1">
-                    <div className="p-3 border-b border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
-                      <Select value={selectedState} onValueChange={setSelectedState}>
-                        <SelectTrigger className="border-orange-200 bg-white/80 rounded-xl font-medium">
-                          <SelectValue placeholder="🗺️ राज्य चुनें" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60 bg-white/95 backdrop-blur-sm z-50">
-                          <SelectItem value="all">🇮🇳 सभी राज्य</SelectItem>
-                          {indiaStates.map((state) => (
-                            <SelectItem key={state} value={state} className="font-medium">
-                              {state}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="max-h-56 overflow-y-auto p-1">
-                      <div 
-                        className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 rounded-xl transition-all duration-200 font-medium"
-                        onClick={() => {
-                          setSelectedLocation("all cities");
-                        }}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="flex items-center">
-                            <Sparkles className="w-4 h-4 mr-2 text-orange-600" />
-                            सभी शहर
-                          </span>
-                          {selectedLocation === "all cities" && <Check className="h-5 w-5 text-orange-600" />}
-                        </div>
-                      </div>
-                      {availableLocations.map((location) => (
-                        <div 
-                          key={location}
-                          className="flex items-center px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 rounded-xl transition-all duration-200 font-medium"
-                          onClick={() => {
-                            setSelectedLocation(location.toLowerCase());
-                          }}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="flex items-center">
-                              <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                              {location}
-                            </span>
-                            {selectedLocation === location.toLowerCase() && <Check className="h-5 w-5 text-orange-600" />}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <MapPin className="absolute left-4 top-4 w-5 h-5 text-orange-600 z-10 pointer-events-none" />
+              <Select value={selectedCity} onValueChange={handleCityChange}>
+                <SelectTrigger className="pl-12 py-4 text-lg border-2 border-orange-400 focus:border-orange-600 bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 font-medium">
+                  <SelectValue placeholder="🏙️ शहर चुनें" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-orange-200 shadow-2xl rounded-xl z-50 max-h-60">
+                  <SelectItem value="all cities" className="font-medium py-3">🌟 सभी शहर</SelectItem>
+                  {availableCities.map((city) => (
+                    <SelectItem key={city} value={city} className="font-medium py-3">
+                      📍 {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
