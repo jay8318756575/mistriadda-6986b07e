@@ -32,59 +32,96 @@ const Index = () => {
   }, []);
 
   const fetchMistris = async () => {
+    console.log('=== STARTING FETCH FROM DATABASE ===');
+    
     try {
+      // Test connection first
+      console.log('Testing Supabase connection...');
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from('mistris')
+        .select('count(*)')
+        .limit(1);
+      
+      if (connectionError) {
+        console.error('Connection test failed:', connectionError);
+        throw connectionError;
+      }
+      
+      console.log('Connection test successful:', connectionTest);
+
+      // Now fetch all mistris
+      console.log('Fetching all mistris from database...');
       const { data, error } = await supabase
         .from('mistris')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Database query result:', { data, error });
+
       if (error) {
         console.error('Error fetching mistris:', error);
         toast({
           title: "त्रुटि",
-          description: "मिस्त्री की जानकारी लोड करने में समस्या हुई",
+          description: "मिस्त्री की जानकारी लोड करने में समस्या हुई: " + error.message,
           variant: "destructive"
         });
         return;
       }
 
       if (data) {
-        // Convert database response to Mistri type
-        const mistris: Mistri[] = data.map(item => ({
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          location: item.location,
-          mobile: item.mobile,
-          experience: item.experience,
-          rating: item.rating,
-          description: item.description
-        }));
+        console.log('Raw database data:', data);
+        console.log('Number of records fetched:', data.length);
 
-        console.log('Fetched mistris from database:', mistris);
+        // Convert database response to Mistri type
+        const mistris: Mistri[] = data.map(item => {
+          console.log('Converting database item:', item);
+          return {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            location: item.location,
+            mobile: item.mobile,
+            experience: item.experience,
+            rating: item.rating,
+            description: item.description
+          };
+        });
+
+        console.log('Converted mistris array:', mistris);
+        console.log('Setting mistris in state...');
         setAllMistris(mistris);
+        console.log('Mistris set in state successfully');
+      } else {
+        console.log('No data returned from query (data is null/undefined)');
       }
     } catch (error) {
-      console.error('Error fetching mistris:', error);
+      console.error('=== FETCH FAILED ===');
+      console.error('Error details:', error);
       toast({
         title: "त्रुटि",
-        description: "डेटा लोड करने में समस्या हुई",
+        description: "डेटा लोड करने में समस्या हुई: " + (error instanceof Error ? error.message : 'Unknown error'),
         variant: "destructive"
       });
     } finally {
+      console.log('=== FETCH COMPLETED ===');
       setIsLoading(false);
     }
   };
 
   const handleProfileCreated = (newProfile: Mistri) => {
-    console.log('Adding new profile to list:', newProfile);
+    console.log('=== PROFILE CREATED CALLBACK ===');
+    console.log('New profile received:', newProfile);
+    console.log('Current mistris in state before update:', allMistris);
+    
     setAllMistris(prev => {
       const updatedList = [newProfile, ...prev]; // Add new profile at the beginning
       console.log('Updated mistris list:', updatedList);
       return updatedList;
     });
+    
     // Automatically switch to search view to show the new profile
     setCurrentView('search');
+    console.log('Switched to search view');
   };
 
   const filteredMistris = useMemo(() => {

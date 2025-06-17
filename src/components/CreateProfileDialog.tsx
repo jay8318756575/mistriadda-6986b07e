@@ -38,10 +38,12 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     e.preventDefault();
     setIsSubmitting(true);
     
+    console.log('=== FORM SUBMISSION STARTED ===');
     console.log('Form data before validation:', formData);
     
     // Validate required fields
     if (!formData.name.trim()) {
+      console.log('Validation failed: Name is empty');
       toast({
         title: "त्रुटि",
         description: "कृपया अपना नाम भरें",
@@ -52,6 +54,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
     
     if (!formData.category) {
+      console.log('Validation failed: Category not selected');
       toast({
         title: "त्रुटि",
         description: "कृपया काम का प्रकार चुनें",
@@ -62,6 +65,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
     
     if (!formData.location) {
+      console.log('Validation failed: Location not selected');
       toast({
         title: "त्रुटि",
         description: "कृपया अपना शहर चुनें",
@@ -72,6 +76,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
     
     if (!formData.mobile.trim() || formData.mobile.length !== 10) {
+      console.log('Validation failed: Mobile number invalid', formData.mobile);
       toast({
         title: "त्रुटि",
         description: "कृपया 10 अंकों का सही मोबाइल नंबर भरें",
@@ -82,6 +87,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
     
     if (!formData.experience.trim() || parseInt(formData.experience) < 0) {
+      console.log('Validation failed: Experience invalid', formData.experience);
       toast({
         title: "त्रुटि",
         description: "कृपया अनुभव भरें",
@@ -91,26 +97,48 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       return;
     }
 
+    console.log('=== ALL VALIDATIONS PASSED ===');
+    console.log('Attempting to save to Supabase...');
+
     try {
+      // Test database connection first
+      console.log('Testing database connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('mistris')
+        .select('count(*)')
+        .limit(1);
+      
+      if (testError) {
+        console.error('Database connection test failed:', testError);
+        throw new Error('Database connection failed: ' + testError.message);
+      }
+      
+      console.log('Database connection successful. Test result:', testData);
+
+      // Prepare data for insertion
+      const insertData = {
+        name: formData.name.trim(),
+        category: formData.category,
+        location: formData.location,
+        mobile: formData.mobile.trim(),
+        experience: parseInt(formData.experience),
+        rating: Number((4.5 + Math.random() * 0.5).toFixed(1)), // Random rating between 4.5-5.0
+        description: formData.description.trim() || null
+      };
+
+      console.log('Data to be inserted:', insertData);
+
       // Save to Supabase database
       const { data, error } = await supabase
         .from('mistris')
-        .insert([
-          {
-            name: formData.name.trim(),
-            category: formData.category,
-            location: formData.location,
-            mobile: formData.mobile.trim(),
-            experience: parseInt(formData.experience),
-            rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
-            description: formData.description.trim() || null
-          }
-        ])
+        .insert([insertData])
         .select()
         .single();
 
+      console.log('Supabase insert response:', { data, error });
+
       if (error) {
-        console.error('Database error:', error);
+        console.error('Database insert error:', error);
         throw error;
       }
 
@@ -127,7 +155,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
           description: data.description
         };
 
-        console.log('New profile created in database:', newProfile);
+        console.log('=== PROFILE CREATED SUCCESSFULLY ===');
+        console.log('New profile from database:', newProfile);
         
         // Call the callback to add profile to the list
         onProfileCreated(newProfile);
@@ -153,13 +182,18 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         setTimeout(() => {
           onClose();
         }, 1500);
+      } else {
+        console.error('No data returned from insert operation');
+        throw new Error('No data returned from database');
       }
       
     } catch (error) {
-      console.error('Profile creation error:', error);
+      console.error('=== PROFILE CREATION FAILED ===');
+      console.error('Full error object:', error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
       toast({
         title: "त्रुटि",
-        description: "प्रोफाइल बनाने में समस्या हुई। कृपया दोबारा कोशिश करें।",
+        description: `प्रोफाइल बनाने में समस्या: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
     } finally {
