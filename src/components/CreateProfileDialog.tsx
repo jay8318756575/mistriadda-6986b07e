@@ -11,6 +11,7 @@ import { upCities } from '@/data/up-locations';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Video, Upload } from 'lucide-react';
 import { Mistri } from '@/types/mistri';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateProfileDialogProps {
   isOpen: boolean;
@@ -91,44 +92,68 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
 
     try {
-      // Create new mistri profile
-      const newProfile: Mistri = {
-        id: `mistri_${Date.now()}`,
-        name: formData.name.trim(),
-        category: formData.category,
-        location: formData.location,
-        mobile: formData.mobile.trim(),
-        experience: parseInt(formData.experience),
-        rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
-        description: formData.description.trim() || undefined
-      };
+      // Save to Supabase database
+      const { data, error } = await supabase
+        .from('mistris')
+        .insert([
+          {
+            name: formData.name.trim(),
+            category: formData.category,
+            location: formData.location,
+            mobile: formData.mobile.trim(),
+            experience: parseInt(formData.experience),
+            rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
+            description: formData.description.trim() || null
+          }
+        ])
+        .select()
+        .single();
 
-      console.log('New profile created:', newProfile);
-      
-      // Call the callback to add profile to the list
-      onProfileCreated(newProfile);
-      
-      toast({
-        title: "सफलता! 🎉",
-        description: `${formData.name} जी, आपकी प्रोफाइल सफलतापूर्वक बन गई है!`,
-      });
-      
-      // Reset form
-      setFormData({
-        name: '',
-        category: '',
-        location: '',
-        mobile: '',
-        experience: '',
-        description: ''
-      });
-      setPhoto(null);
-      setVideo(null);
-      
-      // Close dialog after showing success
-      setTimeout(() => {
-        onClose();
-      }, 1500);
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      if (data) {
+        // Convert database response to Mistri type
+        const newProfile: Mistri = {
+          id: data.id,
+          name: data.name,
+          category: data.category,
+          location: data.location,
+          mobile: data.mobile,
+          experience: data.experience,
+          rating: data.rating,
+          description: data.description
+        };
+
+        console.log('New profile created in database:', newProfile);
+        
+        // Call the callback to add profile to the list
+        onProfileCreated(newProfile);
+        
+        toast({
+          title: "सफलता! 🎉",
+          description: `${formData.name} जी, आपकी प्रोफाइल सफलतापूर्वक बन गई है!`,
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          category: '',
+          location: '',
+          mobile: '',
+          experience: '',
+          description: ''
+        });
+        setPhoto(null);
+        setVideo(null);
+        
+        // Close dialog after showing success
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      }
       
     } catch (error) {
       console.error('Profile creation error:', error);

@@ -9,7 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      mistris: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          experience: number
+          id: string
+          location: string
+          mobile: string
+          name: string
+          rating: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          experience: number
+          id?: string
+          location: string
+          mobile: string
+          name: string
+          rating?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          experience?: number
+          id?: string
+          location?: string
+          mobile?: string
+          name?: string
+          rating?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

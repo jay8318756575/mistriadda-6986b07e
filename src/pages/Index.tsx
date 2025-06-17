@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import CategoryCard from '@/components/CategoryCard';
@@ -6,14 +6,16 @@ import MistriCard from '@/components/MistriCard';
 import MistriProfileDialog from '@/components/MistriProfileDialog';
 import CreateProfileDialog from '@/components/CreateProfileDialog';
 import { categories } from '@/data/categories';
-import { sampleMistris } from '@/data/sample-mistris';
 import { Mistri } from '@/types/mistri';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Star, Users, MapPin, Award } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [currentView, setCurrentView] = useState<'home' | 'search' | 'category'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -21,12 +23,63 @@ const Index = () => {
   const [selectedMistri, setSelectedMistri] = useState<Mistri | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentCategoryFilter, setCurrentCategoryFilter] = useState<string>('');
-  const [allMistris, setAllMistris] = useState<Mistri[]>(sampleMistris);
+  const [allMistris, setAllMistris] = useState<Mistri[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch mistris from database on component mount
+  useEffect(() => {
+    fetchMistris();
+  }, []);
+
+  const fetchMistris = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('mistris')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching mistris:', error);
+        toast({
+          title: "त्रुटि",
+          description: "मिस्त्री की जानकारी लोड करने में समस्या हुई",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data) {
+        // Convert database response to Mistri type
+        const mistris: Mistri[] = data.map(item => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          location: item.location,
+          mobile: item.mobile,
+          experience: item.experience,
+          rating: item.rating,
+          description: item.description
+        }));
+
+        console.log('Fetched mistris from database:', mistris);
+        setAllMistris(mistris);
+      }
+    } catch (error) {
+      console.error('Error fetching mistris:', error);
+      toast({
+        title: "त्रुटि",
+        description: "डेटा लोड करने में समस्या हुई",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleProfileCreated = (newProfile: Mistri) => {
     console.log('Adding new profile to list:', newProfile);
     setAllMistris(prev => {
-      const updatedList = [...prev, newProfile];
+      const updatedList = [newProfile, ...prev]; // Add new profile at the beginning
       console.log('Updated mistris list:', updatedList);
       return updatedList;
     });
@@ -182,7 +235,11 @@ const Index = () => {
         onSearch={handleSearch}
       />
       
-      {filteredMistris.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">डेटा लोड हो रहा है...</p>
+        </div>
+      ) : filteredMistris.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">कोई मिस्त्री नहीं मिला</p>
           <p className="text-gray-400">कृपया अपनी खोज बदलकर दोबारा कोशिश करें</p>
@@ -220,7 +277,11 @@ const Index = () => {
           </h2>
         </div>
         
-        {filteredMistris.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">डेटा लोड हो रहा है...</p>
+          </div>
+        ) : filteredMistris.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">इस श्रेणी में कोई मिस्त्री नहीं मिला</p>
           </div>
