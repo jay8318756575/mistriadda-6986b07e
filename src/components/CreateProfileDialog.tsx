@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,32 +54,51 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
 
     setOtpSending(true);
-    console.log('Sending OTP to:', formData.mobile);
+    console.log('=== SENDING OTP ===');
+    console.log('Mobile number:', formData.mobile);
 
     try {
       // Generate 6-digit OTP
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-      console.log('Generated OTP:', otpCode, 'Expires at:', expiresAt);
+      console.log('Generated OTP:', otpCode);
+      console.log('Expires at:', expiresAt.toISOString());
+
+      // First, delete any existing OTP for this phone number to avoid conflicts
+      const { error: deleteError } = await supabase
+        .from('otp_verifications')
+        .delete()
+        .eq('phone_number', formData.mobile)
+        .eq('is_verified', false);
+
+      if (deleteError) {
+        console.log('Note: Could not delete existing OTP (this is okay):', deleteError);
+      }
 
       // Save OTP to database
       const { data, error } = await supabase
         .from('otp_verifications')
-        .insert([{
+        .insert({
           phone_number: formData.mobile,
           otp_code: otpCode,
-          expires_at: expiresAt.toISOString()
-        }])
+          expires_at: expiresAt.toISOString(),
+          is_verified: false,
+          attempts: 0
+        })
         .select()
         .single();
 
       if (error) {
-        console.error('Error saving OTP:', error);
-        throw error;
+        console.error('Database error while saving OTP:', error);
+        throw new Error(`डेटाबेस में OTP सेव करने में समस्या: ${error.message}`);
       }
 
-      console.log('OTP saved to database:', data);
+      if (!data) {
+        throw new Error('OTP डेटा सेव नहीं हुआ');
+      }
+
+      console.log('OTP saved successfully:', data);
       setOtpId(data.id);
 
       // TODO: Integrate with MSG91 API to send actual SMS
@@ -92,15 +110,23 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
       toast({
         title: "OTP भेजा गया",
-        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (डेवलपमेंट में: ${otpCode})`,
+        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (टेस्ट के लिए: ${otpCode})`,
       });
 
       setStep('otp');
     } catch (error) {
-      console.error('Error sending OTP:', error);
+      console.error('=== OTP SENDING FAILED ===');
+      console.error('Error details:', error);
+      
+      let errorMessage = "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "त्रुटि",
-        description: "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -119,7 +145,9 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     }
 
     setOtpVerifying(true);
-    console.log('Verifying OTP:', otp, 'for ID:', otpId);
+    console.log('=== VERIFYING OTP ===');
+    console.log('OTP entered:', otp);
+    console.log('OTP ID:', otpId);
 
     try {
       // Check OTP in database
@@ -128,27 +156,50 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         .select('*')
         .eq('id', otpId)
         .eq('otp_code', otp)
-        .gt('expires_at', new Date().toISOString())
         .eq('is_verified', false)
         .single();
 
-      if (error || !data) {
-        console.error('OTP verification failed:', error);
+      if (error) {
+        console.error('Database error during OTP verification:', error);
+        throw new Error('OTP सत्यापन में डेटाबेस समस्या');
+      }
+
+      if (!data) {
+        console.log('No matching OTP found');
         toast({
           title: "गलत OTP",
-          description: "OTP गलत है या समय समाप्त हो गया है। कृपया दोबारा कोशिश करें।",
+          description: "OTP गलत है। कृपया दोबारा कोशिश करें।",
           variant: "destructive"
         });
         return;
       }
 
-      console.log('OTP verified successfully:', data);
+      // Check if OTP has expired
+      const now = new Date();
+      const expiresAt = new Date(data.expires_at);
+      
+      if (now > expiresAt) {
+        console.log('OTP has expired');
+        toast({
+          title: "OTP समाप्त",
+          description: "OTP का समय समाप्त हो गया है। कृपया नया OTP भेजें।",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('OTP verified successfully');
 
       // Mark OTP as verified
-      await supabase
+      const { error: updateError } = await supabase
         .from('otp_verifications')
         .update({ is_verified: true })
         .eq('id', otpId);
+
+      if (updateError) {
+        console.error('Error updating OTP status:', updateError);
+        // Continue anyway as the OTP was valid
+      }
 
       toast({
         title: "OTP सत्यापित",
@@ -158,10 +209,18 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       // Now create the profile
       await createProfile();
     } catch (error) {
-      console.error('Error verifying OTP:', error);
+      console.error('=== OTP VERIFICATION FAILED ===');
+      console.error('Error details:', error);
+      
+      let errorMessage = "OTP सत्यापन में समस्या हुई। कृपया दोबारा कोशिश करें।";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "त्रुटि",
-        description: "OTP सत्यापन में समस्या हुई। कृपया दोबारा कोशिश करें।",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -183,8 +242,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         rating: Number((4.5 + Math.random() * 0.5).toFixed(1)),
         description: formData.description.trim() || null,
         phone_verified: true, // Since OTP was verified
-        verification_status: 'pending', // Will be updated after admin approval
-        admin_approval_status: 'pending'
+        verification_status: 'pending' as const,
+        admin_approval_status: 'pending' as const
       };
 
       console.log('Data to be inserted:', insertData);
@@ -200,7 +259,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
       if (error) {
         console.error('Database insert error:', error);
-        throw error;
+        throw new Error(`प्रोफाइल बनाने में समस्या: ${error.message}`);
       }
 
       if (data) {
@@ -217,7 +276,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         };
 
         console.log('=== PROFILE CREATED SUCCESSFULLY ===');
-        console.log('New profile from database:', newProfile);
+        console.log('New profile:', newProfile);
         
         // Call the callback to add profile to the list
         onProfileCreated(newProfile);
@@ -233,10 +292,17 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
     } catch (error) {
       console.error('=== PROFILE CREATION FAILED ===');
-      console.error('Full error object:', error);
+      console.error('Error details:', error);
+      
+      let errorMessage = "प्रोफाइल बनाने में समस्या हुई। कृपया दोबारा कोशिश करें।";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "त्रुटि",
-        description: `प्रोफाइल बनाने में समस्या: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -247,53 +313,39 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     setIsSubmitting(true);
     
     console.log('=== FORM SUBMISSION STARTED ===');
-    console.log('Form data before validation:', formData);
+    console.log('Form data:', formData);
     
     // Validate required fields
+    const validationErrors: string[] = [];
+    
     if (!formData.name.trim()) {
-      toast({
-        title: "त्रुटि",
-        description: "कृपया अपना नाम भरें",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
+      validationErrors.push("कृपया अपना नाम भरें");
     }
     
     if (!formData.category) {
-      toast({
-        title: "त्रुटि",
-        description: "कृपया काम का प्रकार चुनें",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
+      validationErrors.push("कृपया काम का प्रकार चुनें");
     }
     
     if (!formData.location) {
-      toast({
-        title: "त्रुटि",
-        description: "कृपया अपना शहर चुनें",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
+      validationErrors.push("कृपया अपना शहर चुनें");
     }
     
-    if (!formData.mobile.trim() || formData.mobile.length !== 10) {
-      toast({
-        title: "त्रुटि",
-        description: "कृपया 10 अंकों का सही मोबाइल नंबर भरें",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
+    if (!formData.mobile.trim()) {
+      validationErrors.push("कृपया मोबाइल नंबर भरें");
+    } else if (formData.mobile.length !== 10 || !/^\d{10}$/.test(formData.mobile)) {
+      validationErrors.push("कृपया 10 अंकों का सही मोबाइल नंबर भरें");
     }
     
-    if (!formData.experience.trim() || parseInt(formData.experience) < 0) {
+    if (!formData.experience.trim()) {
+      validationErrors.push("कृपया अनुभव भरें");
+    } else if (parseInt(formData.experience) < 0) {
+      validationErrors.push("अनुभव 0 या अधिक होना चाहिए");
+    }
+
+    if (validationErrors.length > 0) {
       toast({
         title: "त्रुटि",
-        description: "कृपया अनुभव भरें",
+        description: validationErrors.join(", "),
         variant: "destructive"
       });
       setIsSubmitting(false);
