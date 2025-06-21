@@ -35,11 +35,11 @@ const Index = () => {
     console.log('=== STARTING FETCH FROM DATABASE ===');
     
     try {
-      // Test connection first
+      // Test connection with a simple select first
       console.log('Testing Supabase connection...');
       const { data: connectionTest, error: connectionError } = await supabase
         .from('mistris')
-        .select('count(*)')
+        .select('id')
         .limit(1);
       
       if (connectionError) {
@@ -122,6 +122,11 @@ const Index = () => {
     // Automatically switch to search view to show the new profile
     setCurrentView('search');
     console.log('Switched to search view');
+    
+    // Refetch data to ensure consistency
+    setTimeout(() => {
+      fetchMistris();
+    }, 1000);
   };
 
   const filteredMistris = useMemo(() => {
