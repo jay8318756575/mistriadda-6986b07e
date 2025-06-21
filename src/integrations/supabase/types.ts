@@ -9,42 +9,140 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      mistri_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          mistri_id: string | null
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          mistri_id?: string | null
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          mistri_id?: string | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mistri_ratings_mistri_id_fkey"
+            columns: ["mistri_id"]
+            isOneToOne: false
+            referencedRelation: "mistris"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mistris: {
         Row: {
+          admin_approval_status: string | null
           category: string
           created_at: string
           description: string | null
           experience: number
           id: string
+          id_proof_url: string | null
+          is_active: boolean | null
+          last_active: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           mobile: string
           name: string
+          phone_verified: boolean | null
+          profile_photo_url: string | null
           rating: number | null
           updated_at: string
+          verification_status: string | null
+          work_gallery: string[] | null
         }
         Insert: {
+          admin_approval_status?: string | null
           category: string
           created_at?: string
           description?: string | null
           experience: number
           id?: string
+          id_proof_url?: string | null
+          is_active?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           mobile: string
           name: string
+          phone_verified?: boolean | null
+          profile_photo_url?: string | null
           rating?: number | null
           updated_at?: string
+          verification_status?: string | null
+          work_gallery?: string[] | null
         }
         Update: {
+          admin_approval_status?: string | null
           category?: string
           created_at?: string
           description?: string | null
           experience?: number
           id?: string
+          id_proof_url?: string | null
+          is_active?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           mobile?: string
           name?: string
+          phone_verified?: boolean | null
+          profile_photo_url?: string | null
           rating?: number | null
           updated_at?: string
+          verification_status?: string | null
+          work_gallery?: string[] | null
+        }
+        Relationships: []
+      }
+      otp_verifications: {
+        Row: {
+          attempts: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          is_verified: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string
+          phone_number?: string
         }
         Relationships: []
       }
