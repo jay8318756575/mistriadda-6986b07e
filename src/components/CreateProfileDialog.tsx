@@ -44,7 +44,10 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
   const { toast } = useToast();
 
   const sendOTP = async () => {
+    console.log('=== SEND OTP FUNCTION CALLED ===');
+    
     if (!formData.mobile || formData.mobile.length !== 10) {
+      console.log('Mobile number validation failed:', formData.mobile);
       toast({
         title: "त्रुटि",
         description: "कृपया 10 अंकों का सही मोबाइल नंबर भरें",
@@ -65,72 +68,109 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       console.log('Generated OTP:', otpCode);
       console.log('Expires at:', expiresAt.toISOString());
 
-      // First, delete any existing OTP for this phone number to avoid conflicts
+      // Test database connection first
+      console.log('Testing database connection...');
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from('otp_verifications')
+        .select('id')
+        .limit(1);
+
+      console.log('Connection test result:', { connectionTest, connectionError });
+
+      if (connectionError) {
+        console.error('Database connection failed:', connectionError);
+        throw new Error(`डेटाबेस कनेक्शन में समस्या: ${connectionError.message}`);
+      }
+
+      console.log('Database connection successful');
+
+      // Delete existing OTPs for this phone number
+      console.log('Deleting existing OTPs for phone:', formData.mobile);
       const { error: deleteError } = await supabase
         .from('otp_verifications')
         .delete()
-        .eq('phone_number', formData.mobile)
-        .eq('is_verified', false);
+        .eq('phone_number', formData.mobile);
 
       if (deleteError) {
-        console.log('Note: Could not delete existing OTP (this is okay):', deleteError);
+        console.log('Delete existing OTP error (continuing anyway):', deleteError);
+      } else {
+        console.log('Successfully deleted existing OTPs');
       }
 
-      // Save OTP to database
+      // Insert new OTP
+      console.log('Inserting new OTP...');
+      const insertData = {
+        phone_number: formData.mobile,
+        otp_code: otpCode,
+        expires_at: expiresAt.toISOString(),
+        is_verified: false,
+        attempts: 0
+      };
+      
+      console.log('Insert data:', insertData);
+
       const { data, error } = await supabase
         .from('otp_verifications')
-        .insert({
-          phone_number: formData.mobile,
-          otp_code: otpCode,
-          expires_at: expiresAt.toISOString(),
-          is_verified: false,
-          attempts: 0
-        })
+        .insert(insertData)
         .select()
         .single();
 
+      console.log('Insert result:', { data, error });
+
       if (error) {
-        console.error('Database error while saving OTP:', error);
-        throw new Error(`डेटाबेस में OTP सेव करने में समस्या: ${error.message}`);
+        console.error('Database insert error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
+        console.error('Error message:', error.message);
+        
+        throw new Error(`OTP सेव करने में समस्या: ${error.message}`);
       }
 
       if (!data) {
+        console.error('No data returned from insert');
         throw new Error('OTP डेटा सेव नहीं हुआ');
       }
 
       console.log('OTP saved successfully:', data);
       setOtpId(data.id);
 
-      // TODO: Integrate with MSG91 API to send actual SMS
-      // For now, show OTP in console and toast for development
+      // Show success message with OTP for testing
       console.log('=== OTP FOR TESTING ===');
       console.log('Mobile:', formData.mobile);
       console.log('OTP Code:', otpCode);
       console.log('======================');
       
       toast({
-        title: "OTP भेजा गया",
+        title: "OTP भेजा गया ✅",
         description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (टेस्ट के लिए: ${otpCode})`,
       });
 
       setStep('otp');
+      console.log('=== OTP SENDING COMPLETED SUCCESSFULLY ===');
+      
     } catch (error) {
       console.error('=== OTP SENDING FAILED ===');
-      console.error('Error details:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error object:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       
       let errorMessage = "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।";
       
       if (error instanceof Error) {
-        errorMessage = error.message;
+        console.error('Error message:', error.message);
+        errorMessage = `समस्या: ${error.message}`;
       }
       
       toast({
-        title: "त्रुटि",
+        title: "OTP त्रुटि ❌",
         description: errorMessage,
         variant: "destructive"
       });
+      
     } finally {
       setOtpSending(false);
+      console.log('=== OTP SENDING PROCESS COMPLETED ===');
     }
   };
 
@@ -310,15 +350,15 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
     console.log('=== FORM SUBMISSION STARTED ===');
     console.log('Form data:', formData);
     
-    // Validate required fields
+    setIsSubmitting(true);
+    
+    // Basic validation
     const validationErrors: string[] = [];
     
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       validationErrors.push("कृपया अपना नाम भरें");
     }
     
@@ -330,19 +370,20 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       validationErrors.push("कृपया अपना शहर चुनें");
     }
     
-    if (!formData.mobile.trim()) {
+    if (!formData.mobile?.trim()) {
       validationErrors.push("कृपया मोबाइल नंबर भरें");
     } else if (formData.mobile.length !== 10 || !/^\d{10}$/.test(formData.mobile)) {
       validationErrors.push("कृपया 10 अंकों का सही मोबाइल नंबर भरें");
     }
     
-    if (!formData.experience.trim()) {
+    if (!formData.experience?.trim()) {
       validationErrors.push("कृपया अनुभव भरें");
     } else if (parseInt(formData.experience) < 0) {
       validationErrors.push("अनुभव 0 या अधिक होना चाहिए");
     }
 
     if (validationErrors.length > 0) {
+      console.log('Validation errors:', validationErrors);
       toast({
         title: "त्रुटि",
         description: validationErrors.join(", "),
@@ -355,8 +396,13 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     console.log('=== ALL VALIDATIONS PASSED ===');
     
     // Send OTP for verification
-    await sendOTP();
-    setIsSubmitting(false);
+    try {
+      await sendOTP();
+    } catch (error) {
+      console.error('Error in handleSubmit calling sendOTP:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
