@@ -68,33 +68,17 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       console.log('Generated OTP:', otpCode);
       console.log('Expires at:', expiresAt.toISOString());
 
-      // Test database connection first
-      console.log('Testing database connection...');
-      const { data: connectionTest, error: connectionError } = await supabase
-        .from('otp_verifications')
-        .select('id')
-        .limit(1);
-
-      console.log('Connection test result:', { connectionTest, connectionError });
-
-      if (connectionError) {
-        console.error('Database connection failed:', connectionError);
-        throw new Error(`डेटाबेस कनेक्शन में समस्या: ${connectionError.message}`);
-      }
-
-      console.log('Database connection successful');
-
-      // Delete existing OTPs for this phone number
-      console.log('Deleting existing OTPs for phone:', formData.mobile);
+      // Delete existing OTPs for this phone number first
+      console.log('Cleaning up existing OTPs for phone:', formData.mobile);
       const { error: deleteError } = await supabase
         .from('otp_verifications')
         .delete()
         .eq('phone_number', formData.mobile);
 
       if (deleteError) {
-        console.log('Delete existing OTP error (continuing anyway):', deleteError);
+        console.log('Delete existing OTP warning (continuing anyway):', deleteError);
       } else {
-        console.log('Successfully deleted existing OTPs');
+        console.log('Successfully cleaned up existing OTPs');
       }
 
       // Insert new OTP
@@ -119,11 +103,6 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
       if (error) {
         console.error('Database insert error:', error);
-        console.error('Error code:', error.code);
-        console.error('Error details:', error.details);
-        console.error('Error hint:', error.hint);
-        console.error('Error message:', error.message);
-        
         throw new Error(`OTP सेव करने में समस्या: ${error.message}`);
       }
 
@@ -151,9 +130,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
     } catch (error) {
       console.error('=== OTP SENDING FAILED ===');
-      console.error('Error type:', typeof error);
-      console.error('Error object:', error);
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Error details:', error);
       
       let errorMessage = "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।";
       
