@@ -47,6 +47,59 @@ export type Database = {
           },
         ]
       }
+      mistri_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: number | null
+          id: string
+          is_active: boolean | null
+          likes_count: number | null
+          mistri_id: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          likes_count?: number | null
+          mistri_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          likes_count?: number | null
+          mistri_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mistri_videos_mistri_id_fkey"
+            columns: ["mistri_id"]
+            isOneToOne: false
+            referencedRelation: "mistris"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mistris: {
         Row: {
           admin_approval_status: string | null
