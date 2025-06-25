@@ -3,27 +3,27 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Star, 
   MapPin, 
   Phone, 
-  Calendar, 
-  Award,
+  Star, 
+  Calendar,
   User,
-  Video,
-  Upload
-} from "lucide-react";
-import { Mistri } from "@/types/mistri";
-import VideosList from './VideosList';
+  Upload,
+  Video
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { hi } from 'date-fns/locale';
+import type { Mistri } from '@/types/mistri';
 import VideoUpload from './VideoUpload';
+import { Link } from 'react-router-dom';
 
 interface MistriProfileDialogProps {
   mistri: Mistri | null;
@@ -32,120 +32,177 @@ interface MistriProfileDialogProps {
 }
 
 const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogProps) => {
-  const [activeTab, setActiveTab] = useState("profile");
   const [showVideoUpload, setShowVideoUpload] = useState(false);
-  const [videoRefreshKey, setVideoRefreshKey] = useState(0);
 
-  // Reset tab when dialog opens/closes
   useEffect(() => {
-    if (isOpen) {
-      setActiveTab("profile");
+    if (!isOpen) {
       setShowVideoUpload(false);
     }
   }, [isOpen]);
 
-  const handleVideoUploaded = () => {
-    setShowVideoUpload(false);
-    setVideoRefreshKey(prev => prev + 1);
-    setActiveTab("videos"); // Switch to videos tab to show the new video
-  };
-
   if (!mistri) return null;
 
-  const getVerificationStatus = () => {
-    if (mistri.phone_verified && mistri.verification_status === 'verified') {
-      return { text: "सत्यापित", color: "bg-green-500" };
-    } else if (mistri.verification_status === 'pending') {
-      return { text: "लंबित", color: "bg-yellow-500" };
-    } else {
-      return { text: "असत्यापित", color: "bg-red-500" };
+  const formatJoinDate = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { 
+        addSuffix: true, 
+        locale: hi 
+      });
+    } catch {
+      return 'कुछ समय पहले';
     }
   };
 
-  const verificationStatus = getVerificationStatus();
+  const getRatingStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${
+          i < rating 
+            ? 'text-yellow-400 fill-current' 
+            : 'text-gray-300'
+        }`}
+      />
+    ));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-xl font-bold">
-                {mistri.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <DialogTitle className="text-2xl">{mistri.name}</DialogTitle>
-                <DialogDescription className="text-lg">
-                  {mistri.category} • {mistri.location}
-                </DialogDescription>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Badge className={`${verificationStatus.color} text-white`}>
-                    {verificationStatus.text}
-                  </Badge>
-                  {mistri.rating && (
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{mistri.rating}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+          <DialogTitle className="flex items-center space-x-3">
+            <div className="bg-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center">
+              <User className="w-6 h-6" />
             </div>
-          </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">{mistri.name}</h2>
+              <p className="text-gray-600">{mistri.category}</p>
+            </div>
+          </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile" className="flex items-center space-x-2">
-              <User className="w-4 h-4" />
-              <span>प्रोफाइल</span>
-            </TabsTrigger>
-            <TabsTrigger value="videos" className="flex items-center space-x-2">
-              <Video className="w-4 h-4" />
-              <span>वीडियो</span>
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center space-x-2">
-              <Upload className="w-4 h-4" />
-              <span>अपलोड</span>
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
+          {/* Video Upload Section - Prominently displayed at top */}
+          <Card className="border-2 border-orange-200 bg-orange-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Video className="w-5 h-5 text-orange-600" />
+                  <CardTitle className="text-lg text-orange-800">वीडियो सेक्शन</CardTitle>
+                </div>
+              </div>
+              <CardDescription className="text-orange-700">
+                अपने काम के वीडियो अपलोड करें या देखें
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() => setShowVideoUpload(!showVideoUpload)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
+                </Button>
+                <Link to="/videos" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    <Video className="w-4 h-4 mr-2" />
+                    सभी वीडियो देखें
+                  </Button>
+                </Link>
+              </div>
+              
+              {showVideoUpload && (
+                <div className="mt-4 p-4 bg-white rounded-lg border">
+                  <VideoUpload 
+                    mistriId={mistri.id} 
+                    onVideoUploaded={() => setShowVideoUpload(false)}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="mt-4 overflow-y-auto max-h-[60vh]">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-1">
+              <TabsTrigger value="profile">प्रोफाइल विवरण</TabsTrigger>
+            </TabsList>
+
             <TabsContent value="profile" className="space-y-6">
-              {/* Basic Information */}
+              {/* Basic Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle>बुनियादी जानकारी</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <User className="w-5 h-5 text-orange-600" />
+                    <span>बुनियादी जानकारी</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-3">
-                      <Phone className="w-5 h-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium">मोबाइल नंबर</p>
-                        <p className="text-gray-600">{mistri.mobile}</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        नाम
+                      </label>
+                      <p className="text-gray-900 font-medium">{mistri.name}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        श्रेणी
+                      </label>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                        {mistri.category}
+                      </Badge>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        अनुभव
+                      </label>
+                      <p className="text-gray-900">{mistri.experience} साल</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        रेटिंग
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex">
+                          {getRatingStars(mistri.rating)}
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          ({mistri.rating}/5)
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="w-5 h-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium">स्थान</p>
-                        <p className="text-gray-600">{mistri.location}</p>
-                      </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Contact Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Phone className="w-5 h-5 text-orange-600" />
+                    <span>संपर्क जानकारी</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        फोन नंबर
+                      </label>
+                      <p className="text-gray-900 font-medium">{mistri.phone}</p>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Award className="w-5 h-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium">अनुभव</p>
-                        <p className="text-gray-600">{mistri.experience} साल</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="w-5 h-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium">श्रेणी</p>
-                        <p className="text-gray-600">{mistri.category}</p>
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        स्थान
+                      </label>
+                      <p className="text-gray-900 flex items-center">
+                        <MapPin className="w-4 h-4 mr-1 text-gray-500" />
+                        {mistri.location}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -158,58 +215,46 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                     <CardTitle>विवरण</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700 leading-relaxed">{mistri.description}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {mistri.description}
+                    </p>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Contact Actions */}
+              {/* Additional Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle>संपर्क करें</CardTitle>
-                  <CardDescription>
-                    इस मिस्त्री से सीधे संपर्क करने के लिए कॉल करें
-                  </CardDescription>
+                  <CardTitle>अतिरिक्त जानकारी</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={() => window.open(`tel:${mistri.mobile}`, '_self')}
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    कॉल करें: {mistri.mobile}
-                  </Button>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        शामिल हुए
+                      </label>
+                      <p className="text-gray-900 flex items-center">
+                        <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                        {formatJoinDate(mistri.created_at)}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        सत्यापन स्थिति
+                      </label>
+                      <Badge 
+                        variant={mistri.is_verified ? "default" : "secondary"}
+                        className={mistri.is_verified ? "bg-green-600" : "bg-gray-500"}
+                      >
+                        {mistri.is_verified ? "सत्यापित" : "अस्सत्यापित"}
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
-
-            <TabsContent value="videos" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">वीडियो गैलरी</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab("upload")}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  नया वीडियो
-                </Button>
-              </div>
-              <VideosList 
-                key={videoRefreshKey}
-                mistriId={mistri.id} 
-                showMistriInfo={false}
-              />
-            </TabsContent>
-
-            <TabsContent value="upload" className="space-y-4">
-              <VideoUpload 
-                mistriId={mistri.id}
-                onVideoUploaded={handleVideoUploaded}
-              />
-            </TabsContent>
-          </div>
-        </Tabs>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );
