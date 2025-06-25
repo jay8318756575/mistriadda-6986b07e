@@ -5,13 +5,16 @@ import CategoryCard from '@/components/CategoryCard';
 import MistriCard from '@/components/MistriCard';
 import MistriProfileDialog from '@/components/MistriProfileDialog';
 import CreateProfileDialog from '@/components/CreateProfileDialog';
+import VideoUpload from '@/components/VideoUpload';
 import { categories } from '@/data/categories';
 import { Mistri } from '@/types/mistri';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Users, MapPin, Award } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { t } = useLanguage();
@@ -22,6 +25,7 @@ const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState('all cities');
   const [selectedMistri, setSelectedMistri] = useState<Mistri | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showVideoUpload, setShowVideoUpload] = useState(false);
   const [currentCategoryFilter, setCurrentCategoryFilter] = useState<string>('');
   const [allMistris, setAllMistris] = useState<Mistri[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -204,6 +208,56 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Upload Section - New Addition */}
+      <Card className="border-2 border-orange-200 bg-orange-50">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Video className="w-5 h-5 text-orange-600" />
+              <CardTitle className="text-lg text-orange-800">वीडियो सेक्शन</CardTitle>
+            </div>
+          </div>
+          <CardDescription className="text-orange-700">
+            अपने काम के वीडियो अपलोड करें या सभी वीडियो देखें
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => setShowVideoUpload(!showVideoUpload)}
+              className="bg-orange-600 hover:bg-orange-700 text-white flex-1"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
+            </Button>
+            <Link to="/videos" className="flex-1">
+              <Button 
+                variant="outline" 
+                className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                सभी वीडियो देखें
+              </Button>
+            </Link>
+          </div>
+          
+          {showVideoUpload && (
+            <div className="mt-4 p-4 bg-white rounded-lg border">
+              <div className="mb-4 text-sm text-gray-600">
+                <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
+                <p className="mt-2">
+                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: "sample-mistri-123"
+                </p>
+              </div>
+              <VideoUpload 
+                mistriId="sample-mistri-123" 
+                onVideoUploaded={() => setShowVideoUpload(false)}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
       <SearchBar
         searchQuery={searchQuery}

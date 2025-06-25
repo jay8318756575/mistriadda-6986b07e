@@ -1,94 +1,191 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import VideosList from '@/components/VideosList';
+import ShortsPlayer from '@/components/ShortsPlayer';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Video, TrendingUp, Clock } from 'lucide-react';
-import { categories } from '@/data/categories';
+import { ChevronUp, ChevronDown, ArrowLeft } from 'lucide-react';
+import type { MistriVideo } from '@/components/VideoCard';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 const Videos = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('latest');
+  const [videos, setVideos] = useState<MistriVideo[]>([]);
+  const [mistris, setMistris] = useState<Record<string, { name: string; category: string }>>({});
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const fetchVideos = async () => {
+    try {
+      console.log('Fetching videos for shorts display...');
+      
+      const { data: videosData, error: videosError } = await supabase
+        .from('mistri_videos')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (videosError) {
+        console.error('Error fetching videos:', videosError);
+        toast({
+          title: "त्रुटि",
+          description: "वीडियो लोड करने में समस्या हुई",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Videos fetched:', videosData);
+      setVideos(videosData || []);
+
+      // Fetch mistri information
+      if (videosData && videosData.length > 0) {
+        const mistriIds = [...new Set(videosData.map(v => v.mistri_id))];
+        
+        const { data: mistrisData, error: mistrisError } = await supabase
+          .from('mistris')
+          .select('id, name, category')
+          .in('id', mistriIds);
+
+        if (!mistrisError && mistrisData) {
+          const mistrisMap = mistrisData.reduce((acc, mistri) => {
+            acc[mistri.id] = { name: mistri.name, category: mistri.category };
+            return acc;
+          }, {} as Record<string, { name: string; category: string }>);
+          
+          setMistris(mistrisMap);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error in fetchVideos:', error);
+      toast({
+        title: "त्रुटि",
+        description: "डेटा लोड करने में समस्या हुई",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentVideoIndex > 0) {
+      setCurrentVideoIndex(currentVideoIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentVideoIndex < videos.length - 1) {
+      setCurrentVideoIndex(currentVideoIndex + 1);
+    }
+  };
+
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if (event.key === 'ArrowUp') {
+      handlePrevious();
+    } else if (event.key === 'ArrowDown') {
+      handleNext();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [currentVideoIndex, videos.length]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>वीडियो लोड हो रहे हैं...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (videos.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center space-x-4 mb-8">
+            <Link to="/">
+              <Button variant="outline" className="border-orange-300 text-orange-600 hover:bg-orange-50">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                वापस जाएं
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-20 text-white">
+            <h2 className="text-2xl font-bold mb-4">कोई वीडियो नहीं मिला</h2>
+            <p className="text-orange-100">अभी तक कोई वीडियो अपलोड नहीं किया गया है</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentVideo = videos[currentVideoIndex];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <Video className="w-8 h-8 text-white" />
-            <h1 className="text-4xl font-bold text-white">मिस्त्री वीडियो</h1>
-          </div>
-          <p className="text-xl text-orange-100">
-            देखें कि आपके मिस्त्री कैसे काम करते हैं • वीडियो के माध्यम से उनकी कुशलता को समझें
-          </p>
-        </div>
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Header - Only show on mobile or when needed */}
+      <div className="absolute top-4 left-4 z-50">
+        <Link to="/">
+          <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            वापस
+          </Button>
+        </Link>
+      </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="वीडियो खोजें..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+      {/* Video counter */}
+      <div className="absolute top-4 right-4 z-50 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+        {currentVideoIndex + 1} / {videos.length}
+      </div>
 
-            {/* Category Filter */}
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="श्रेणी चुनें" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">सभी श्रेणियां</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.nameHindi}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Main video display */}
+      <div className="flex items-center justify-center min-h-screen">
+        <ShortsPlayer
+          video={currentVideo}
+          mistriName={mistris[currentVideo.mistri_id]?.name}
+          mistriCategory={mistris[currentVideo.mistri_id]?.category}
+          isActive={true}
+        />
+      </div>
 
-            {/* Sort By */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="सॉर्ट करें" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="latest">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4" />
-                    <span>नवीनतम</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="popular">
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="w-4 h-4" />
-                    <span>लोकप्रिय</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      {/* Navigation controls */}
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-4">
+        <Button
+          onClick={handlePrevious}
+          disabled={currentVideoIndex === 0}
+          className="bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full p-2 disabled:opacity-30"
+        >
+          <ChevronUp className="w-6 h-6 text-white" />
+        </Button>
+        
+        <Button
+          onClick={handleNext}
+          disabled={currentVideoIndex === videos.length - 1}
+          className="bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full p-2 disabled:opacity-30"
+        >
+          <ChevronDown className="w-6 h-6 text-white" />
+        </Button>
+      </div>
 
-        {/* Videos Grid */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <VideosList 
-            showMistriInfo={true}
-            className="gap-6"
-          />
-        </div>
-      </main>
+      {/* Instruction text */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center text-sm opacity-70">
+        <p>↑↓ तीर कुंजी या बटन दबाकर वीडियो बदलें</p>
+      </div>
     </div>
   );
 };
