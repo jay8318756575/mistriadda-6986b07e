@@ -168,10 +168,10 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       </label>
                       <div className="flex items-center space-x-2">
                         <div className="flex">
-                          {getRatingStars(mistri.rating)}
+                          {getRatingStars(mistri.rating || 0)}
                         </div>
                         <span className="text-sm text-gray-600">
-                          ({mistri.rating}/5)
+                          ({mistri.rating || 0}/5)
                         </span>
                       </div>
                     </div>
@@ -193,7 +193,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         फोन नंबर
                       </label>
-                      <p className="text-gray-900 font-medium">{mistri.phone}</p>
+                      <p className="text-gray-900 font-medium">{mistri.mobile}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -235,7 +235,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       </label>
                       <p className="text-gray-900 flex items-center">
                         <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                        {formatJoinDate(mistri.created_at)}
+                        {formatJoinDate(mistri.created_at || new Date().toISOString())}
                       </p>
                     </div>
                     <div>
@@ -243,10 +243,10 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                         सत्यापन स्थिति
                       </label>
                       <Badge 
-                        variant={mistri.is_verified ? "default" : "secondary"}
-                        className={mistri.is_verified ? "bg-green-600" : "bg-gray-500"}
+                        variant={mistri.phone_verified ? "default" : "secondary"}
+                        className={mistri.phone_verified ? "bg-green-600" : "bg-gray-500"}
                       >
-                        {mistri.is_verified ? "सत्यापित" : "अस्सत्यापित"}
+                        {mistri.phone_verified ? "सत्यापित" : "अस्सत्यापित"}
                       </Badge>
                     </div>
                   </div>
