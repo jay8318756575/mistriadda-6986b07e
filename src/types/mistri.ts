@@ -1,4 +1,3 @@
-
 export interface Mistri {
   id: string;
   name: string;
@@ -19,6 +18,8 @@ export interface Mistri {
   last_active?: string;
   latitude?: number;
   longitude?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Category {
