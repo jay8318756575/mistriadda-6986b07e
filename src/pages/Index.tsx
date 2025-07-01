@@ -10,7 +10,7 @@ import { categories } from '@/data/categories';
 import { Mistri } from '@/types/mistri';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload } from 'lucide-react';
+import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload, Play } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -209,45 +209,65 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Video Upload Section - New Addition */}
-      <Card className="border-2 border-orange-200 bg-orange-50">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Video className="w-5 h-5 text-orange-600" />
-              <CardTitle className="text-lg text-orange-800">वीडियो सेक्शन</CardTitle>
+      {/* Video Upload Section - Enhanced Design */}
+      <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-2xl transform hover:scale-105 transition-all duration-300">
+        <CardHeader className="pb-4 text-center">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <Play className="w-8 h-8 text-white fill-current" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                <Video className="w-3 h-3 text-white" />
+              </div>
             </div>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
+              🎬 वीडियो सेक्शन
+            </CardTitle>
           </div>
-          <CardDescription className="text-orange-700">
-            अपने काम के वीडियो अपलोड करें या सभी वीडियो देखें
+          <CardDescription className="text-lg text-gray-700 font-medium mt-2">
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+              अपने किसी भी टैलेंट की वीडियो अपलोड बनाकर करें
+            </span>
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button
               onClick={() => setShowVideoUpload(!showVideoUpload)}
-              className="bg-orange-600 hover:bg-orange-700 text-white flex-1"
+              className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white flex-1 py-3 text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
             >
-              <Upload className="w-4 h-4 mr-2" />
-              {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <Upload className="w-4 h-4" />
+                </div>
+                <span>{showVideoUpload ? '📹 अपलोड छुपाएं' : '🎥 नया वीडियो अपलोड करें'}</span>
+              </div>
             </Button>
             <Link to="/videos" className="flex-1">
               <Button 
                 variant="outline" 
-                className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                className="w-full py-3 text-lg font-semibold border-2 border-purple-400 text-purple-600 hover:bg-purple-50 shadow-lg transform hover:scale-105 transition-all duration-200"
               >
-                <Video className="w-4 h-4 mr-2" />
-                सभी वीडियो देखें
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <Play className="w-3 h-3 text-white fill-current" />
+                  </div>
+                  <span>🎬 सभी वीडियो देखें</span>
+                </div>
               </Button>
             </Link>
           </div>
           
           {showVideoUpload && (
-            <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 text-sm text-gray-600">
-                <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
-                <p className="mt-2">
-                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: "sample-mistri-123"
+            <div className="mt-6 p-6 bg-white rounded-xl border-2 border-purple-200 shadow-inner">
+              <div className="mb-6 text-center bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg">
+                <p className="text-purple-700 font-medium">
+                  🎯 वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।
+                </p>
+                <p className="mt-2 text-purple-600">
+                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: 
+                  <span className="font-bold text-orange-600"> "sample-mistri-123"</span>
                 </p>
               </div>
               <VideoUpload 
