@@ -210,23 +210,27 @@ const Index = () => {
       </div>
 
       {/* Video Upload Section - New Addition */}
-      <Card className="border-2 border-orange-200 bg-orange-50">
+      <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Video className="w-5 h-5 text-orange-600" />
-              <CardTitle className="text-lg text-orange-800">वीडियो सेक्शन</CardTitle>
+            <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-full">
+                <Video className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                शॉर्ट वीडियो सेक्शन
+              </CardTitle>
             </div>
           </div>
-          <CardDescription className="text-orange-700">
-            अपने काम के वीडियो अपलोड करें या सभी वीडियो देखें
+          <CardDescription className="text-gray-700 font-medium">
+            अपने किसी भी काम की वीडियो अपलोड करें
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={() => setShowVideoUpload(!showVideoUpload)}
-              className="bg-orange-600 hover:bg-orange-700 text-white flex-1"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex-1 shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
               {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
@@ -234,7 +238,7 @@ const Index = () => {
             <Link to="/videos" className="flex-1">
               <Button 
                 variant="outline" 
-                className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                className="w-full border-2 border-purple-400 text-purple-600 hover:bg-purple-50 hover:border-purple-500"
               >
                 <Video className="w-4 h-4 mr-2" />
                 सभी वीडियो देखें
