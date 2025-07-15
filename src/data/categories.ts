@@ -13,5 +13,7 @@ export const categories: Category[] = [
   { id: 'cleaner', name: 'Cleaner', nameHindi: 'सफाई कर्मी', icon: 'Sparkles' },
   { id: 'driver', name: 'Driver', nameHindi: 'ड्राइवर', icon: 'Car' },
   { id: 'security', name: 'Security Guard', nameHindi: 'सिक्योरिटी गार्ड', icon: 'Shield' },
-  { id: 'cook', name: 'Cook', nameHindi: 'रसोइया', icon: 'ChefHat' }
+  { id: 'cook', name: 'Cook', nameHindi: 'रसोइया', icon: 'ChefHat' },
+  { id: 'property', name: 'Property/Land Sale', nameHindi: 'संपत्ति/जमीन बिक्री', icon: 'Home' },
+  { id: 'kabadi', name: 'Scrap/Old Items', nameHindi: 'कबाड़ी/पुराना सामान', icon: 'Recycle' }
 ];
