@@ -6,7 +6,7 @@ export const categories: Category[] = [
   { id: 'plumber', name: 'Plumber', nameHindi: 'प्लंबर', icon: 'Wrench', workImage: '/src/assets/plumber-work.jpg' },
   { id: 'painter', name: 'Painter', nameHindi: 'पेंटर', icon: 'Paintbrush', workImage: '/src/assets/painter-work.jpg' },
   { id: 'carpenter', name: 'Carpenter', nameHindi: 'बढ़ई', icon: 'Hammer', workImage: '/src/assets/carpenter-work.jpg' },
-  { id: 'mason', name: 'Mason', nameHindi: 'राजमिस्त्री', icon: 'Brick', workImage: '/src/assets/mason-work.jpg' },
+  { id: 'mason', name: 'Mason', nameHindi: 'राजमिस्त्री', icon: 'Hammer', workImage: '/src/assets/mason-work.jpg' },
   { id: 'mechanic', name: 'Mechanic', nameHindi: 'मैकेनिक', icon: 'Settings', workImage: '/src/assets/mechanic-work.jpg' },
   { id: 'welder', name: 'Welder', nameHindi: 'वेल्डर', icon: 'Flame', workImage: '/src/assets/welder-work.jpg' },
   { id: 'gardener', name: 'Gardener', nameHindi: 'माली', icon: 'Leaf', workImage: '/src/assets/gardener-work.jpg' },

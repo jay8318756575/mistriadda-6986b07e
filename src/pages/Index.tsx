@@ -139,10 +139,10 @@ const Index = () => {
         mistri.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mistri.category.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === 'all' || 
-        mistri.category === selectedCategory ||
-        currentCategoryFilter === '' ||
-        mistri.category === currentCategoryFilter;
+      // Fix category filtering logic - prioritize currentCategoryFilter
+      const matchesCategory = 
+        (currentCategoryFilter !== '' && mistri.category === currentCategoryFilter) ||
+        (currentCategoryFilter === '' && (selectedCategory === 'all' || mistri.category === selectedCategory));
       
       const matchesLocation = selectedLocation === 'all cities' || 
         mistri.location.toLowerCase().includes(selectedLocation.toLowerCase());
@@ -214,8 +214,12 @@ const Index = () => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-full">
-                <Video className="w-6 h-6 text-white" />
+              {/* Video logo with colorful design like the reference image */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-2xl shadow-lg transform rotate-12">
+                  <Video className="w-8 h-8 text-white drop-shadow-lg" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-pink-400 to-red-500 rounded-full animate-pulse"></div>
               </div>
               <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
                 शॉर्ट वीडियो सेक्शन

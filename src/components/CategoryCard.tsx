@@ -26,7 +26,7 @@ import kabadiWork from '@/assets/kabadi-work.jpg';
 const iconMap = {
   Zap, Wrench, Paintbrush, Hammer, Settings,
   Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle,
-  Brick: Hammer // Fallback for brick
+  Brick: Hammer // Fallback for brick (mason uses hammer icon)
 };
 
 const imageMap: Record<string, string> = {
