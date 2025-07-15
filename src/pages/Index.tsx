@@ -198,7 +198,7 @@ const Index = () => {
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
             <Award className="w-8 h-8 mx-auto mb-2" />
-            <div className="text-2xl font-bold">12+</div>
+            <div className="text-2xl font-bold">14+</div>
             <div className="text-sm">{t('category.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">

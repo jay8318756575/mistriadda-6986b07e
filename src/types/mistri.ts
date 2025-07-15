@@ -27,6 +27,7 @@ export interface Category {
   name: string;
   icon: string;
   nameHindi: string;
+  workImage?: string;
 }
 
 export interface MistriRating {
