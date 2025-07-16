@@ -7,13 +7,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Import all work images
-import electricianWork from '@/assets/electrician-work.jpg';
-import plumberWork from '@/assets/plumber-work.jpg';
-import painterWork from '@/assets/painter-work.jpg';
-import carpenterWork from '@/assets/carpenter-work.jpg';
-import masonWork from '@/assets/mason-work.jpg';
-import mechanicWork from '@/assets/mechanic-work.jpg';
+// Import all category icons
+import electricianIcon from '@/assets/electrician-icon.png';
+import plumberIcon from '@/assets/plumber-icon.png';
+import painterIcon from '@/assets/painter-icon.png';
+import carpenterIcon from '@/assets/carpenter-icon.png';
+import masonIcon from '@/assets/mason-icon.png';
+import mechanicIcon from '@/assets/mechanic-icon.png';
+import kabadiIcon from '@/assets/kabadi-icon.png';
 import welderWork from '@/assets/welder-work.jpg';
 import gardenerWork from '@/assets/gardener-work.jpg';
 import cleanerWork from '@/assets/cleaner-work.jpg';
@@ -21,7 +22,6 @@ import driverWork from '@/assets/driver-work.jpg';
 import securityWork from '@/assets/security-work.jpg';
 import cookWork from '@/assets/cook-work.jpg';
 import propertyWork from '@/assets/property-work.jpg';
-import kabadiWork from '@/assets/kabadi-work.jpg';
 
 const iconMap = {
   Zap, Wrench, Paintbrush, Hammer, Settings,
@@ -29,13 +29,14 @@ const iconMap = {
   Brick: Hammer // Fallback for brick (mason uses hammer icon)
 };
 
-const imageMap: Record<string, string> = {
-  'electrician': electricianWork,
-  'plumber': plumberWork,
-  'painter': painterWork,
-  'carpenter': carpenterWork,
-  'mason': masonWork,
-  'mechanic': mechanicWork,
+const iconImageMap: Record<string, string> = {
+  'electrician': electricianIcon,
+  'plumber': plumberIcon,
+  'painter': painterIcon,
+  'carpenter': carpenterIcon,
+  'mason': masonIcon,
+  'mechanic': mechanicIcon,
+  'kabadi': kabadiIcon,
   'welder': welderWork,
   'gardener': gardenerWork,
   'cleaner': cleanerWork,
@@ -43,7 +44,6 @@ const imageMap: Record<string, string> = {
   'security': securityWork,
   'cook': cookWork,
   'property': propertyWork,
-  'kabadi': kabadiWork,
 };
 
 const gradientMap: Record<string, string> = {
@@ -72,7 +72,7 @@ interface CategoryCardProps {
 const CategoryCard = ({ category, onClick, className }: CategoryCardProps) => {
   const IconComponent = iconMap[category.icon as keyof typeof iconMap] || Settings;
   const gradient = gradientMap[category.id] || 'from-blue-400 via-purple-500 to-pink-500';
-  const workImage = imageMap[category.id];
+  const categoryIcon = iconImageMap[category.id];
 
   return (
     <Card 
@@ -82,18 +82,6 @@ const CategoryCard = ({ category, onClick, className }: CategoryCardProps) => {
       )}
       onClick={() => onClick(category.id)}
     >
-      {/* Work Image Background */}
-      {workImage && (
-        <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500">
-          <img 
-            src={workImage} 
-            alt={`${category.name} work`}
-            className="w-full h-full object-cover"
-          />
-          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-60`}></div>
-        </div>
-      )}
-      
       {/* Animated background overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
       
@@ -102,12 +90,19 @@ const CategoryCard = ({ category, onClick, className }: CategoryCardProps) => {
       <div className="absolute bottom-3 left-3 w-0.5 h-0.5 bg-white/80 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       
       <div className="relative p-8 text-center space-y-4 bg-white/80 backdrop-blur-sm group-hover:bg-white/90 transition-all duration-300">
-        {/* Icon container */}
-        <div className="relative mx-auto w-20 h-20">
-          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} rounded-2xl blur-xl opacity-60 group-hover:opacity-80 animate-pulse transition-opacity duration-300`}></div>
-          <div className={`relative w-full h-full bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500`}>
-            <IconComponent className="w-10 h-10 text-white drop-shadow-lg" />
-          </div>
+        {/* Category Icon */}
+        <div className="relative mx-auto w-24 h-24">
+          {categoryIcon ? (
+            <img 
+              src={categoryIcon} 
+              alt={`${category.name} icon`}
+              className="w-full h-full object-contain drop-shadow-xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+            />
+          ) : (
+            <div className={`relative w-full h-full bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500`}>
+              <IconComponent className="w-12 h-12 text-white drop-shadow-lg" />
+            </div>
+          )}
         </div>
         
         {/* Content */}
