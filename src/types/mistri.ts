@@ -18,6 +18,8 @@ export interface Mistri {
   last_active?: string;
   latitude?: number;
   longitude?: number;
+  aadhar_number?: string;
+  aadhar_address?: string;
   created_at?: string;
   updated_at?: string;
 }

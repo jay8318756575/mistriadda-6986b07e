@@ -26,7 +26,9 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     location: '',
     mobile: '',
     experience: '',
-    description: ''
+    description: '',
+    aadharNumber: '',
+    aadharAddress: ''
   });
   const [photo, setPhoto] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
@@ -258,6 +260,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         experience: parseInt(formData.experience),
         rating: Number((4.5 + Math.random() * 0.5).toFixed(1)),
         description: formData.description.trim() || null,
+        aadhar_number: formData.aadharNumber.trim(),
+        aadhar_address: formData.aadharAddress.trim(),
         phone_verified: true, // Since OTP was verified
         verification_status: 'pending' as const,
         admin_approval_status: 'pending' as const
@@ -358,6 +362,16 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     } else if (parseInt(formData.experience) < 0) {
       validationErrors.push("अनुभव 0 या अधिक होना चाहिए");
     }
+    
+    if (!formData.aadharNumber?.trim()) {
+      validationErrors.push("कृपया आधार कार्ड नंबर भरें");
+    } else if (!/^\d{12}$/.test(formData.aadharNumber)) {
+      validationErrors.push("कृपया 12 अंकों का सही आधार कार्ड नंबर भरें");
+    }
+    
+    if (!formData.aadharAddress?.trim()) {
+      validationErrors.push("कृपया आधार कार्ड का पता भरें");
+    }
 
     if (validationErrors.length > 0) {
       console.log('Validation errors:', validationErrors);
@@ -389,7 +403,9 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       location: '',
       mobile: '',
       experience: '',
-      description: ''
+      description: '',
+      aadharNumber: '',
+      aadharAddress: ''
     });
     setPhoto(null);
     setVideo(null);
@@ -655,6 +671,44 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
           </Button>
           <p className="text-xs text-gray-500 mt-1">अधिकतम 50MB, 1 मिनट का वीडियो</p>
         </div>
+      </div>
+
+      {/* Aadhar Number Field */}
+      <div>
+        <Label htmlFor="aadharNumber" className="text-orange-800 font-semibold">आधार कार्ड नंबर *</Label>
+        <Input
+          id="aadharNumber"
+          type="text"
+          value={formData.aadharNumber}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+            if (value.length <= 12) {
+              handleInputChange('aadharNumber', value);
+            }
+          }}
+          placeholder="123456789012"
+          className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
+          maxLength={12}
+          required
+          disabled={isSubmitting}
+        />
+        <p className="text-xs text-gray-500 mt-1">12 अंकों का आधार कार्ड नंबर</p>
+      </div>
+
+      {/* Aadhar Address Field */}
+      <div>
+        <Label htmlFor="aadharAddress" className="text-orange-800 font-semibold">आधार कार्ड का पूरा पता *</Label>
+        <Textarea
+          id="aadharAddress"
+          value={formData.aadharAddress}
+          onChange={(e) => handleInputChange('aadharAddress', e.target.value)}
+          placeholder="आधार कार्ड में दिया गया पूरा पता भरें..."
+          className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
+          rows={3}
+          required
+          disabled={isSubmitting}
+        />
+        <p className="text-xs text-gray-500 mt-1">आधार कार्ड में दिया गया वही पता भरें</p>
       </div>
       
       <div>

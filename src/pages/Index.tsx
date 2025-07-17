@@ -87,7 +87,21 @@ const Index = () => {
             mobile: item.mobile,
             experience: item.experience,
             rating: item.rating,
-            description: item.description
+            description: item.description,
+            aadhar_number: item.aadhar_number || undefined,
+            aadhar_address: item.aadhar_address || undefined,
+            verification_status: item.verification_status as 'pending' | 'verified' | 'rejected' | undefined,
+            admin_approval_status: item.admin_approval_status as 'pending' | 'approved' | 'rejected' | undefined,
+            phone_verified: item.phone_verified || undefined,
+            id_proof_url: item.id_proof_url || undefined,
+            profile_photo_url: item.profile_photo_url || undefined,
+            work_gallery: item.work_gallery || undefined,
+            is_active: item.is_active || undefined,
+            last_active: item.last_active || undefined,
+            latitude: item.latitude || undefined,
+            longitude: item.longitude || undefined,
+            created_at: item.created_at || undefined,
+            updated_at: item.updated_at || undefined
           };
         });
 
@@ -133,8 +147,26 @@ const Index = () => {
     }, 1000);
   };
 
+  // Helper function to calculate address similarity
+  const calculateAddressSimilarity = (address1: string, address2: string): number => {
+    if (!address1 || !address2) return 0;
+    
+    const normalize = (addr: string) => addr.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const words1 = normalize(address1).split(/\s+/);
+    const words2 = normalize(address2).split(/\s+/);
+    
+    let commonWords = 0;
+    words1.forEach(word => {
+      if (words2.some(w => w.includes(word) || word.includes(w))) {
+        commonWords++;
+      }
+    });
+    
+    return commonWords / Math.max(words1.length, words2.length);
+  };
+
   const filteredMistris = useMemo(() => {
-    return allMistris.filter(mistri => {
+    let filtered = allMistris.filter(mistri => {
       const matchesSearch = searchQuery === '' || 
         mistri.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mistri.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -149,11 +181,31 @@ const Index = () => {
       
       return matchesSearch && matchesCategory && matchesLocation;
     });
-  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris]);
+
+    // If we're in category view, sort by location proximity based on Aadhar addresses
+    if (currentCategoryFilter !== '' && currentView === 'category') {
+      // Get a reference address from the first available mistri's Aadhar address or use a common location
+      const referenceAddress = allMistris.find(m => m.aadhar_address)?.aadhar_address || 'Uttar Pradesh India';
+      
+      filtered = filtered.sort((a, b) => {
+        const similarityA = calculateAddressSimilarity(a.aadhar_address || a.location, referenceAddress);
+        const similarityB = calculateAddressSimilarity(b.aadhar_address || b.location, referenceAddress);
+        return similarityB - similarityA; // Sort by highest similarity first
+      });
+    }
+
+    return filtered;
+  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris, currentView]);
 
   const handleCategoryClick = (categoryId: string) => {
     setCurrentCategoryFilter(categoryId);
     setCurrentView('category');
+    
+    // Show toast about location-based suggestions
+    toast({
+      title: "स्थानीय मिस्त्री सुझाव",
+      description: "आधार कार्ड के पते के आधार पर नजदीकी मिस्त्री दिखाए जा रहे हैं",
+    });
   };
 
   const handleSearch = () => {
