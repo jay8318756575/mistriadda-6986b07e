@@ -3,7 +3,7 @@ import { Category } from '@/types/mistri';
 import { Card } from '@/components/ui/card';
 import { 
   Zap, Wrench, Paintbrush, Hammer, Settings, 
-  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle 
+  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle, Layers, CircuitBoard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +25,7 @@ import propertyWork from '@/assets/property-work.jpg';
 
 const iconMap = {
   Zap, Wrench, Paintbrush, Hammer, Settings,
-  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle,
+  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle, Layers, CircuitBoard,
   Brick: Hammer // Fallback for brick (mason uses hammer icon)
 };
 
@@ -60,7 +60,9 @@ const gradientMap: Record<string, string> = {
   'driver': 'from-blue-400 via-indigo-500 to-purple-500',
   'security': 'from-gray-400 via-slate-500 to-gray-600',
   'property': 'from-green-400 via-blue-500 to-indigo-500',
-  'kabadi': 'from-amber-400 via-orange-500 to-red-500'
+  'kabadi': 'from-amber-400 via-orange-500 to-red-500',
+  'pop-ceiling': 'from-white via-gray-200 to-slate-400',
+  'junction-sealing': 'from-blue-400 via-indigo-500 to-purple-600'
 };
 
 interface CategoryCardProps {
