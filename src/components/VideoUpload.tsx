@@ -25,8 +25,8 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
       // Check file size (max 50MB)
       if (file.size > 50 * 1024 * 1024) {
         toast({
-          title: "फ़ाइल बहुत बड़ी है",
-          description: "कृपया 50MB से छोटी वीडियो अपलोड करें",
+          title: "File too large",
+          description: "Please upload videos smaller than 50MB",
           variant: "destructive"
         });
         return;
@@ -35,8 +35,8 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
       // Check file type
       if (!file.type.startsWith('video/')) {
         toast({
-          title: "गलत फ़ाइल प्रकार",
-          description: "कृपया केवल वीडियो फ़ाइलें अपलोड करें",
+          title: "Wrong file type",
+          description: "Please upload video files only",
           variant: "destructive"
         });
         return;
@@ -49,8 +49,8 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
   const uploadVideo = async () => {
     if (!videoFile || !title.trim()) {
       toast({
-        title: "अनुपूर्ण जानकारी",
-        description: "कृपया शीर्षक और वीडियो फ़ाइल दोनों प्रदान करें",
+        title: "Incomplete information",
+        description: "Please provide both title and video file",
         variant: "destructive"
       });
       return;
@@ -77,7 +77,7 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
-        throw new Error(`वीडियो अपलोड में समस्या: ${uploadError.message}`);
+        throw new Error(`Video upload error: ${uploadError.message}`);
       }
 
       console.log('File uploaded successfully:', uploadData);
@@ -106,14 +106,14 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
         console.error('Database insert error:', dbError);
         // Try to cleanup uploaded file
         await supabase.storage.from('mistri-videos').remove([fileName]);
-        throw new Error(`डेटाबेस में सेव करने में समस्या: ${dbError.message}`);
+        throw new Error(`Database save error: ${dbError.message}`);
       }
 
       console.log('Video record created:', videoData);
 
       toast({
-        title: "सफल!",
-        description: "वीडियो सफलतापूर्वक अपलोड हो गया",
+        title: "Success!",
+        description: "Video uploaded successfully",
       });
 
       // Reset form
@@ -133,8 +133,8 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
     } catch (error) {
       console.error('Video upload failed:', error);
       toast({
-        title: "अपलोड असफल",
-        description: error instanceof Error ? error.message : "वीडियो अपलोड करने में समस्या हुई",
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Error uploading video",
         variant: "destructive"
       });
     } finally {
@@ -143,43 +143,43 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
   };
 
   return (
-    <div className="space-y-4 p-6 bg-white rounded-lg shadow-md">
+    <div className="space-y-4 p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg shadow-md border-2 border-purple-200">
       <div className="flex items-center space-x-2">
-        <Video className="w-5 h-5 text-orange-600" />
-        <h3 className="text-lg font-semibold text-gray-800">नया वीडियो अपलोड करें</h3>
+        <Video className="w-5 h-5 text-purple-600" />
+        <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Upload New Video</h3>
       </div>
       
       <div className="space-y-4">
         <div>
-          <label htmlFor="video-title" className="block text-sm font-medium text-gray-700 mb-1">
-            शीर्षक *
+          <label htmlFor="video-title" className="block text-sm font-bold text-purple-700 mb-1">
+            Title *
           </label>
           <Input
             id="video-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="वीडियो का शीर्षक दर्ज करें"
+            placeholder="Enter video title"
             maxLength={100}
           />
         </div>
 
         <div>
-          <label htmlFor="video-description" className="block text-sm font-medium text-gray-700 mb-1">
-            विवरण
+          <label htmlFor="video-description" className="block text-sm font-bold text-pink-700 mb-1">
+            Description
           </label>
           <Textarea
             id="video-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="वीडियो के बारे में बताएं (वैकल्पिक)"
+            placeholder="Tell us about your video (optional)"
             rows={3}
             maxLength={500}
           />
         </div>
 
         <div>
-          <label htmlFor="video-file-input" className="block text-sm font-medium text-gray-700 mb-1">
-            वीडियो फ़ाइल * (अधिकतम 50MB)
+          <label htmlFor="video-file-input" className="block text-sm font-bold text-orange-700 mb-1">
+            Video File * (Max 50MB)
           </label>
           <div className="relative">
             <Input
@@ -191,15 +191,15 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
             />
             <label
               htmlFor="video-file-input"
-              className="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-500 transition-colors"
+              className="flex items-center justify-center w-full p-4 border-2 border-dashed border-purple-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors"
             >
               <div className="text-center">
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">
-                  {videoFile ? videoFile.name : "वीडियो फ़ाइल चुनने के लिए क्लिक करें"}
+                <Upload className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                <p className="text-sm font-medium text-purple-600">
+                  {videoFile ? videoFile.name : "Click to select video file"}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  MP4, MOV, AVI, या अन्य वीडियो फॉर्मेट
+                <p className="text-xs text-purple-400 mt-1">
+                  MP4, MOV, AVI, or other video formats
                 </p>
               </div>
             </label>
@@ -209,17 +209,17 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
         <Button
           onClick={uploadVideo}
           disabled={isUploading || !videoFile || !title.trim()}
-          className="w-full bg-orange-600 hover:bg-orange-700"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg"
         >
           {isUploading ? (
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>अपलोड हो रहा है...</span>
+              <span>Uploading...</span>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
-              <span>वीडियो अपलोड करें</span>
+              <span>Upload Video</span>
             </div>
           )}
         </Button>

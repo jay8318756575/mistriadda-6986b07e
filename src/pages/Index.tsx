@@ -313,12 +313,12 @@ const Index = () => {
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-pink-400 to-red-500 rounded-full animate-pulse"></div>
               </div>
               <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
-                शॉर्ट वीडियो सेक्शन
+                Short Video Section
               </CardTitle>
             </div>
           </div>
           <CardDescription className="text-gray-700 font-medium">
-            अपने किसी भी काम की वीडियो अपलोड करें
+            Upload videos of your work showcase
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -328,7 +328,7 @@ const Index = () => {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex-1 shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
+              {showVideoUpload ? 'Hide Upload' : 'Upload New Video'}
             </Button>
             <Link to="/videos" className="flex-1">
               <Button 
@@ -336,17 +336,17 @@ const Index = () => {
                 className="w-full border-2 border-purple-400 text-purple-600 hover:bg-purple-50 hover:border-purple-500"
               >
                 <Video className="w-4 h-4 mr-2" />
-                सभी वीडियो देखें
+                View All Videos
               </Button>
             </Link>
           </div>
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 text-sm text-gray-600">
-                <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
-                <p className="mt-2">
-                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: "sample-mistri-123"
+              <div className="mb-4 text-sm text-purple-600 font-medium">
+                <p className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">To upload videos, you need to register as a mistri first.</p>
+                <p className="mt-2 text-orange-600 font-semibold">
+                  For now, you can use sample mistri ID: "sample-mistri-123"
                 </p>
               </div>
               <VideoUpload 
