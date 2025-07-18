@@ -22,6 +22,8 @@ import driverWork from '@/assets/driver-work.jpg';
 import securityWork from '@/assets/security-work.jpg';
 import cookWork from '@/assets/cook-work.jpg';
 import propertyWork from '@/assets/property-work.jpg';
+import popCeilingIcon from '@/assets/pop-ceiling-icon.png';
+import gypsumBoardIcon from '@/assets/gypsum-board-icon.png';
 
 const iconMap = {
   Zap, Wrench, Paintbrush, Hammer, Settings,
@@ -44,6 +46,8 @@ const iconImageMap: Record<string, string> = {
   'security': securityWork,
   'cook': cookWork,
   'property': propertyWork,
+  'pop-ceiling': popCeilingIcon,
+  'gypsum-board': gypsumBoardIcon,
 };
 
 const gradientMap: Record<string, string> = {
@@ -62,6 +66,7 @@ const gradientMap: Record<string, string> = {
   'property': 'from-green-400 via-blue-500 to-indigo-500',
   'kabadi': 'from-amber-400 via-orange-500 to-red-500',
   'pop-ceiling': 'from-white via-gray-200 to-slate-400',
+  'gypsum-board': 'from-gray-300 via-slate-400 to-gray-500',
   'junction-sealing': 'from-blue-400 via-indigo-500 to-purple-600'
 };
 
