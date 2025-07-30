@@ -15,8 +15,5 @@ export const categories: Category[] = [
   { id: 'security', name: 'Security Guard', nameHindi: 'सिक्योरिटी गार्ड', icon: 'Shield', workImage: '/src/assets/security-work.jpg' },
   { id: 'cook', name: 'Cook', nameHindi: 'रसोइया', icon: 'ChefHat', workImage: '/src/assets/cook-work.jpg' },
   { id: 'property', name: 'Property/Land Sale', nameHindi: 'संपत्ति/जमीन बिक्री', icon: 'Home', workImage: '/src/assets/property-work.jpg' },
-  { id: 'kabadi', name: 'Scrap/Old Items', nameHindi: 'कबाड़ी/पुराना सामान', icon: 'Recycle', workImage: '/src/assets/kabadi-work.jpg' },
-  { id: 'pop-ceiling', name: 'POP Ceiling Work', nameHindi: 'पॉप सीलिंग वाला', icon: 'Layers', workImage: '/src/assets/pop-ceiling-work.jpg' },
-  { id: 'gypsum-board', name: 'Gypsum Board Work', nameHindi: 'जिप्सम बोर्ड वाला', icon: 'Layers', workImage: '/src/assets/pop-ceiling-work.jpg' },
-  { id: 'junction-sealing', name: 'Junction Board Sealing', nameHindi: 'जंक्शन बोर्ड सीलिंग वाला', icon: 'CircuitBoard', workImage: '/src/assets/junction-sealing-work.jpg' }
+  { id: 'kabadi', name: 'Scrap/Old Items', nameHindi: 'कबाड़ी/पुराना सामान', icon: 'Recycle', workImage: '/src/assets/kabadi-work.jpg' }
 ];

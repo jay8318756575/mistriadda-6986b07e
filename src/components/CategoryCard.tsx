@@ -3,7 +3,7 @@ import { Category } from '@/types/mistri';
 import { Card } from '@/components/ui/card';
 import { 
   Zap, Wrench, Paintbrush, Hammer, Settings, 
-  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle, Layers, CircuitBoard
+  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,12 +22,10 @@ import driverWork from '@/assets/driver-work.jpg';
 import securityWork from '@/assets/security-work.jpg';
 import cookWork from '@/assets/cook-work.jpg';
 import propertyWork from '@/assets/property-work.jpg';
-import popCeilingIcon from '@/assets/pop-ceiling-icon.png';
-import gypsumBoardIcon from '@/assets/gypsum-board-icon.png';
 
 const iconMap = {
   Zap, Wrench, Paintbrush, Hammer, Settings,
-  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle, Layers, CircuitBoard,
+  Flame, Leaf, Sparkles, Car, Shield, ChefHat, Home, Recycle,
   Brick: Hammer // Fallback for brick (mason uses hammer icon)
 };
 
@@ -46,8 +44,6 @@ const iconImageMap: Record<string, string> = {
   'security': securityWork,
   'cook': cookWork,
   'property': propertyWork,
-  'pop-ceiling': popCeilingIcon,
-  'gypsum-board': gypsumBoardIcon,
 };
 
 const gradientMap: Record<string, string> = {
@@ -64,10 +60,7 @@ const gradientMap: Record<string, string> = {
   'driver': 'from-blue-400 via-indigo-500 to-purple-500',
   'security': 'from-gray-400 via-slate-500 to-gray-600',
   'property': 'from-green-400 via-blue-500 to-indigo-500',
-  'kabadi': 'from-amber-400 via-orange-500 to-red-500',
-  'pop-ceiling': 'from-white via-gray-200 to-slate-400',
-  'gypsum-board': 'from-gray-300 via-slate-400 to-gray-500',
-  'junction-sealing': 'from-blue-400 via-indigo-500 to-purple-600'
+  'kabadi': 'from-amber-400 via-orange-500 to-red-500'
 };
 
 interface CategoryCardProps {
