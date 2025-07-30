@@ -87,7 +87,21 @@ const Index = () => {
             mobile: item.mobile,
             experience: item.experience,
             rating: item.rating,
-            description: item.description
+            description: item.description,
+            aadhar_number: item.aadhar_number || undefined,
+            aadhar_address: item.aadhar_address || undefined,
+            verification_status: item.verification_status as 'pending' | 'verified' | 'rejected' | undefined,
+            admin_approval_status: item.admin_approval_status as 'pending' | 'approved' | 'rejected' | undefined,
+            phone_verified: item.phone_verified || undefined,
+            id_proof_url: item.id_proof_url || undefined,
+            profile_photo_url: item.profile_photo_url || undefined,
+            work_gallery: item.work_gallery || undefined,
+            is_active: item.is_active || undefined,
+            last_active: item.last_active || undefined,
+            latitude: item.latitude || undefined,
+            longitude: item.longitude || undefined,
+            created_at: item.created_at || undefined,
+            updated_at: item.updated_at || undefined
           };
         });
 
@@ -133,31 +147,108 @@ const Index = () => {
     }, 1000);
   };
 
+  // Enhanced address similarity calculation
+  const calculateAddressSimilarity = (address1: string, address2: string): number => {
+    if (!address1 || !address2) return 0;
+    
+    const normalize = (addr: string) => addr.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const words1 = normalize(address1).split(/\s+/).filter(w => w.length > 2);
+    const words2 = normalize(address2).split(/\s+/).filter(w => w.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    let score = 0;
+    const maxWords = Math.max(words1.length, words2.length);
+    
+    // Check for exact matches (higher weight)
+    words1.forEach(word1 => {
+      words2.forEach(word2 => {
+        if (word1 === word2) {
+          score += 2;
+        } else if (word1.includes(word2) || word2.includes(word1)) {
+          score += 1;
+        } else if (word1.substring(0, 3) === word2.substring(0, 3)) {
+          score += 0.5;
+        }
+      });
+    });
+    
+    return Math.min(score / (maxWords * 2), 1);
+  };
+
+  // Get user's location-based reference address
+  const getUserLocationReference = (): string => {
+    // Priority: 1. User's current location (if available), 2. Search location, 3. Default
+    if (selectedLocation && selectedLocation !== 'all cities') {
+      return selectedLocation;
+    }
+    return 'Uttar Pradesh India'; // Default reference for UP-based service
+  };
+
   const filteredMistris = useMemo(() => {
-    return allMistris.filter(mistri => {
+    let filtered = allMistris.filter(mistri => {
       const matchesSearch = searchQuery === '' || 
         mistri.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mistri.category.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === 'all' || 
-        mistri.category === selectedCategory ||
-        currentCategoryFilter === '' ||
-        mistri.category === currentCategoryFilter;
+      // Fix category filtering logic - prioritize currentCategoryFilter
+      const matchesCategory = 
+        (currentCategoryFilter !== '' && mistri.category === currentCategoryFilter) ||
+        (currentCategoryFilter === '' && (selectedCategory === 'all' || mistri.category === selectedCategory));
       
       const matchesLocation = selectedLocation === 'all cities' || 
         mistri.location.toLowerCase().includes(selectedLocation.toLowerCase());
       
       return matchesSearch && matchesCategory && matchesLocation;
     });
-  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris]);
+
+    // Apply proximity-based sorting for all views when we have a specific location
+    if ((currentView === 'category' || currentView === 'search') && 
+        (selectedLocation !== 'all cities' || currentCategoryFilter !== '')) {
+      
+      const referenceAddress = getUserLocationReference();
+      
+      filtered = filtered.sort((a, b) => {
+        // Calculate proximity scores using Aadhar address first, then location
+        const addressA = a.aadhar_address || a.location;
+        const addressB = b.aadhar_address || b.location;
+        
+        const similarityA = calculateAddressSimilarity(addressA, referenceAddress);
+        const similarityB = calculateAddressSimilarity(addressB, referenceAddress);
+        
+        // Secondary sort by rating if proximity is similar
+        if (Math.abs(similarityA - similarityB) < 0.1) {
+          return (b.rating || 0) - (a.rating || 0);
+        }
+        
+        return similarityB - similarityA; // Sort by highest similarity first
+      });
+    }
+
+    return filtered;
+  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris, currentView]);
 
   const handleCategoryClick = (categoryId: string) => {
     setCurrentCategoryFilter(categoryId);
     setCurrentView('category');
+    
+    // Show toast about location-based suggestions
+    toast({
+      title: "स्थानीय मिस्त्री सुझाव",
+      description: "आधार कार्ड के पते के आधार पर नजदीकी मिस्त्री दिखाए जा रहे हैं",
+    });
   };
 
   const handleSearch = () => {
     setCurrentView('search');
+    
+    // Show toast about location-based suggestions if location is selected
+    if (selectedLocation !== 'all cities') {
+      toast({
+        title: "स्थानीय मिस्त्री सुझाव",
+        description: `${selectedLocation} के नजदीकी मिस्त्री दिखाए जा रहे हैं`,
+      });
+    }
   };
 
   const handleBackToHome = () => {
@@ -198,7 +289,7 @@ const Index = () => {
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
             <Award className="w-8 h-8 mx-auto mb-2" />
-            <div className="text-2xl font-bold">12+</div>
+            <div className="text-2xl font-bold">14+</div>
             <div className="text-sm">{t('category.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
@@ -214,16 +305,20 @@ const Index = () => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-full">
-                <Video className="w-6 h-6 text-white" />
+              {/* Video logo with colorful design like the reference image */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-2xl shadow-lg transform rotate-12">
+                  <Video className="w-8 h-8 text-white drop-shadow-lg" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-pink-400 to-red-500 rounded-full animate-pulse"></div>
               </div>
               <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
-                शॉर्ट वीडियो सेक्शन
+                Short Video Section
               </CardTitle>
             </div>
           </div>
           <CardDescription className="text-gray-700 font-medium">
-            अपने किसी भी काम की वीडियो अपलोड करें
+            Upload videos of your work showcase
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -233,7 +328,7 @@ const Index = () => {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex-1 shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
+              {showVideoUpload ? 'Hide Upload' : 'Upload New Video'}
             </Button>
             <Link to="/videos" className="flex-1">
               <Button 
@@ -241,17 +336,17 @@ const Index = () => {
                 className="w-full border-2 border-purple-400 text-purple-600 hover:bg-purple-50 hover:border-purple-500"
               >
                 <Video className="w-4 h-4 mr-2" />
-                सभी वीडियो देखें
+                View All Videos
               </Button>
             </Link>
           </div>
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 text-sm text-gray-600">
-                <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
-                <p className="mt-2">
-                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: "sample-mistri-123"
+              <div className="mb-4 text-sm text-purple-600 font-medium">
+                <p className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">To upload videos, you need to register as a mistri first.</p>
+                <p className="mt-2 text-orange-600 font-semibold">
+                  For now, you can use sample mistri ID: "sample-mistri-123"
                 </p>
               </div>
               <VideoUpload 
@@ -346,13 +441,21 @@ const Index = () => {
         </div>
       ) : (
         <div className="grid gap-4">
-          {filteredMistris.map((mistri) => (
-            <MistriCard
-              key={mistri.id}
-              mistri={mistri}
-              onViewDetails={setSelectedMistri}
-            />
-          ))}
+          {filteredMistris.map((mistri) => {
+            // Calculate proximity score for display
+            const referenceAddress = getUserLocationReference();
+            const mistriAddress = mistri.aadhar_address || mistri.location;
+            const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
+            
+            return (
+              <MistriCard
+                key={mistri.id}
+                mistri={mistri}
+                onViewDetails={setSelectedMistri}
+                proximityScore={proximityScore}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -387,13 +490,21 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {filteredMistris.map((mistri) => (
-              <MistriCard
-                key={mistri.id}
-                mistri={mistri}
-                onViewDetails={setSelectedMistri}
-              />
-            ))}
+            {filteredMistris.map((mistri) => {
+              // Calculate proximity score for display
+              const referenceAddress = getUserLocationReference();
+              const mistriAddress = mistri.aadhar_address || mistri.location;
+              const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
+              
+              return (
+                <MistriCard
+                  key={mistri.id}
+                  mistri={mistri}
+                  onViewDetails={setSelectedMistri}
+                  proximityScore={proximityScore}
+                />
+              );
+            })}
           </div>
         )}
       </div>
