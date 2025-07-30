@@ -18,8 +18,6 @@ export interface Mistri {
   last_active?: string;
   latitude?: number;
   longitude?: number;
-  aadhar_number?: string;
-  aadhar_address?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -29,7 +27,6 @@ export interface Category {
   name: string;
   icon: string;
   nameHindi: string;
-  workImage?: string;
 }
 
 export interface MistriRating {

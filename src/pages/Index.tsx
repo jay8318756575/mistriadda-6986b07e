@@ -87,21 +87,7 @@ const Index = () => {
             mobile: item.mobile,
             experience: item.experience,
             rating: item.rating,
-            description: item.description,
-            aadhar_number: item.aadhar_number || undefined,
-            aadhar_address: item.aadhar_address || undefined,
-            verification_status: item.verification_status as 'pending' | 'verified' | 'rejected' | undefined,
-            admin_approval_status: item.admin_approval_status as 'pending' | 'approved' | 'rejected' | undefined,
-            phone_verified: item.phone_verified || undefined,
-            id_proof_url: item.id_proof_url || undefined,
-            profile_photo_url: item.profile_photo_url || undefined,
-            work_gallery: item.work_gallery || undefined,
-            is_active: item.is_active || undefined,
-            last_active: item.last_active || undefined,
-            latitude: item.latitude || undefined,
-            longitude: item.longitude || undefined,
-            created_at: item.created_at || undefined,
-            updated_at: item.updated_at || undefined
+            description: item.description
           };
         });
 
@@ -147,65 +133,27 @@ const Index = () => {
     }, 1000);
   };
 
-  // Helper function to calculate address similarity
-  const calculateAddressSimilarity = (address1: string, address2: string): number => {
-    if (!address1 || !address2) return 0;
-    
-    const normalize = (addr: string) => addr.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const words1 = normalize(address1).split(/\s+/);
-    const words2 = normalize(address2).split(/\s+/);
-    
-    let commonWords = 0;
-    words1.forEach(word => {
-      if (words2.some(w => w.includes(word) || word.includes(w))) {
-        commonWords++;
-      }
-    });
-    
-    return commonWords / Math.max(words1.length, words2.length);
-  };
-
   const filteredMistris = useMemo(() => {
-    let filtered = allMistris.filter(mistri => {
+    return allMistris.filter(mistri => {
       const matchesSearch = searchQuery === '' || 
         mistri.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         mistri.category.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // Fix category filtering logic - prioritize currentCategoryFilter
-      const matchesCategory = 
-        (currentCategoryFilter !== '' && mistri.category === currentCategoryFilter) ||
-        (currentCategoryFilter === '' && (selectedCategory === 'all' || mistri.category === selectedCategory));
+      const matchesCategory = selectedCategory === 'all' || 
+        mistri.category === selectedCategory ||
+        currentCategoryFilter === '' ||
+        mistri.category === currentCategoryFilter;
       
       const matchesLocation = selectedLocation === 'all cities' || 
         mistri.location.toLowerCase().includes(selectedLocation.toLowerCase());
       
       return matchesSearch && matchesCategory && matchesLocation;
     });
-
-    // If we're in category view, sort by location proximity based on Aadhar addresses
-    if (currentCategoryFilter !== '' && currentView === 'category') {
-      // Get a reference address from the first available mistri's Aadhar address or use a common location
-      const referenceAddress = allMistris.find(m => m.aadhar_address)?.aadhar_address || 'Uttar Pradesh India';
-      
-      filtered = filtered.sort((a, b) => {
-        const similarityA = calculateAddressSimilarity(a.aadhar_address || a.location, referenceAddress);
-        const similarityB = calculateAddressSimilarity(b.aadhar_address || b.location, referenceAddress);
-        return similarityB - similarityA; // Sort by highest similarity first
-      });
-    }
-
-    return filtered;
-  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris, currentView]);
+  }, [searchQuery, selectedCategory, selectedLocation, currentCategoryFilter, allMistris]);
 
   const handleCategoryClick = (categoryId: string) => {
     setCurrentCategoryFilter(categoryId);
     setCurrentView('category');
-    
-    // Show toast about location-based suggestions
-    toast({
-      title: "स्थानीय मिस्त्री सुझाव",
-      description: "आधार कार्ड के पते के आधार पर नजदीकी मिस्त्री दिखाए जा रहे हैं",
-    });
   };
 
   const handleSearch = () => {
@@ -250,7 +198,7 @@ const Index = () => {
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
             <Award className="w-8 h-8 mx-auto mb-2" />
-            <div className="text-2xl font-bold">14+</div>
+            <div className="text-2xl font-bold">12+</div>
             <div className="text-sm">{t('category.count')}</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
@@ -266,12 +214,8 @@ const Index = () => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {/* Video logo with colorful design like the reference image */}
-              <div className="relative">
-                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-2xl shadow-lg transform rotate-12">
-                  <Video className="w-8 h-8 text-white drop-shadow-lg" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-pink-400 to-red-500 rounded-full animate-pulse"></div>
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-full">
+                <Video className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
                 शॉर्ट वीडियो सेक्शन

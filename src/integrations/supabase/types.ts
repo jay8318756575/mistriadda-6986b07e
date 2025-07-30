@@ -107,8 +107,6 @@ export type Database = {
       }
       mistris: {
         Row: {
-          aadhar_address: string | null
-          aadhar_number: string | null
           admin_approval_status: string | null
           category: string
           created_at: string
@@ -131,8 +129,6 @@ export type Database = {
           work_gallery: string[] | null
         }
         Insert: {
-          aadhar_address?: string | null
-          aadhar_number?: string | null
           admin_approval_status?: string | null
           category: string
           created_at?: string
@@ -155,8 +151,6 @@ export type Database = {
           work_gallery?: string[] | null
         }
         Update: {
-          aadhar_address?: string | null
-          aadhar_number?: string | null
           admin_approval_status?: string | null
           category?: string
           created_at?: string
