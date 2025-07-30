@@ -147,42 +147,22 @@ const Index = () => {
     }, 1000);
   };
 
-  // Enhanced address similarity calculation
+  // Helper function to calculate address similarity
   const calculateAddressSimilarity = (address1: string, address2: string): number => {
     if (!address1 || !address2) return 0;
     
     const normalize = (addr: string) => addr.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const words1 = normalize(address1).split(/\s+/).filter(w => w.length > 2);
-    const words2 = normalize(address2).split(/\s+/).filter(w => w.length > 2);
+    const words1 = normalize(address1).split(/\s+/);
+    const words2 = normalize(address2).split(/\s+/);
     
-    if (words1.length === 0 || words2.length === 0) return 0;
-    
-    let score = 0;
-    const maxWords = Math.max(words1.length, words2.length);
-    
-    // Check for exact matches (higher weight)
-    words1.forEach(word1 => {
-      words2.forEach(word2 => {
-        if (word1 === word2) {
-          score += 2;
-        } else if (word1.includes(word2) || word2.includes(word1)) {
-          score += 1;
-        } else if (word1.substring(0, 3) === word2.substring(0, 3)) {
-          score += 0.5;
-        }
-      });
+    let commonWords = 0;
+    words1.forEach(word => {
+      if (words2.some(w => w.includes(word) || word.includes(w))) {
+        commonWords++;
+      }
     });
     
-    return Math.min(score / (maxWords * 2), 1);
-  };
-
-  // Get user's location-based reference address
-  const getUserLocationReference = (): string => {
-    // Priority: 1. User's current location (if available), 2. Search location, 3. Default
-    if (selectedLocation && selectedLocation !== 'all cities') {
-      return selectedLocation;
-    }
-    return 'Uttar Pradesh India'; // Default reference for UP-based service
+    return commonWords / Math.max(words1.length, words2.length);
   };
 
   const filteredMistris = useMemo(() => {
@@ -202,25 +182,14 @@ const Index = () => {
       return matchesSearch && matchesCategory && matchesLocation;
     });
 
-    // Apply proximity-based sorting for all views when we have a specific location
-    if ((currentView === 'category' || currentView === 'search') && 
-        (selectedLocation !== 'all cities' || currentCategoryFilter !== '')) {
-      
-      const referenceAddress = getUserLocationReference();
+    // If we're in category view, sort by location proximity based on Aadhar addresses
+    if (currentCategoryFilter !== '' && currentView === 'category') {
+      // Get a reference address from the first available mistri's Aadhar address or use a common location
+      const referenceAddress = allMistris.find(m => m.aadhar_address)?.aadhar_address || 'Uttar Pradesh India';
       
       filtered = filtered.sort((a, b) => {
-        // Calculate proximity scores using Aadhar address first, then location
-        const addressA = a.aadhar_address || a.location;
-        const addressB = b.aadhar_address || b.location;
-        
-        const similarityA = calculateAddressSimilarity(addressA, referenceAddress);
-        const similarityB = calculateAddressSimilarity(addressB, referenceAddress);
-        
-        // Secondary sort by rating if proximity is similar
-        if (Math.abs(similarityA - similarityB) < 0.1) {
-          return (b.rating || 0) - (a.rating || 0);
-        }
-        
+        const similarityA = calculateAddressSimilarity(a.aadhar_address || a.location, referenceAddress);
+        const similarityB = calculateAddressSimilarity(b.aadhar_address || b.location, referenceAddress);
         return similarityB - similarityA; // Sort by highest similarity first
       });
     }
@@ -241,14 +210,6 @@ const Index = () => {
 
   const handleSearch = () => {
     setCurrentView('search');
-    
-    // Show toast about location-based suggestions if location is selected
-    if (selectedLocation !== 'all cities') {
-      toast({
-        title: "स्थानीय मिस्त्री सुझाव",
-        description: `${selectedLocation} के नजदीकी मिस्त्री दिखाए जा रहे हैं`,
-      });
-    }
   };
 
   const handleBackToHome = () => {
@@ -441,21 +402,13 @@ const Index = () => {
         </div>
       ) : (
         <div className="grid gap-4">
-          {filteredMistris.map((mistri) => {
-            // Calculate proximity score for display
-            const referenceAddress = getUserLocationReference();
-            const mistriAddress = mistri.aadhar_address || mistri.location;
-            const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
-            
-            return (
-              <MistriCard
-                key={mistri.id}
-                mistri={mistri}
-                onViewDetails={setSelectedMistri}
-                proximityScore={proximityScore}
-              />
-            );
-          })}
+          {filteredMistris.map((mistri) => (
+            <MistriCard
+              key={mistri.id}
+              mistri={mistri}
+              onViewDetails={setSelectedMistri}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -490,21 +443,13 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {filteredMistris.map((mistri) => {
-              // Calculate proximity score for display
-              const referenceAddress = getUserLocationReference();
-              const mistriAddress = mistri.aadhar_address || mistri.location;
-              const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
-              
-              return (
-                <MistriCard
-                  key={mistri.id}
-                  mistri={mistri}
-                  onViewDetails={setSelectedMistri}
-                  proximityScore={proximityScore}
-                />
-              );
-            })}
+            {filteredMistris.map((mistri) => (
+              <MistriCard
+                key={mistri.id}
+                mistri={mistri}
+                onViewDetails={setSelectedMistri}
+              />
+            ))}
           </div>
         )}
       </div>

@@ -7,10 +7,9 @@ import { MapPin, Phone, Star, Calendar, Sparkles, Award, Shield, Heart, Check } 
 interface MistriCardProps {
   mistri: Mistri;
   onViewDetails: (mistri: Mistri) => void;
-  proximityScore?: number; // New prop to show proximity indicator
 }
 
-const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) => {
+const MistriCard = ({ mistri, onViewDetails }: MistriCardProps) => {
   return (
     <Card className="relative overflow-hidden hover:shadow-2xl transition-all duration-500 bg-white border-0 shadow-lg transform hover:scale-[1.02] group">
       {/* Modern gradient overlay */}
@@ -69,16 +68,6 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
                 <span className="text-gray-700 font-semibold text-sm">{mistri.experience} वर्ष</span>
               </div>
             </div>
-            
-            {/* Proximity indicator */}
-            {proximityScore !== undefined && proximityScore > 0.3 && (
-              <div className="flex items-center justify-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl border border-green-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700 font-bold text-sm">
-                  📍 आपके नजदीक - {Math.round(proximityScore * 100)}% मैच
-                </span>
-              </div>
-            )}
             
             {/* Description */}
             {mistri.description && (
