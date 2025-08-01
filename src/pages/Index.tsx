@@ -14,6 +14,7 @@ import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload } from 'lucide-rea
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ErrorHandler } from '@/utils/errorHandler';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
@@ -64,10 +65,17 @@ const Index = () => {
 
       if (error) {
         console.error('Error fetching mistris:', error);
+        console.log('Using fallback sample data due to database error');
+        
+        // Use sample data as fallback
+        const { sampleMistris } = await import('@/data/sample-mistris');
+        setAllMistris(sampleMistris);
+        setIsLoading(false);
+        
         toast({
-          title: "त्रुटि",
-          description: "मिस्त्री की जानकारी लोड करने में समस्या हुई: " + error.message,
-          variant: "destructive"
+          title: ErrorHandler.getToastTitle(error),
+          description: ErrorHandler.getErrorMessage(error),
+          variant: ErrorHandler.getToastVariant(error)
         });
         return;
       }
@@ -112,13 +120,19 @@ const Index = () => {
       } else {
         console.log('No data returned from query (data is null/undefined)');
       }
-    } catch (error) {
-      console.error('=== FETCH FAILED ===');
-      console.error('Error details:', error);
+    } catch (fetchError) {
+      console.error('Fetch mistris failed completely:', fetchError);
+      
+      // Use sample data as fallback
+      console.log('Loading sample data as fallback...');
+      const { sampleMistris } = await import('@/data/sample-mistris');
+      setAllMistris(sampleMistris);
+      
+      // Show user-friendly message using error handler
       toast({
-        title: "त्रुटि",
-        description: "डेटा लोड करने में समस्या हुई: " + (error instanceof Error ? error.message : 'Unknown error'),
-        variant: "destructive"
+        title: ErrorHandler.getToastTitle(fetchError),
+        description: ErrorHandler.getErrorMessage(fetchError),
+        variant: ErrorHandler.getToastVariant(fetchError)
       });
     } finally {
       console.log('=== FETCH COMPLETED ===');

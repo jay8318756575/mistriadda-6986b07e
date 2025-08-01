@@ -169,11 +169,11 @@ const SearchBar = ({
                 </SelectTrigger>
                 <SelectContent className="bg-white/95 backdrop-blur-lg border-2 border-orange-200 shadow-2xl rounded-xl z-50 max-h-60">
                   <SelectItem value="all cities" className="font-medium py-3">🌟 {t('search.allCities')}</SelectItem>
-                  {availableCities.map((city) => (
-                    <SelectItem key={city} value={city} className="font-medium py-3">
-                      📍 {city}
-                    </SelectItem>
-                  ))}
+                   {availableCities.map((city, index) => (
+                     <SelectItem key={`${city}-${index}`} value={city} className="font-medium py-3">
+                       📍 {city}
+                     </SelectItem>
+                   ))}
                 </SelectContent>
               </Select>
             </div>

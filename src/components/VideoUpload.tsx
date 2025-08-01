@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Upload, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ErrorHandler } from '@/utils/errorHandler';
 
 interface VideoUploadProps {
   mistriId: string;
@@ -177,10 +178,26 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
 
     } catch (error) {
       console.error('Video upload failed:', error);
+      
+      // Better error messages for users
+      let errorMessage = "वीडियो अपलोड करने में समस्या हुई";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('नेटवर्क') || error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('स्टोरेज') || error.message.includes('storage') || error.message.includes('bucket')) {
+          errorMessage = "वीडियो स्टोरेज में समस्या। कृपया बाद में कोशिश करें।";
+        } else if (error.message.includes('size') || error.message.includes('बड़ी')) {
+          errorMessage = "वीडियो फ़ाइल बहुत बड़ी है। कृपया छोटी फ़ाइल अपलोड करें।";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "अपलोड असफल",
-        description: error instanceof Error ? error.message : "वीडियो अपलोड करने में समस्या हुई",
-        variant: "destructive"
+        title: ErrorHandler.getToastTitle(error),
+        description: ErrorHandler.handleError(error, 'Video Upload'),
+        variant: ErrorHandler.getToastVariant(error)
       });
     } finally {
       setIsUploading(false);

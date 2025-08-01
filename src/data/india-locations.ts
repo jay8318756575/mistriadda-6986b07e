@@ -299,7 +299,7 @@ export const majorCities = {
     'Pathankot', 'Mohali', 'Moga', 'Batala', 'Firozpur', 'Barnala', 
     'Kapurthala', 'Phagwara', 'Khanna', 'Muktsar', 'Rajpura', 'Sangrur'
   ],
-  'Rajasthan': [
+  'Rajasthan_Cities': [
     'Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer', 'Udaipur', 'Bhilwara', 
     'Sri Ganganagar', 'Sikar', 'Pali', 'Alwar', 'Bharatpur', 'Hanumangarh', 
     'Beawar', 'Kishangarh', 'Jhunjhunu', 'Bundi', 'Tonk', 'Churu', 'Balotra', 'Nagaur'

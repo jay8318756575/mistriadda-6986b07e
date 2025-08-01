@@ -162,23 +162,64 @@ if (isset($_GET['api'])) {
     }
     ?>
     
-    <!-- PHP Backend Integration -->
+    <!-- PHP Backend Integration with Error Handling -->
     <script>
-    // Add PHP backend integration
+    // Add PHP backend integration with better error handling
     window.phpBackend = {
         apiUrl: '<?php echo $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST']; ?>',
-        callAPI: function(endpoint, data = {}) {
-            const formData = new FormData();
-            Object.keys(data).forEach(key => {
-                formData.append(key, data[key]);
-            });
-            
-            return fetch(`${this.apiUrl}/?api=${endpoint}`, {
-                method: 'POST',
-                body: formData
-            }).then(response => response.json());
+        
+        callAPI: async function(endpoint, data = {}) {
+            try {
+                const formData = new FormData();
+                Object.keys(data).forEach(key => {
+                    formData.append(key, data[key]);
+                });
+                
+                const response = await fetch(`${this.apiUrl}/?api=${endpoint}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('PHP Backend API Error:', error);
+                // Return user-friendly error messages
+                if (error.message.includes('fetch') || error.message.includes('Network')) {
+                    throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।');
+                }
+                throw error;
+            }
+        },
+        
+        // Health check function
+        checkHealth: async function() {
+            try {
+                const result = await this.callAPI('health', {});
+                return result && result.status === 'ok';
+            } catch (error) {
+                console.warn('Backend health check failed:', error);
+                return false;
+            }
         }
     };
+    
+    // Perform initial health check when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        window.phpBackend.checkHealth().then(function(isHealthy) {
+            if (isHealthy) {
+                console.log('✅ PHP Backend is healthy');
+            } else {
+                console.warn('⚠️ PHP Backend health check failed');
+            }
+        }).catch(function(error) {
+            console.warn('❌ Backend health check error:', error);
+        });
+    });
     </script>
   </body>
 </html>
