@@ -70,17 +70,21 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       console.log('Generated OTP:', otpCode);
       console.log('Expires at:', expiresAt.toISOString());
 
-      // Delete existing OTPs for this phone number first
+      // Delete existing OTPs for this phone number first (with error handling)
       console.log('Cleaning up existing OTPs for phone:', formData.mobile);
-      const { error: deleteError } = await supabase
-        .from('otp_verifications')
-        .delete()
-        .eq('phone_number', formData.mobile);
-
-      if (deleteError) {
-        console.log('Delete existing OTP warning (continuing anyway):', deleteError);
-      } else {
-        console.log('Successfully cleaned up existing OTPs');
+      try {
+        const { error: deleteError } = await supabase
+          .from('otp_verifications')
+          .delete()
+          .eq('phone_number', formData.mobile);
+        
+        if (deleteError) {
+          console.log('Delete existing OTP warning (continuing anyway):', deleteError);
+        } else {
+          console.log('Successfully cleaned up existing OTPs');
+        }
+      } catch (deleteErr) {
+        console.log('Delete operation failed, continuing with insert:', deleteErr);
       }
 
       // Insert new OTP
@@ -95,17 +99,32 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
       console.log('Insert data:', insertData);
 
-      const { data, error } = await supabase
-        .from('otp_verifications')
-        .insert(insertData)
-        .select()
-        .single();
+      let data, error;
+      try {
+        const result = await supabase
+          .from('otp_verifications')
+          .insert(insertData)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } catch (networkError) {
+        console.error('Network error during OTP insert:', networkError);
+        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      }
 
       console.log('Insert result:', { data, error });
 
       if (error) {
         console.error('Database insert error:', error);
-        throw new Error(`OTP सेव करने में समस्या: ${error.message}`);
+        
+        if (error.message?.includes('permission') || error.message?.includes('policy')) {
+          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
+        } else if (error.message?.includes('connection') || error.message?.includes('network')) {
+          throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।');
+        } else {
+          throw new Error(`OTP सेव करने में समस्या: ${error.message}`);
+        }
       }
 
       if (!data) {
@@ -170,17 +189,32 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
     try {
       // Check OTP in database
-      const { data, error } = await supabase
-        .from('otp_verifications')
-        .select('*')
-        .eq('id', otpId)
-        .eq('otp_code', otp)
-        .eq('is_verified', false)
-        .single();
+      let data, error;
+      try {
+        const result = await supabase
+          .from('otp_verifications')
+          .select('*')
+          .eq('id', otpId)
+          .eq('otp_code', otp)
+          .eq('is_verified', false)
+          .single();
+        data = result.data;
+        error = result.error;
+      } catch (networkError) {
+        console.error('Network error during OTP verification:', networkError);
+        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      }
 
       if (error) {
         console.error('Database error during OTP verification:', error);
-        throw new Error('OTP सत्यापन में डेटाबेस समस्या');
+        
+        if (error.message?.includes('permission') || error.message?.includes('policy')) {
+          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
+        } else if (error.message?.includes('connection') || error.message?.includes('network')) {
+          throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।');
+        } else {
+          throw new Error('OTP सत्यापन में डेटाबेस समस्या');
+        }
       }
 
       if (!data) {

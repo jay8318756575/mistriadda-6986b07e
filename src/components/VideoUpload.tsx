@@ -60,6 +60,11 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
     
     try {
       console.log('Starting video upload process...');
+      console.log('Video file details:', {
+        name: videoFile.name,
+        size: videoFile.size,
+        type: videoFile.type
+      });
       
       // Generate unique filename
       const fileExtension = videoFile.name.split('.').pop();
@@ -67,17 +72,34 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
       
       console.log('Uploading file to storage:', fileName);
       
-      // Upload video to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('mistri-videos')
-        .upload(fileName, videoFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      // Upload video to storage with better error handling
+      let uploadData, uploadError;
+      try {
+        const result = await supabase.storage
+          .from('mistri-videos')
+          .upload(fileName, videoFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: videoFile.type
+          });
+        uploadData = result.data;
+        uploadError = result.error;
+      } catch (networkError) {
+        console.error('Network error during upload:', networkError);
+        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      }
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
-        throw new Error(`वीडियो अपलोड में समस्या: ${uploadError.message}`);
+        
+        // Check for specific error types
+        if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
+          throw new Error('वीडियो स्टोरेज में समस्या। कृपया बाद में कोशिश करें।');
+        } else if (uploadError.message?.includes('size') || uploadError.message?.includes('large')) {
+          throw new Error('वीडियो फ़ाइल बहुत बड़ी है। कृपया छोटी फ़ाइल अपलोड करें।');
+        } else {
+          throw new Error(`वीडियो अपलोड में समस्या: ${uploadError.message}`);
+        }
       }
 
       console.log('File uploaded successfully:', uploadData);
@@ -90,23 +112,46 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
       console.log('Got public URL:', urlData.publicUrl);
 
       // Create video record in database
-      const { data: videoData, error: dbError } = await supabase
-        .from('mistri_videos')
-        .insert({
-          mistri_id: mistriId,
-          title: title.trim(),
-          description: description.trim() || null,
-          video_url: urlData.publicUrl,
-          duration: null, // Can be calculated later with video metadata
-        })
-        .select()
-        .single();
+      let videoData, dbError;
+      try {
+        const result = await supabase
+          .from('mistri_videos')
+          .insert({
+            mistri_id: mistriId,
+            title: title.trim(),
+            description: description.trim() || null,
+            video_url: urlData.publicUrl,
+            duration: null, // Can be calculated later with video metadata
+          })
+          .select()
+          .single();
+        videoData = result.data;
+        dbError = result.error;
+      } catch (networkError) {
+        console.error('Network error during database insert:', networkError);
+        // Try to cleanup uploaded file
+        try {
+          await supabase.storage.from('mistri-videos').remove([fileName]);
+        } catch (cleanupError) {
+          console.error('Failed to cleanup file after db error:', cleanupError);
+        }
+        throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      }
 
       if (dbError) {
         console.error('Database insert error:', dbError);
         // Try to cleanup uploaded file
-        await supabase.storage.from('mistri-videos').remove([fileName]);
-        throw new Error(`डेटाबेस में सेव करने में समस्या: ${dbError.message}`);
+        try {
+          await supabase.storage.from('mistri-videos').remove([fileName]);
+        } catch (cleanupError) {
+          console.error('Failed to cleanup file after db error:', cleanupError);
+        }
+        
+        if (dbError.message?.includes('permission') || dbError.message?.includes('policy')) {
+          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
+        } else {
+          throw new Error(`डेटाबेस में सेव करने में समस्या: ${dbError.message}`);
+        }
       }
 
       console.log('Video record created:', videoData);
