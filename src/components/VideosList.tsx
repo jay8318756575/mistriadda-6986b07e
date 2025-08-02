@@ -35,7 +35,20 @@ const VideosList = ({
       
       let query = supabase
         .from('mistri_videos')
-        .select('*')
+        .select(`
+          id,
+          mistri_id,
+          title,
+          description,
+          video_url,
+          thumbnail_url,
+          duration,
+          views_count,
+          likes_count,
+          is_active,
+          created_at,
+          updated_at
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 

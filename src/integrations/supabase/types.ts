@@ -58,6 +58,7 @@ export type Database = {
           description: string | null
           duration: number | null
           id: string
+          is_active: boolean | null
           likes_count: number | null
           mistri_id: string
           title: string
@@ -70,6 +71,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          is_active?: boolean | null
           likes_count?: number | null
           mistri_id: string
           title: string
@@ -82,6 +84,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          is_active?: boolean | null
           likes_count?: number | null
           mistri_id?: string
           title?: string
