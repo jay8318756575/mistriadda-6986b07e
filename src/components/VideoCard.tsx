@@ -12,7 +12,6 @@ export interface MistriVideo {
   title: string;
   description?: string;
   video_url: string;
-  thumbnail_url?: string;
   duration?: number;
   views_count: number;
   likes_count: number;
@@ -50,10 +49,7 @@ const VideoCard = ({ video, mistriName, onClick, className = "" }: VideoCardProp
   };
 
   const getThumbnail = () => {
-    if (video.thumbnail_url && !imageError) {
-      return video.thumbnail_url;
-    }
-    // Fallback to a placeholder or video poster
+    // Since we don't have thumbnail_url, use a placeholder
     return '/placeholder.svg';
   };
 
