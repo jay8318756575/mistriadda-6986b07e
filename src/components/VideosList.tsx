@@ -41,7 +41,6 @@ const VideosList = ({
           title,
           description,
           video_url,
-          thumbnail_url,
           duration,
           views_count,
           likes_count,
