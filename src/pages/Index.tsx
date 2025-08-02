@@ -360,11 +360,11 @@ const Index = () => {
               <div className="mb-4 text-sm text-gray-600">
                 <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
                 <p className="mt-2">
-                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं: "sample-mistri-123"
+                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं
                 </p>
               </div>
               <VideoUpload 
-                mistriId="sample-mistri-123" 
+                mistriId="550e8400-e29b-41d4-a716-446655440000" 
                 onVideoUploaded={() => setShowVideoUpload(false)}
               />
             </div>
