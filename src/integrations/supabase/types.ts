@@ -14,7 +14,196 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mistri_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          mistri_id: string
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          mistri_id: string
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          mistri_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mistri_ratings_mistri_id_fkey"
+            columns: ["mistri_id"]
+            isOneToOne: false
+            referencedRelation: "mistris"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mistri_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: number | null
+          id: string
+          likes_count: number | null
+          mistri_id: string
+          title: string
+          updated_at: string
+          video_url: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          likes_count?: number | null
+          mistri_id: string
+          title: string
+          updated_at?: string
+          video_url: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          likes_count?: number | null
+          mistri_id?: string
+          title?: string
+          updated_at?: string
+          video_url?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mistri_videos_mistri_id_fkey"
+            columns: ["mistri_id"]
+            isOneToOne: false
+            referencedRelation: "mistris"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mistris: {
+        Row: {
+          aadhar_address: string | null
+          aadhar_number: string | null
+          admin_approval_status: string | null
+          category: string
+          created_at: string
+          description: string | null
+          experience: number
+          id: string
+          id_proof_url: string | null
+          is_active: boolean | null
+          last_active: string | null
+          latitude: number | null
+          location: string
+          longitude: number | null
+          mobile: string
+          name: string
+          phone_verified: boolean | null
+          profile_photo_url: string | null
+          rating: number | null
+          updated_at: string
+          verification_status: string | null
+          work_gallery: string[] | null
+        }
+        Insert: {
+          aadhar_address?: string | null
+          aadhar_number?: string | null
+          admin_approval_status?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          experience?: number
+          id?: string
+          id_proof_url?: string | null
+          is_active?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          mobile: string
+          name: string
+          phone_verified?: boolean | null
+          profile_photo_url?: string | null
+          rating?: number | null
+          updated_at?: string
+          verification_status?: string | null
+          work_gallery?: string[] | null
+        }
+        Update: {
+          aadhar_address?: string | null
+          aadhar_number?: string | null
+          admin_approval_status?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          experience?: number
+          id?: string
+          id_proof_url?: string | null
+          is_active?: boolean | null
+          last_active?: string | null
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          mobile?: string
+          name?: string
+          phone_verified?: boolean | null
+          profile_photo_url?: string | null
+          rating?: number | null
+          updated_at?: string
+          verification_status?: string | null
+          work_gallery?: string[] | null
+        }
+        Relationships: []
+      }
+      otp_verifications: {
+        Row: {
+          attempts: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          is_verified: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string
+          phone_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
