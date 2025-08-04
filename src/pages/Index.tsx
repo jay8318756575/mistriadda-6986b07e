@@ -364,7 +364,7 @@ const Index = () => {
                 </p>
               </div>
               <VideoUpload 
-                mistriId="550e8400-e29b-41d4-a716-446655440000" 
+                mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
                 onVideoUploaded={() => setShowVideoUpload(false)}
               />
             </div>
