@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import VideoCard, { type MistriVideo } from './VideoCard';
 import VideoPlayerDialog from './VideoPlayerDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Video } from 'lucide-react';
 
@@ -33,36 +33,16 @@ const VideosList = ({
     try {
       console.log('Fetching videos...', { mistriId, limit });
       
-      let query = supabase
-        .from('mistri_videos')
-        .select(`
-          id,
-          mistri_id,
-          title,
-          description,
-          video_url,
-          duration,
-          views_count,
-          likes_count,
-          is_active,
-          created_at,
-          updated_at
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+      // Build query parameters
+      const filters: any = {};
+      if (mistriId) filters.mistri_id = mistriId;
+      if (limit) filters.limit = limit;
 
-      if (mistriId) {
-        query = query.eq('mistri_id', mistriId);
-      }
+      // Fetch videos via PHP API
+      const result = await phpClient.getVideos(filters);
 
-      if (limit) {
-        query = query.limit(limit);
-      }
-
-      const { data: videosData, error: videosError } = await query;
-
-      if (videosError) {
-        console.error('Error fetching videos:', videosError);
+      if (!result.success) {
+        console.error('Error fetching videos:', result.error);
         toast({
           title: "त्रुटि",
           description: "वीडियो लोड करने में समस्या हुई",
@@ -71,26 +51,22 @@ const VideosList = ({
         return;
       }
 
-      console.log('Videos fetched:', videosData);
-      setVideos(videosData || []);
+      console.log('Videos fetched:', result.data);
+      setVideos(result.data || []);
 
-      // Fetch mistri information if needed
-      if (showMistriInfo && videosData && videosData.length > 0) {
-        const mistriIds = [...new Set(videosData.map(v => v.mistri_id))];
-        
-        const { data: mistrisData, error: mistrisError } = await supabase
-          .from('mistris')
-          .select('id, name, category')
-          .in('id', mistriIds);
-
-        if (!mistrisError && mistrisData) {
-          const mistrisMap = mistrisData.reduce((acc, mistri) => {
-            acc[mistri.id] = { name: mistri.name, category: mistri.category };
-            return acc;
-          }, {} as Record<string, { name: string; category: string }>);
-          
-          setMistris(mistrisMap);
-        }
+      // If showMistriInfo is true, mistri info is already included in PHP response
+      if (showMistriInfo && result.data && result.data.length > 0) {
+        const mistrisMap = {};
+        result.data.forEach(video => {
+          if (video.mistri_name) {
+            mistrisMap[video.mistri_id] = {
+              id: video.mistri_id,
+              name: video.mistri_name,
+              category: video.category
+            };
+          }
+        });
+        setMistris(mistrisMap);
       }
 
     } catch (error) {

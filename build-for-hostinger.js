@@ -22,9 +22,15 @@ try {
     console.log('📦 Building React app...');
     execSync('npm run build', { stdio: 'inherit' });
 
-    // Copy index.php to dist folder
+    // Copy PHP files
     console.log('📋 Copying PHP files...');
-    fs.copyFileSync('index.php', 'dist/index.php');
+    const phpFiles = ['index.php', 'config.php', 'save_profile.php', 'send_otp.php', 'upload.php', 'api.php'];
+    phpFiles.forEach(phpFile => {
+      if (fs.existsSync(phpFile)) {
+        fs.copyFileSync(phpFile, `dist/${phpFile}`);
+        console.log(`✅ Copied ${phpFile}`);
+      }
+    });
 
     // Create .htaccess for proper routing
     console.log('⚙️ Creating .htaccess...');

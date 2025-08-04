@@ -10,7 +10,7 @@ import { upCities } from '@/data/up-locations';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Video, Upload, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Mistri } from '@/types/mistri';
-import { supabase } from '@/integrations/supabase/client';
+import { phpClient } from '@/integrations/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface CreateProfileDialogProps {
@@ -63,91 +63,21 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     console.log('Mobile number:', formData.mobile);
 
     try {
-      // Generate 6-digit OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-
-      console.log('Generated OTP:', otpCode);
-      console.log('Expires at:', expiresAt.toISOString());
-
-      // Delete existing OTPs for this phone number first (with error handling)
-      console.log('Cleaning up existing OTPs for phone:', formData.mobile);
-      try {
-        const { error: deleteError } = await supabase
-          .from('otp_verifications')
-          .delete()
-          .eq('phone_number', formData.mobile);
-        
-        if (deleteError) {
-          console.log('Delete existing OTP warning (continuing anyway):', deleteError);
-        } else {
-          console.log('Successfully cleaned up existing OTPs');
-        }
-      } catch (deleteErr) {
-        console.log('Delete operation failed, continuing with insert:', deleteErr);
-      }
-
-      // Insert new OTP
-      console.log('Inserting new OTP...');
-      const insertData = {
-        phone_number: formData.mobile,
-        otp_code: otpCode,
-        expires_at: expiresAt.toISOString(),
-        is_verified: false,
-        attempts: 0
-      };
+      const result = await phpClient.sendOTP(formData.mobile, 'send');
       
-      console.log('Insert data:', insertData);
-
-      let data, error;
-      try {
-        const result = await supabase
-          .from('otp_verifications')
-          .insert(insertData)
-          .select()
-          .single();
-        data = result.data;
-        error = result.error;
-      } catch (networkError) {
-        console.error('Network error during OTP insert:', networkError);
-        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      if (!result.success) {
+        throw new Error(result.error);
       }
-
-      console.log('Insert result:', { data, error });
-
-      if (error) {
-        console.error('Database insert error:', error);
-        
-        if (error.message?.includes('permission') || error.message?.includes('policy')) {
-          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
-        } else if (error.message?.includes('connection') || error.message?.includes('network')) {
-          throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।');
-        } else {
-          throw new Error(`OTP सेव करने में समस्या: ${error.message}`);
-        }
-      }
-
-      if (!data) {
-        console.error('No data returned from insert');
-        throw new Error('OTP डेटा सेव नहीं हुआ');
-      }
-
-      console.log('OTP saved successfully:', data);
-      setOtpId(data.id);
-
-      // Show success message with OTP for testing
-      console.log('=== OTP FOR TESTING ===');
-      console.log('Mobile:', formData.mobile);
-      console.log('OTP Code:', otpCode);
-      console.log('======================');
+      
+      console.log('OTP sent successfully:', result);
+      setOtpId(result.otp); // For demo
       
       toast({
         title: "OTP भेजा गया ✅",
-        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (टेस्ट के लिए: ${otpCode})`,
+        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (टेस्ट के लिए: ${result.otp})`,
       });
 
       setStep('otp');
-      console.log('=== OTP SENDING COMPLETED SUCCESSFULLY ===');
       
     } catch (error) {
       console.error('=== OTP SENDING FAILED ===');
@@ -156,7 +86,6 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       let errorMessage = "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।";
       
       if (error instanceof Error) {
-        console.error('Error message:', error.message);
         errorMessage = `समस्या: ${error.message}`;
       }
       
@@ -168,7 +97,6 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
     } finally {
       setOtpSending(false);
-      console.log('=== OTP SENDING PROCESS COMPLETED ===');
     }
   };
 

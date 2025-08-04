@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Video } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorHandler } from '@/utils/errorHandler';
 
@@ -60,102 +60,31 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
     setIsUploading(true);
     
     try {
-      console.log('Starting video upload process...');
+      console.log('Starting video upload via PHP...');
       console.log('Video file details:', {
         name: videoFile.name,
         size: videoFile.size,
         type: videoFile.type
       });
       
-      // Generate unique filename
-      const fileExtension = videoFile.name.split('.').pop();
-      const fileName = `${mistriId}/${Date.now()}.${fileExtension}`;
-      
-      console.log('Uploading file to storage:', fileName);
-      
-      // Upload video to storage with better error handling
-      let uploadData, uploadError;
-      try {
-        const result = await supabase.storage
-          .from('mistri-videos')
-          .upload(fileName, videoFile, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: videoFile.type
-          });
-        uploadData = result.data;
-        uploadError = result.error;
-      } catch (networkError) {
-        console.error('Network error during upload:', networkError);
-        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
+      // Create form data for PHP upload
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      formData.append('mistri_id', mistriId);
+      formData.append('title', title.trim());
+      formData.append('description', description.trim());
+
+      console.log('Uploading video via PHP backend...');
+
+      // Upload video via PHP backend
+      const result = await phpClient.uploadVideo(formData);
+
+      if (!result.success) {
+        console.error('Upload error:', result.error);
+        throw new Error(result.error);
       }
 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        
-        // Check for specific error types
-        if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
-          throw new Error('वीडियो स्टोरेज में समस्या। कृपया बाद में कोशिश करें।');
-        } else if (uploadError.message?.includes('size') || uploadError.message?.includes('large')) {
-          throw new Error('वीडियो फ़ाइल बहुत बड़ी है। कृपया छोटी फ़ाइल अपलोड करें।');
-        } else {
-          throw new Error(`वीडियो अपलोड में समस्या: ${uploadError.message}`);
-        }
-      }
-
-      console.log('File uploaded successfully:', uploadData);
-
-      // Get public URL for the video
-      const { data: urlData } = supabase.storage
-        .from('mistri-videos')
-        .getPublicUrl(fileName);
-
-      console.log('Got public URL:', urlData.publicUrl);
-
-      // Create video record in database
-      let videoData, dbError;
-      try {
-        const result = await supabase
-          .from('mistri_videos')
-          .insert({
-            mistri_id: mistriId,
-            title: title.trim(),
-            description: description.trim() || null,
-            video_url: urlData.publicUrl,
-            duration: null, // Can be calculated later with video metadata
-          })
-          .select()
-          .single();
-        videoData = result.data;
-        dbError = result.error;
-      } catch (networkError) {
-        console.error('Network error during database insert:', networkError);
-        // Try to cleanup uploaded file
-        try {
-          await supabase.storage.from('mistri-videos').remove([fileName]);
-        } catch (cleanupError) {
-          console.error('Failed to cleanup file after db error:', cleanupError);
-        }
-        throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
-      }
-
-      if (dbError) {
-        console.error('Database insert error:', dbError);
-        // Try to cleanup uploaded file
-        try {
-          await supabase.storage.from('mistri-videos').remove([fileName]);
-        } catch (cleanupError) {
-          console.error('Failed to cleanup file after db error:', cleanupError);
-        }
-        
-        if (dbError.message?.includes('permission') || dbError.message?.includes('policy')) {
-          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
-        } else {
-          throw new Error(`डेटाबेस में सेव करने में समस्या: ${dbError.message}`);
-        }
-      }
-
-      console.log('Video record created:', videoData);
+      console.log('Video uploaded successfully:', result);
 
       toast({
         title: "सफल!",
@@ -179,25 +108,20 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
     } catch (error) {
       console.error('Video upload failed:', error);
       
-      // Better error messages for users
       let errorMessage = "वीडियो अपलोड करने में समस्या हुई";
       
       if (error instanceof Error) {
-        if (error.message.includes('नेटवर्क') || error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('स्टोरेज') || error.message.includes('storage') || error.message.includes('bucket')) {
-          errorMessage = "वीडियो स्टोरेज में समस्या। कृपया बाद में कोशिश करें।";
-        } else if (error.message.includes('size') || error.message.includes('बड़ी')) {
-          errorMessage = "वीडियो फ़ाइल बहुत बड़ी है। कृपया छोटी फ़ाइल अपलोड करें।";
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = "नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।";
         } else {
           errorMessage = error.message;
         }
       }
       
       toast({
-        title: ErrorHandler.getToastTitle(error),
-        description: ErrorHandler.handleError(error, 'Video Upload'),
-        variant: ErrorHandler.getToastVariant(error)
+        title: "त्रुटि",
+        description: errorMessage,
+        variant: "destructive"
       });
     } finally {
       setIsUploading(false);
