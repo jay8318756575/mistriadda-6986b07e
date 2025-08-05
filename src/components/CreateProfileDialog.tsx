@@ -74,7 +74,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
       toast({
         title: "OTP भेजा गया ✅",
-        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है। (टेस्ट के लिए: ${result.otp})`,
+        description: `डेमो मोड में OTP: ${result.otp} (कोई भी 6 अंक का नंबर डालें)`,
       });
 
       setStep('otp');
