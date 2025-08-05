@@ -116,71 +116,14 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     console.log('OTP ID:', otpId);
 
     try {
-      // Check OTP in database
-      let data, error;
-      try {
-        const result = await supabase
-          .from('otp_verifications')
-          .select('*')
-          .eq('id', otpId)
-          .eq('otp_code', otp)
-          .eq('is_verified', false)
-          .single();
-        data = result.data;
-        error = result.error;
-      } catch (networkError) {
-        console.error('Network error during OTP verification:', networkError);
-        throw new Error('नेटवर्क कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।');
-      }
-
-      if (error) {
-        console.error('Database error during OTP verification:', error);
-        
-        if (error.message?.includes('permission') || error.message?.includes('policy')) {
-          throw new Error('डेटाबेस अनुमति की समस्या। कृपया बाद में कोशिश करें।');
-        } else if (error.message?.includes('connection') || error.message?.includes('network')) {
-          throw new Error('डेटाबेस कनेक्शन में समस्या। कृपया इंटरनेट कनेक्शन चेक करें।');
-        } else {
-          throw new Error('OTP सत्यापन में डेटाबेस समस्या');
-        }
-      }
-
-      if (!data) {
-        console.log('No matching OTP found');
-        toast({
-          title: "गलत OTP",
-          description: "OTP गलत है। कृपया दोबारा कोशिश करें।",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Check if OTP has expired
-      const now = new Date();
-      const expiresAt = new Date(data.expires_at);
+      // Verify OTP using PHP API
+      const result = await phpClient.sendOTP(formData.mobile, 'verify', otp);
       
-      if (now > expiresAt) {
-        console.log('OTP has expired');
-        toast({
-          title: "OTP समाप्त",
-          description: "OTP का समय समाप्त हो गया है। कृपया नया OTP भेजें।",
-          variant: "destructive"
-        });
-        return;
+      if (!result.success) {
+        throw new Error(result.error || 'OTP verification failed');
       }
-
       console.log('OTP verified successfully');
 
-      // Mark OTP as verified
-      const { error: updateError } = await supabase
-        .from('otp_verifications')
-        .update({ is_verified: true })
-        .eq('id', otpId);
-
-      if (updateError) {
-        console.error('Error updating OTP status:', updateError);
-        // Continue anyway as the OTP was valid
-      }
 
       toast({
         title: "OTP सत्यापित",
@@ -231,31 +174,27 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
       console.log('Data to be inserted:', insertData);
 
-      // Save to Supabase database
-      const { data, error } = await supabase
-        .from('mistris')
-        .insert([insertData])
-        .select()
-        .single();
+      // Save using PHP API
+      const result = await phpClient.saveProfile(insertData);
 
-      console.log('Supabase insert response:', { data, error });
+      console.log('PHP API response:', result);
 
-      if (error) {
-        console.error('Database insert error:', error);
-        throw new Error(`प्रोफाइल बनाने में समस्या: ${error.message}`);
+      if (!result.success) {
+        console.error('Profile creation error:', result.error);
+        throw new Error(`प्रोफाइल बनाने में समस्या: ${result.error}`);
       }
 
-      if (data) {
-        // Convert database response to Mistri type
+      if (result.data) {
+        // Convert API response to Mistri type
         const newProfile: Mistri = {
-          id: data.id,
-          name: data.name,
-          category: data.category,
-          location: data.location,
-          mobile: data.mobile,
-          experience: data.experience,
-          rating: data.rating,
-          description: data.description
+          id: result.data.id,
+          name: result.data.name,
+          category: result.data.category,
+          location: result.data.location,
+          mobile: result.data.mobile,
+          experience: result.data.experience,
+          rating: result.data.rating,
+          description: result.data.description
         };
 
         console.log('=== PROFILE CREATED SUCCESSFULLY ===');

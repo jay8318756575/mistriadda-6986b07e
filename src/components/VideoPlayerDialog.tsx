@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, Heart, Calendar, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { hi } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
+import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { MistriVideo } from './VideoCard';
 
@@ -51,15 +51,9 @@ const VideoPlayerDialog = ({
     if (!video || hasViewed) return;
     
     try {
-      const { error } = await supabase
-        .from('mistri_videos')
-        .update({ views_count: video.views_count + 1 })
-        .eq('id', video.id);
-
-      if (!error) {
-        setLocalViews(video.views_count + 1);
-        setHasViewed(true);
-      }
+      // For now, just update locally since we don't have PHP endpoint for views
+      setLocalViews(video.views_count + 1);
+      setHasViewed(true);
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
@@ -73,20 +67,14 @@ const VideoPlayerDialog = ({
         ? Math.max(0, (localLikes || video.likes_count) - 1)
         : (localLikes || video.likes_count) + 1;
 
-      const { error } = await supabase
-        .from('mistri_videos')
-        .update({ likes_count: newLikeCount })
-        .eq('id', video.id);
-
-      if (!error) {
-        setIsLiked(!isLiked);
-        setLocalLikes(newLikeCount);
-        
-        toast({
-          title: isLiked ? "लाइक हटाया गया" : "लाइक किया गया",
-          description: isLiked ? "आपने इस वीडियो को अनलाइक किया" : "आपने इस वीडियो को लाइक किया",
-        });
-      }
+      // For now, just update locally since we don't have PHP endpoint for likes
+      setIsLiked(!isLiked);
+      setLocalLikes(newLikeCount);
+      
+      toast({
+        title: isLiked ? "लाइक हटाया गया" : "लाइक किया गया",
+        description: isLiked ? "आपने इस वीडियो को अनलाइक किया" : "आपने इस वीडियो को लाइक किया",
+      });
     } catch (error) {
       console.error('Error toggling like:', error);
       toast({

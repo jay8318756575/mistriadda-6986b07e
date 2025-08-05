@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorHandler } from '@/utils/errorHandler';
 import { Link } from 'react-router-dom';
@@ -37,35 +37,17 @@ const Index = () => {
   }, []);
 
   const fetchMistris = async () => {
-    console.log('=== STARTING FETCH FROM DATABASE ===');
+    console.log('=== STARTING FETCH FROM PHP API ===');
     
     try {
-      // Test connection with a simple select first
-      console.log('Testing Supabase connection...');
-      const { data: connectionTest, error: connectionError } = await supabase
-        .from('mistris')
-        .select('id')
-        .limit(1);
-      
-      if (connectionError) {
-        console.error('Connection test failed:', connectionError);
-        throw connectionError;
-      }
-      
-      console.log('Connection test successful:', connectionTest);
+      console.log('Fetching all mistris from PHP API...');
+      const result = await phpClient.getMistris();
 
-      // Now fetch all mistris
-      console.log('Fetching all mistris from database...');
-      const { data, error } = await supabase
-        .from('mistris')
-        .select('*')
-        .order('created_at', { ascending: false });
+      console.log('PHP API query result:', result);
 
-      console.log('Database query result:', { data, error });
-
-      if (error) {
-        console.error('Error fetching mistris:', error);
-        console.log('Using fallback sample data due to database error');
+      if (!result.success) {
+        console.error('Error fetching mistris:', result.error);
+        console.log('Using fallback sample data due to API error');
         
         // Use sample data as fallback
         const { sampleMistris } = await import('@/data/sample-mistris');
@@ -73,20 +55,20 @@ const Index = () => {
         setIsLoading(false);
         
         toast({
-          title: ErrorHandler.getToastTitle(error),
-          description: ErrorHandler.getErrorMessage(error),
-          variant: ErrorHandler.getToastVariant(error)
+          title: "डेटा लोड करने में समस्या",
+          description: result.error || 'मिस्त्री की जानकारी लोड नहीं हो सकी',
+          variant: "destructive"
         });
         return;
       }
 
-      if (data) {
-        console.log('Raw database data:', data);
-        console.log('Number of records fetched:', data.length);
+      if (result.data) {
+        console.log('Raw API data:', result.data);
+        console.log('Number of records fetched:', result.data.length);
 
-        // Convert database response to Mistri type
-        const mistris: Mistri[] = data.map(item => {
-          console.log('Converting database item:', item);
+        // Convert API response to Mistri type
+        const mistris: Mistri[] = result.data.map((item: any) => {
+          console.log('Converting API item:', item);
           return {
             id: item.id,
             name: item.name,
@@ -118,7 +100,7 @@ const Index = () => {
         setAllMistris(mistris);
         console.log('Mistris set in state successfully');
       } else {
-        console.log('No data returned from query (data is null/undefined)');
+        console.log('No data returned from API (data is null/undefined)');
       }
     } catch (fetchError) {
       console.error('Fetch mistris failed completely:', fetchError);
@@ -128,11 +110,11 @@ const Index = () => {
       const { sampleMistris } = await import('@/data/sample-mistris');
       setAllMistris(sampleMistris);
       
-      // Show user-friendly message using error handler
+      // Show user-friendly message
       toast({
-        title: ErrorHandler.getToastTitle(fetchError),
-        description: ErrorHandler.getErrorMessage(fetchError),
-        variant: ErrorHandler.getToastVariant(fetchError)
+        title: "कनेक्शन समस्या",
+        description: "सर्वर से कनेक्ट नहीं हो सका। सैंपल डेटा दिखाया जा रहा है।",
+        variant: "destructive"
       });
     } finally {
       console.log('=== FETCH COMPLETED ===');
