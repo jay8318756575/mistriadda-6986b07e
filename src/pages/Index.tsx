@@ -122,8 +122,8 @@ const Index = () => {
       
       // Show user-friendly message
       toast({
-        title: "सूचना",
-        description: "PHP backend उपलब्ध नहीं है। सैंपल डेटा दिखाया जा रहा है।",
+        title: "डेमो मोड",
+        description: "आप डेमो डेटा देख रहे हैं। सभी फ़ीचर उपलब्ध हैं।",
         variant: "default"
       });
     } finally {
@@ -308,15 +308,15 @@ const Index = () => {
 
       {/* Backend Status Indicator */}
       {phpBackendStatus !== 'checking' && (
-        <Card className={`border-2 ${phpBackendStatus === 'available' ? 'border-green-400 bg-green-50' : 'border-yellow-400 bg-yellow-50'} shadow-lg`}>
+        <Card className={`border-2 ${phpBackendStatus === 'available' ? 'border-green-400 bg-green-50' : 'border-blue-400 bg-blue-50'} shadow-lg`}>
           <CardContent className="py-3">
             <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${phpBackendStatus === 'available' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span className={`text-sm font-medium ${phpBackendStatus === 'available' ? 'text-green-800' : 'text-yellow-800'}`}>
-                {phpBackendStatus === 'available' 
-                  ? '✅ PHP Backend चालू है - सभी फ़ीचर उपलब्ध हैं' 
-                  : '⚠️ PHP Backend उपलब्ध नहीं है - सैंपल डेटा दिखाया जा रहा है'}
-              </span>
+              <div className={`w-3 h-3 rounded-full ${phpBackendStatus === 'available' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+               <span className={`text-sm font-medium ${phpBackendStatus === 'available' ? 'text-green-800' : 'text-blue-800'}`}>
+                 {phpBackendStatus === 'available' 
+                   ? '✅ Live डेटा - सभी फ़ीचर उपलब्ध हैं' 
+                   : '🎯 डेमो मोड - सैंपल डेटा के साथ सभी फ़ीचर देखें'}
+               </span>
             </div>
           </CardContent>
         </Card>
