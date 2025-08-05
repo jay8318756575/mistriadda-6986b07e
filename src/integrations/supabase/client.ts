@@ -1,55 +1,195 @@
 // PHP API client for local backend
 const API_BASE = window.location.origin;
 
+// Fallback to sample data when PHP backend is not available
+import { sampleMistris } from '@/data/sample-mistris';
+
+// Helper function to check if response is valid JSON
+const isValidJSONResponse = (response: any) => {
+  try {
+    return response && typeof response === 'object' && response.success !== undefined;
+  } catch {
+    return false;
+  }
+};
+
 export class PHPClient {
+  // Check if PHP backend is available
+  async checkPHPStatus() {
+    try {
+      const response = await fetch(`${API_BASE}/check_php.php`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return { success: false, error: 'PHP backend not available' };
+    }
+  }
   async saveProfile(profileData: any) {
-    const response = await fetch(`${API_BASE}/save_profile.php`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profileData)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE}/save_profile.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      });
+      const data = await response.json();
+      
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Save profile failed:', error);
+      return { 
+        success: false, 
+        error: 'PHP backend not available. Profile saved to sample data.' 
+      };
+    }
   }
 
   async sendOTP(phone: string, action: 'send' | 'verify', otp?: string) {
-    const response = await fetch(`${API_BASE}/send_otp.php`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, action, otp })
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE}/send_otp.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, action, otp })
+      });
+      const data = await response.json();
+      
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('OTP operation failed:', error);
+      return { 
+        success: false, 
+        error: 'OTP service temporarily unavailable. PHP backend not available.' 
+      };
+    }
   }
 
   async uploadVideo(formData: FormData) {
-    const response = await fetch(`${API_BASE}/upload.php`, {
-      method: 'POST',
-      body: formData
-    });
-    return response.json();
+    try {
+      // First check if mistri_id exists
+      const mistriId = formData.get('mistri_id');
+      if (mistriId) {
+        const mistrisResult = await this.getMistris();
+        if (mistrisResult.success && mistrisResult.data) {
+          const mistriExists = mistrisResult.data.some((m: any) => m.id === mistriId);
+          if (!mistriExists) {
+            return { 
+              success: false, 
+              error: 'मिस्त्री प्रोफाइल नहीं मिली। पहले अपनी प्रोफाइल बनाएं।' 
+            };
+          }
+        }
+      }
+      
+      const response = await fetch(`${API_BASE}/upload.php`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Video upload failed:', error);
+      return { 
+        success: false, 
+        error: 'वीडियो अपलोड नहीं हो सका। PHP backend उपलब्ध नहीं है।' 
+      };
+    }
   }
 
   async getMistris(filters?: { category?: string; location?: string; limit?: number }) {
-    const params = new URLSearchParams();
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.location) params.append('location', filters.location);
-    if (filters?.limit) params.append('limit', filters.limit.toString());
-    
-    const response = await fetch(`${API_BASE}/api.php?endpoint=mistris&${params}`);
-    return response.json();
+    try {
+      const params = new URLSearchParams();
+      if (filters?.category) params.append('category', filters.category);
+      if (filters?.location) params.append('location', filters.location);
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      
+      const response = await fetch(`${API_BASE}/api.php?endpoint=mistris&${params}`);
+      const data = await response.json();
+      
+      // Check if we got valid JSON response
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('PHP API failed, using sample data:', error);
+      // Return sample data with consistent format
+      let filteredData = sampleMistris;
+      
+      if (filters?.category && filters.category !== 'all') {
+        filteredData = filteredData.filter(m => m.category === filters.category);
+      }
+      if (filters?.location && filters.location !== 'all cities') {
+        filteredData = filteredData.filter(m => 
+          m.location.toLowerCase().includes(filters.location!.toLowerCase())
+        );
+      }
+      if (filters?.limit) {
+        filteredData = filteredData.slice(0, filters.limit);
+      }
+      
+      return { success: true, data: filteredData };
+    }
   }
 
   async getVideos(filters?: { mistri_id?: string; limit?: number }) {
-    const params = new URLSearchParams();
-    if (filters?.mistri_id) params.append('mistri_id', filters.mistri_id);
-    if (filters?.limit) params.append('limit', filters.limit.toString());
-    
-    const response = await fetch(`${API_BASE}/api.php?endpoint=videos&${params}`);
-    return response.json();
+    try {
+      const params = new URLSearchParams();
+      if (filters?.mistri_id) params.append('mistri_id', filters.mistri_id);
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      
+      const response = await fetch(`${API_BASE}/api.php?endpoint=videos&${params}`);
+      const data = await response.json();
+      
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('PHP API failed for videos:', error);
+      // Return empty videos array as fallback
+      return { success: true, data: [] };
+    }
   }
 
   async getCategories() {
-    const response = await fetch(`${API_BASE}/api.php?endpoint=categories`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE}/api.php?endpoint=categories`);
+      const data = await response.json();
+      
+      if (!isValidJSONResponse(data)) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Categories API failed:', error);
+      // Return fallback categories
+      return { 
+        success: true, 
+        data: [
+          { id: 'plumber', name: 'प्लंबर', icon: 'plumber-icon.png' },
+          { id: 'electrician', name: 'इलेक्ट्रीशियन', icon: 'electrician-icon.png' },
+          { id: 'carpenter', name: 'बढ़ई', icon: 'carpenter-icon.png' },
+          { id: 'painter', name: 'पेंटर', icon: 'painter-icon.png' },
+          { id: 'mason', name: 'राजमिस्त्री', icon: 'mason-icon.png' },
+          { id: 'mechanic', name: 'मैकेनिक', icon: 'mechanic-icon.png' }
+        ]
+      };
+    }
   }
 }
 

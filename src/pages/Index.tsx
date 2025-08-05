@@ -30,11 +30,21 @@ const Index = () => {
   const [currentCategoryFilter, setCurrentCategoryFilter] = useState<string>('');
   const [allMistris, setAllMistris] = useState<Mistri[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [phpBackendStatus, setPHPBackendStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
 
-  // Fetch mistris from database on component mount
+  // Check PHP backend status and fetch mistris on component mount
   useEffect(() => {
-    fetchMistris();
+    checkBackendAndFetchData();
   }, []);
+
+  const checkBackendAndFetchData = async () => {
+    // Check PHP backend status first
+    const status = await phpClient.checkPHPStatus();
+    setPHPBackendStatus(status.success ? 'available' : 'unavailable');
+    
+    // Then fetch mistris
+    fetchMistris();
+  };
 
   const fetchMistris = async () => {
     console.log('=== STARTING FETCH FROM PHP API ===');
@@ -112,9 +122,9 @@ const Index = () => {
       
       // Show user-friendly message
       toast({
-        title: "कनेक्शन समस्या",
-        description: "सर्वर से कनेक्ट नहीं हो सका। सैंपल डेटा दिखाया जा रहा है।",
-        variant: "destructive"
+        title: "सूचना",
+        description: "PHP backend उपलब्ध नहीं है। सैंपल डेटा दिखाया जा रहा है।",
+        variant: "default"
       });
     } finally {
       console.log('=== FETCH COMPLETED ===');
@@ -296,6 +306,22 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Backend Status Indicator */}
+      {phpBackendStatus !== 'checking' && (
+        <Card className={`border-2 ${phpBackendStatus === 'available' ? 'border-green-400 bg-green-50' : 'border-yellow-400 bg-yellow-50'} shadow-lg`}>
+          <CardContent className="py-3">
+            <div className="flex items-center space-x-3">
+              <div className={`w-3 h-3 rounded-full ${phpBackendStatus === 'available' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <span className={`text-sm font-medium ${phpBackendStatus === 'available' ? 'text-green-800' : 'text-yellow-800'}`}>
+                {phpBackendStatus === 'available' 
+                  ? '✅ PHP Backend चालू है - सभी फ़ीचर उपलब्ध हैं' 
+                  : '⚠️ PHP Backend उपलब्ध नहीं है - सैंपल डेटा दिखाया जा रहा है'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Video Upload Section - New Addition */}
       <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-xl">
         <CardHeader className="pb-3">
@@ -339,10 +365,13 @@ const Index = () => {
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 text-sm text-gray-600">
-                <p>वीडियो अपलोड करने के लिए, पहले आपको एक मिस्त्री के रूप में रजिस्टर करना होगा।</p>
-                <p className="mt-2">
-                  अभी के लिए, आप सैंपल मिस्त्री ID का उपयोग कर सकते हैं
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 font-medium">📌 सूचना:</p>
+                <p className="text-sm text-blue-700 mt-1">
+                  PHP backend उपलब्ध नहीं होने के कारण वीडियो अपलोड फ़ीचर अस्थायी रूप से निष्क्रिय है।
+                </p>
+                <p className="text-sm text-blue-700 mt-1">
+                  आप अभी भी सैंपल डेटा देख सकते हैं और अन्य फ़ीचर का उपयोग कर सकते हैं।
                 </p>
               </div>
               <VideoUpload 
