@@ -11,9 +11,10 @@ import { ErrorHandler } from '@/utils/errorHandler';
 interface VideoUploadProps {
   mistriId: string;
   onVideoUploaded?: () => void;
+  onRefreshVideos?: () => void;
 }
 
-const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
+const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -104,6 +105,14 @@ const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
       if (onVideoUploaded) {
         onVideoUploaded();
       }
+      
+      // Refresh video list
+      if (onRefreshVideos) {
+        onRefreshVideos();
+      }
+      
+      // Dispatch custom event for global video refresh
+      window.dispatchEvent(new CustomEvent('videoUploaded'));
 
     } catch (error) {
       console.error('Video upload failed:', error);

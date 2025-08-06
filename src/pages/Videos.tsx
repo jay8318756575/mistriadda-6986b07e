@@ -18,6 +18,15 @@ const Videos = () => {
 
   useEffect(() => {
     fetchVideos();
+    
+    // Listen for video upload events
+    const handleVideoUploaded = () => {
+      console.log('Video uploaded, refreshing videos list');
+      fetchVideos();
+    };
+    
+    window.addEventListener('videoUploaded', handleVideoUploaded);
+    return () => window.removeEventListener('videoUploaded', handleVideoUploaded);
   }, []);
 
   const fetchVideos = async () => {

@@ -153,12 +153,23 @@ export class PHPClient {
       console.error('Video upload failed:', error);
       
       // Demo mode fallback for video upload
+      const videoFile = formData.get('video') as File;
+      let videoUrl = 'demo_video.mp4';
+      
+      // Create a blob URL for the actual uploaded video in demo mode
+      if (videoFile) {
+        videoUrl = URL.createObjectURL(videoFile);
+      }
+      
       const demoVideo = {
         id: 'demo_video_' + Date.now(),
         title: formData.get('title'),
         description: formData.get('description'),
         mistri_id: formData.get('mistri_id'),
-        video_url: 'demo_video.mp4',
+        video_url: videoUrl,
+        views_count: 0,
+        likes_count: 0,
+        is_active: true,
         created_at: new Date().toISOString()
       };
       
