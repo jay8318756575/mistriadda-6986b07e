@@ -352,6 +352,14 @@ const Index = () => {
               <Upload className="w-4 h-4 mr-2" />
               {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
             </Button>
+            <Link to="/video-feed" className="flex-1">
+              <Button 
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                स्क्रॉल वीडियो फीड
+              </Button>
+            </Link>
             <Link to="/videos" className="flex-1">
               <Button 
                 variant="outline" 
