@@ -154,15 +154,30 @@ export class PHPClient {
       
       // Demo mode fallback for video upload
       const videoFile = formData.get('video') as File;
-      let videoUrl = 'demo_video.mp4';
+      const videoId = 'demo_video_' + Date.now();
       
-      // Create a blob URL for the actual uploaded video in demo mode
+      // Convert video file to base64 for persistent storage in demo mode
+      let videoUrl = 'demo_video.mp4';
       if (videoFile) {
-        videoUrl = URL.createObjectURL(videoFile);
+        try {
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve) => {
+            reader.onload = () => {
+              const base64String = reader.result as string;
+              resolve(base64String);
+            };
+          });
+          reader.readAsDataURL(videoFile);
+          videoUrl = await base64Promise;
+        } catch (error) {
+          console.error('Error converting video to base64:', error);
+          // Fallback to blob URL (temporary)
+          videoUrl = URL.createObjectURL(videoFile);
+        }
       }
       
       const demoVideo = {
-        id: 'demo_video_' + Date.now(),
+        id: videoId,
         title: formData.get('title'),
         description: formData.get('description'),
         mistri_id: formData.get('mistri_id'),
