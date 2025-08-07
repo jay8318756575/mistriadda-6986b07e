@@ -24,17 +24,7 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        toast({
-          title: "फ़ाइल बहुत बड़ी है",
-          description: "कृपया 50MB से छोटी वीडियो अपलोड करें",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Check file type
+      // Check file type only - no size restrictions
       if (!file.type.startsWith('video/')) {
         toast({
           title: "गलत फ़ाइल प्रकार",
@@ -174,7 +164,7 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
 
         <div>
           <label htmlFor="video-file-input" className="block text-sm font-medium text-gray-700 mb-1">
-            वीडियो फ़ाइल * (अधिकतम 50MB)
+            वीडियो फ़ाइल * (कोई साइज़ लिमिट नहीं)
           </label>
           <div className="relative">
             <Input
