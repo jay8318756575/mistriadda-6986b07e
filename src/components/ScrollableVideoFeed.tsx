@@ -16,7 +16,7 @@ const ScrollableVideoFeed = ({ className = "" }: ScrollableVideoFeedProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,10 +39,21 @@ const ScrollableVideoFeed = ({ className = "" }: ScrollableVideoFeedProps) => {
     if (videoRef.current && videos.length > 0) {
       videoRef.current.currentTime = 0;
       if (isPlaying) {
-        videoRef.current.play();
+        const playPromise = videoRef.current.play();
+        if (playPromise && typeof (playPromise as Promise<void>).catch === 'function') {
+          (playPromise as Promise<void>).catch((err) => {
+            console.error('Autoplay prevented or error:', err);
+            setIsPlaying(false);
+            toast({
+              title: 'ऑटोप्ले रुका',
+              description: 'वीडियो चलाने के लिए प्ले बटन दबाएं',
+              variant: 'default'
+            });
+          });
+        }
       }
     }
-  }, [currentIndex, videos, isPlaying]);
+  }, [currentIndex, videos, isPlaying, toast]);
 
   const fetchVideos = async () => {
     try {
@@ -77,6 +88,23 @@ const ScrollableVideoFeed = ({ className = "" }: ScrollableVideoFeedProps) => {
       setCurrentIndex(currentIndex - 1);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        handleNext();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        handlePrevious();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        togglePlay();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, videos, isPlaying]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -163,8 +191,11 @@ const ScrollableVideoFeed = ({ className = "" }: ScrollableVideoFeedProps) => {
           loop
           muted={isMuted}
           playsInline
+          controls
           autoPlay={isPlaying}
           onClick={togglePlay}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
           onError={(e) => {
             console.error('Video playback error:', e);
             toast({
