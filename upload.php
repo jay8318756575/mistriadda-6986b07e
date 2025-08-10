@@ -49,7 +49,10 @@ try {
     $file_type = $video_file['type'];
     $file_name = $video_file['name'];
     
-    // No file size restrictions - allow videos of any length
+    // Validate file size (50MB max)
+    if ($file_size > 50 * 1024 * 1024) {
+        sendJSON(['error' => 'File size too large. Maximum 50MB allowed'], 400);
+    }
     
     // Validate file type
     $allowed_types = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm'];

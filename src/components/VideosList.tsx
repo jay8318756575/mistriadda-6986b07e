@@ -11,15 +11,13 @@ interface VideosListProps {
   limit?: number;
   showMistriInfo?: boolean;
   className?: string;
-  onRefresh?: (refreshFn: () => void) => void;
 }
 
 const VideosList = ({ 
   mistriId, 
   limit, 
   showMistriInfo = true, 
-  className = "",
-  onRefresh
+  className = "" 
 }: VideosListProps) => {
   const [videos, setVideos] = useState<MistriVideo[]>([]);
   const [mistris, setMistris] = useState<Record<string, { name: string; category: string }>>({});
@@ -82,19 +80,6 @@ const VideosList = ({
       setIsLoading(false);
     }
   };
-
-  // Add a public method to refresh videos
-  const refreshVideos = () => {
-    setIsLoading(true);
-    fetchVideos();
-  };
-
-  // Expose refresh function to parent
-  useEffect(() => {
-    if (onRefresh) {
-      onRefresh(refreshVideos);
-    }
-  }, [onRefresh]);
 
   const handleVideoClick = (video: MistriVideo) => {
     setSelectedVideo(video);

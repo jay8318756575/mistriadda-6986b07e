@@ -4,10 +4,6 @@ const API_BASE = window.location.origin;
 // Fallback to sample data when PHP backend is not available
 import { sampleMistris } from '@/data/sample-mistris';
 
-// Local storage keys for demo mode
-const DEMO_MISTRIS_KEY = 'demo_mistris';
-const DEMO_VIDEOS_KEY = 'demo_videos';
-
 // Helper function to check if response is valid JSON
 const isValidJSONResponse = (response: any) => {
   try {
@@ -51,19 +47,12 @@ export class PHPClient {
         name: profileData.name,
         category: profileData.category,
         location: profileData.location,
-        phone: profileData.phone,
-        experience_years: profileData.experience_years || 0,
+        mobile: profileData.mobile,
+        experience: profileData.experience,
         rating: 4.5,
-        description: profileData.description || '',
-        profile_image: profileData.profile_image || '',
-        is_verified: false,
+        description: profileData.description,
         created_at: new Date().toISOString()
       };
-      
-      // Save to localStorage for demo mode persistence
-      const existingMistris = JSON.parse(localStorage.getItem(DEMO_MISTRIS_KEY) || '[]');
-      existingMistris.push(demoProfile);
-      localStorage.setItem(DEMO_MISTRIS_KEY, JSON.stringify(existingMistris));
       
       return { 
         success: true, 
@@ -153,50 +142,17 @@ export class PHPClient {
       console.error('Video upload failed:', error);
       
       // Demo mode fallback for video upload
-      const videoFile = formData.get('video') as File;
-      const videoId = 'demo_video_' + Date.now();
-      
-      // Convert video file to base64 for persistent storage in demo mode
-      let videoUrl = 'demo_video.mp4';
-      if (videoFile) {
-        try {
-          const reader = new FileReader();
-          const base64Promise = new Promise<string>((resolve) => {
-            reader.onload = () => {
-              const base64String = reader.result as string;
-              resolve(base64String);
-            };
-          });
-          reader.readAsDataURL(videoFile);
-          videoUrl = await base64Promise;
-        } catch (error) {
-          console.error('Error converting video to base64:', error);
-          // Fallback to blob URL (temporary)
-          videoUrl = URL.createObjectURL(videoFile);
-        }
-      }
-      
-      const demoVideo = {
-        id: videoId,
-        title: formData.get('title'),
-        description: formData.get('description'),
-        mistri_id: formData.get('mistri_id'),
-        video_url: videoUrl,
-        views_count: 0,
-        likes_count: 0,
-        is_active: true,
-        created_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage for demo mode persistence
-      const existingVideos = JSON.parse(localStorage.getItem(DEMO_VIDEOS_KEY) || '[]');
-      existingVideos.push(demoVideo);
-      localStorage.setItem(DEMO_VIDEOS_KEY, JSON.stringify(existingVideos));
-      
       return { 
         success: true, 
         message: 'डेमो मोड में वीडियो अपलोड हो गया',
-        data: demoVideo
+        data: {
+          id: 'demo_video_' + Date.now(),
+          title: formData.get('title'),
+          description: formData.get('description'),
+          mistri_id: formData.get('mistri_id'),
+          video_url: 'demo_video.mp4',
+          created_at: new Date().toISOString()
+        }
       };
     }
   }
@@ -219,12 +175,8 @@ export class PHPClient {
       return data;
     } catch (error) {
       console.error('PHP API failed, using sample data:', error);
-      
-      // Get demo mode data from localStorage
-      const demoMistris = JSON.parse(localStorage.getItem(DEMO_MISTRIS_KEY) || '[]');
-      
-      // Combine sample data with demo data
-      let filteredData = [...sampleMistris, ...demoMistris];
+      // Return sample data with consistent format
+      let filteredData = sampleMistris;
       
       if (filters?.category && filters.category !== 'all') {
         filteredData = filteredData.filter(m => m.category === filters.category);
@@ -258,20 +210,8 @@ export class PHPClient {
       return data;
     } catch (error) {
       console.error('PHP API failed for videos:', error);
-      
-      // Get demo videos from localStorage
-      const demoVideos = JSON.parse(localStorage.getItem(DEMO_VIDEOS_KEY) || '[]');
-      
-      // Filter videos if mistri_id is provided
-      let filteredVideos = demoVideos;
-      if (filters?.mistri_id) {
-        filteredVideos = demoVideos.filter((v: any) => v.mistri_id === filters.mistri_id);
-      }
-      if (filters?.limit) {
-        filteredVideos = filteredVideos.slice(0, filters.limit);
-      }
-      
-      return { success: true, data: filteredVideos };
+      // Return empty videos array as fallback
+      return { success: true, data: [] };
     }
   }
 

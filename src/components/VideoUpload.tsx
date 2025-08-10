@@ -11,10 +11,9 @@ import { ErrorHandler } from '@/utils/errorHandler';
 interface VideoUploadProps {
   mistriId: string;
   onVideoUploaded?: () => void;
-  onRefreshVideos?: () => void;
 }
 
-const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUploadProps) => {
+const VideoUpload = ({ mistriId, onVideoUploaded }: VideoUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -24,7 +23,17 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file type only - no size restrictions
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          title: "फ़ाइल बहुत बड़ी है",
+          description: "कृपया 50MB से छोटी वीडियो अपलोड करें",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check file type
       if (!file.type.startsWith('video/')) {
         toast({
           title: "गलत फ़ाइल प्रकार",
@@ -95,14 +104,6 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
       if (onVideoUploaded) {
         onVideoUploaded();
       }
-      
-      // Refresh video list
-      if (onRefreshVideos) {
-        onRefreshVideos();
-      }
-      
-      // Dispatch custom event for global video refresh
-      window.dispatchEvent(new CustomEvent('videoUploaded'));
 
     } catch (error) {
       console.error('Video upload failed:', error);
@@ -164,7 +165,7 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
 
         <div>
           <label htmlFor="video-file-input" className="block text-sm font-medium text-gray-700 mb-1">
-            वीडियो फ़ाइल * (कोई साइज़ लिमिट नहीं)
+            वीडियो फ़ाइल * (अधिकतम 50MB)
           </label>
           <div className="relative">
             <Input
