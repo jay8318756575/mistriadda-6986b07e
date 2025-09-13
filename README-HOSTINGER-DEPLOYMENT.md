@@ -1,11 +1,13 @@
-# 🚀 Hostinger Deployment Guide - MistriAdda
+# 🚀 MistriAdda - Complete Hostinger Deployment Guide
 
 ## 📋 Pre-Deployment Checklist
 
 ✅ **Files Created:**
-- `index.php` - PHP backend with React app integration
+- `index.php` - PHP backend with React app integration  
+- `debug.php` - Debugging and diagnostics page
 - `build-for-hostinger.js` - Automated build script
 - `README-HOSTINGER-DEPLOYMENT.md` - This guide
+- Fixed asset loading and manifest handling
 
 ## 🛠️ Build Commands
 
@@ -102,6 +104,7 @@ dist/
 
 ### Test URLs After Deployment:
 - `https://yoursite.com/` - Main site
+- `https://yoursite.com/debug.php` - Debug information page
 - `https://yoursite.com/?api=health` - PHP backend test
 - `https://yoursite.com/videos` - React routing test
 

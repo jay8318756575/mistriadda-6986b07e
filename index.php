@@ -130,21 +130,40 @@ if (isset($_GET['api'])) {
     
     <!-- Dynamic CSS and JS loading -->
     <?php
-    // Check if built assets exist
+    // Check if manifest.json exists (production build)
+    $manifestPath = __DIR__ . '/.vite/manifest.json';
     $assetsDir = __DIR__ . '/assets/';
-    $cssFiles = glob($assetsDir . 'index-*.css');
-    $jsFiles = glob($assetsDir . 'index-*.js');
     
-    // Load CSS files
-    if (!empty($cssFiles)) {
-        foreach ($cssFiles as $cssFile) {
-            $cssFile = basename($cssFile);
-            echo '<link rel="stylesheet" href="/assets/' . $cssFile . '">' . "\n    ";
+    if (file_exists($manifestPath)) {
+        // Production mode - load from manifest
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        
+        // Load CSS files
+        if (isset($manifest['index.html']['css'])) {
+            foreach ($manifest['index.html']['css'] as $cssFile) {
+                echo '<link rel="stylesheet" href="/' . $cssFile . '">' . "\n    ";
+            }
+        }
+        
+        // Preload JS module
+        if (isset($manifest['index.html']['file'])) {
+            echo '<link rel="modulepreload" href="/' . $manifest['index.html']['file'] . '">' . "\n    ";
         }
     } else {
-        // Development mode - load from Vite dev server
-        echo '<script type="module" src="http://localhost:8080/@vite/client"></script>' . "\n    ";
-        echo '<script type="module" src="http://localhost:8080/src/main.tsx"></script>' . "\n    ";
+        // Fallback: Check for built assets in assets directory
+        $cssFiles = glob($assetsDir . '*.css');
+        $jsFiles = glob($assetsDir . '*.js');
+        
+        if (!empty($cssFiles)) {
+            foreach ($cssFiles as $cssFile) {
+                $cssFile = basename($cssFile);
+                echo '<link rel="stylesheet" href="/assets/' . $cssFile . '">' . "\n    ";
+            }
+        } else {
+            // Development mode - load from Vite dev server
+            echo '<script type="module" src="http://localhost:8080/@vite/client"></script>' . "\n    ";
+            echo '<script type="module" src="http://localhost:8080/src/main.tsx"></script>' . "\n    ";
+        }
     }
     ?>
   </head>
@@ -153,8 +172,23 @@ if (isset($_GET['api'])) {
     <div id="root"></div>
     
     <?php
-    // Load JS files only in production
-    if (!empty($jsFiles)) {
+    // Load JS files
+    if (file_exists($manifestPath)) {
+        // Production mode - load from manifest
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        
+        if (isset($manifest['index.html']['file'])) {
+            echo '<script type="module" src="/' . $manifest['index.html']['file'] . '"></script>' . "\n    ";
+        }
+        
+        // Load any additional imports
+        if (isset($manifest['index.html']['imports'])) {
+            foreach ($manifest['index.html']['imports'] as $importFile) {
+                echo '<script type="module" src="/' . $importFile . '"></script>' . "\n    ";
+            }
+        }
+    } else if (!empty($jsFiles)) {
+        // Fallback: Load JS files from assets directory
         foreach ($jsFiles as $jsFile) {
             $jsFile = basename($jsFile);
             echo '<script type="module" src="/assets/' . $jsFile . '"></script>' . "\n    ";

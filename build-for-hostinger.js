@@ -22,14 +22,36 @@ try {
     console.log('📦 Building React app...');
     execSync('npm run build', { stdio: 'inherit' });
 
-    // Copy PHP files
+    // Copy PHP files to dist
     console.log('📋 Copying PHP files...');
-    const phpFiles = ['index.php', 'config.php', 'save_profile.php', 'send_otp.php', 'upload.php', 'api.php'];
+    const phpFiles = [
+        'index.php', 'config.php', 'save_profile.php', 'send_otp.php', 
+        'upload.php', 'api.php', 'auth.php', 'firebase_otp.php',
+        'driver_register.php', 'customer_register.php', 'schema.sql',
+        'debug.php'
+    ];
+    
     phpFiles.forEach(phpFile => {
-      if (fs.existsSync(phpFile)) {
-        fs.copyFileSync(phpFile, `dist/${phpFile}`);
-        console.log(`✅ Copied ${phpFile}`);
-      }
+        if (fs.existsSync(phpFile)) {
+            fs.copyFileSync(phpFile, `dist/${phpFile}`);
+            console.log(`✅ Copied ${phpFile}`);
+        }
+    });
+
+    // Copy .htaccess if it exists
+    if (fs.existsSync('.htaccess')) {
+        fs.copyFileSync('.htaccess', 'dist/.htaccess');
+        console.log('✅ Copied .htaccess');
+    }
+
+    // Create uploads directory structure in dist
+    const uploadDirs = ['uploads', 'uploads/videos', 'uploads/profiles'];
+    uploadDirs.forEach(dir => {
+        const distDir = `dist/${dir}`;
+        if (!fs.existsSync(distDir)) {
+            fs.mkdirSync(distDir, { recursive: true });
+            console.log(`✅ Created ${dir} directory`);
+        }
     });
 
     // Create .htaccess for proper routing
