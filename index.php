@@ -172,26 +172,11 @@ if (isset($_GET['api'])) {
     <div id="root"></div>
     
     <?php
-    // Load JS files
-    if (file_exists($manifestPath)) {
-        // Production mode - load from manifest
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-        
-        if (isset($manifest['index.html']['file'])) {
-            echo '<script type="module" src="/' . $manifest['index.html']['file'] . '"></script>' . "\n    ";
-        }
-        
-        // Load any additional imports
-        if (isset($manifest['index.html']['imports'])) {
-            foreach ($manifest['index.html']['imports'] as $importFile) {
-                echo '<script type="module" src="/' . $importFile . '"></script>' . "\n    ";
-            }
-        }
-    } else if (!empty($jsFiles)) {
-        // Fallback: Load JS files from assets directory
-        foreach ($jsFiles as $jsFile) {
-            $jsFile = basename($jsFile);
-            echo '<script type="module" src="/assets/' . $jsFile . '"></script>' . "\n    ";
+    // Load JS files using entry/imports computed above
+    if (!empty($entryFile)) {
+        echo '<script type="module" src="/' . $entryFile . '"></script>' . "\n    ";
+        foreach ($imports as $importFile) {
+            echo '<script type="module" src="/' . $importFile . '"></script>' . "\n    ";
         }
     }
     ?>
