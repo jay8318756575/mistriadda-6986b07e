@@ -26,9 +26,9 @@ try {
     console.log('📋 Copying PHP files...');
     const phpFiles = [
         'index.php', 'config.php', 'save_profile.php', 'send_otp.php', 
-        'upload.php', 'api.php', 'auth.php', 'firebase_otp.php',
+        'upload.php', 'upload_video.php', 'api.php', 'auth.php', 'firebase_otp.php',
         'driver_register.php', 'customer_register.php', 'schema.sql',
-        'debug.php'
+        'debug.php', 'get_data.php', 'database.sql'
     ];
     
     phpFiles.forEach(phpFile => {
@@ -101,47 +101,94 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
     console.log('📄 Creating deployment info...');
     const deploymentInfo = {
         buildDate: new Date().toISOString(),
-        version: require('./package.json').version,
+        version: require('./package.json').version || '1.0.0',
         platform: 'Hostinger',
-        type: 'PHP + React SPA'
+        type: 'Complete PHP + MySQL + React Website',
+        features: [
+            'Profile Creation',
+            'Video Upload', 
+            'OTP Verification',
+            'Hindi/English Support',
+            'Mobile Responsive',
+            'SEO Optimized'
+        ],
+        database: 'MySQL with sample data included',
+        apis: [
+            'save_profile.php',
+            'upload_video.php', 
+            'send_otp.php',
+            'get_data.php'
+        ]
     };
 
     fs.writeFileSync('dist/deployment-info.json', JSON.stringify(deploymentInfo, null, 2));
 
+    // Copy comprehensive setup guide
+    console.log('📋 Copying setup guides...');
+    const setupFiles = [
+        'HOSTINGER-COMPLETE-SETUP.md',
+        'HOSTINGER-SETUP.md', 
+        'README-HOSTINGER-DEPLOYMENT.md'
+    ];
+    
+    setupFiles.forEach(file => {
+        if (fs.existsSync(file)) {
+            fs.copyFileSync(file, `dist/${file}`);
+            console.log(`✅ Copied ${file}`);
+        }
+    });
+
     // Create upload instructions
     const instructions = `
-🎉 BUILD SUCCESSFUL!
+🎉 MISTRIADDA WEBSITE - BUILD SUCCESSFUL!
 
-📁 DEPLOYMENT FILES READY IN 'dist' FOLDER
+📁 COMPLETE PACKAGE READY IN 'dist' FOLDER
 
-🚀 HOSTINGER DEPLOYMENT STEPS:
+🚀 QUICK HOSTINGER SETUP:
 
-1. ZIP the 'dist' folder contents (not the folder itself)
-2. Login to your Hostinger control panel
-3. Go to File Manager
-4. Navigate to public_html folder
-5. Upload and extract the ZIP file
-6. Make sure these files are in public_html root:
-   ✓ index.php
-   ✓ index.html
-   ✓ .htaccess
-   ✓ assets/ folder
-   ✓ All other files
+1. Create MySQL database in Hostinger panel
+2. Upload all files to public_html folder  
+3. Import database.sql in phpMyAdmin
+4. Update config.php with database details
+5. Set uploads/ folder permission to 755
 
-🔧 FEATURES INCLUDED:
-✓ PHP backend for API calls
-✓ React SPA with routing
-✓ SEO optimized
-✓ Mobile responsive
-✓ Hindi/English support
-✓ Supabase integration ready
+📋 DETAILED SETUP GUIDE:
+👉 Read HOSTINGER-COMPLETE-SETUP.md for complete instructions
 
-🌐 AFTER UPLOAD:
-- Your site will be available at your domain
-- PHP API endpoints at: yoursite.com/?api=health
-- All React routes will work properly
+🔧 COMPLETE FEATURES INCLUDED:
+✅ Mistri profile creation & management
+✅ Video upload with validation
+✅ OTP verification system
+✅ Search & category filtering
+✅ Hindi/English language support
+✅ Mobile responsive design
+✅ SEO optimized pages
+✅ Complete MySQL database schema
+✅ Sample data included
+✅ Secure file uploads
+✅ Error handling & debugging
 
-📞 SUPPORT: Check deployment-info.json for build details
+💾 DATABASE SCHEMA:
+✅ Users, Mistris, Videos tables
+✅ OTP verification system
+✅ Categories with sample data
+✅ Jobs & Reviews system
+✅ Complete indexes for performance
+
+🌐 AFTER UPLOAD YOUR WEBSITE WILL HAVE:
+🔹 Professional home page
+🔹 Category-wise mistri browsing
+🔹 Video showcase feature
+🔹 Profile creation forms
+🔹 Mobile-friendly interface
+🔹 Fast loading & SEO optimized
+
+📞 SUPPORT: 
+- Check debug.php for system health
+- Read HOSTINGER-COMPLETE-SETUP.md for troubleshooting
+- All files include error handling & fallbacks
+
+🎯 READY FOR PRODUCTION USE!
 `;
 
     fs.writeFileSync('dist/DEPLOYMENT-INSTRUCTIONS.txt', instructions);
