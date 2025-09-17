@@ -130,39 +130,59 @@ if (isset($_GET['api'])) {
     
     <!-- Dynamic CSS and JS loading -->
     <?php
-    // Check if manifest.json exists (production build)
+    // Check for Vite manifest first (production build)
     $manifestPath = __DIR__ . '/.vite/manifest.json';
-    $assetsDir = __DIR__ . '/assets/';
+    $entryFile = '';
+    $imports = [];
     
     if (file_exists($manifestPath)) {
-        // Production mode - load from manifest
+        // Production build with manifest
         $manifest = json_decode(file_get_contents($manifestPath), true);
         
-        // Load CSS files
-        if (isset($manifest['index.html']['css'])) {
-            foreach ($manifest['index.html']['css'] as $cssFile) {
-                echo '<link rel="stylesheet" href="/' . $cssFile . '">' . "\n    ";
+        if (isset($manifest['index.html'])) {
+            // Load CSS files
+            if (isset($manifest['index.html']['css'])) {
+                foreach ($manifest['index.html']['css'] as $cssFile) {
+                    echo '<link rel="stylesheet" href="/' . $cssFile . '">' . "\n    ";
+                }
             }
-        }
-        
-        // Preload JS module
-        if (isset($manifest['index.html']['file'])) {
-            echo '<link rel="modulepreload" href="/' . $manifest['index.html']['file'] . '">' . "\n    ";
+            
+            // Set entry file
+            if (isset($manifest['index.html']['file'])) {
+                $entryFile = $manifest['index.html']['file'];
+            }
+            
+            // Load imports
+            if (isset($manifest['index.html']['imports'])) {
+                $imports = $manifest['index.html']['imports'];
+            }
         }
     } else {
         // Fallback: Check for built assets in assets directory
-        $cssFiles = glob($assetsDir . '*.css');
-        $jsFiles = glob($assetsDir . '*.js');
+        $assetsDir = __DIR__ . '/assets/';
         
-        if (!empty($cssFiles)) {
-            foreach ($cssFiles as $cssFile) {
-                $cssFile = basename($cssFile);
-                echo '<link rel="stylesheet" href="/assets/' . $cssFile . '">' . "\n    ";
+        if (is_dir($assetsDir)) {
+            // Find CSS files
+            $cssFiles = glob($assetsDir . '*.css');
+            if (!empty($cssFiles)) {
+                foreach ($cssFiles as $cssFile) {
+                    $cssFile = basename($cssFile);
+                    echo '<link rel="stylesheet" href="/assets/' . $cssFile . '">' . "\n    ";
+                }
             }
-        } else {
-            // Development mode - load from Vite dev server
-            echo '<script type="module" src="http://localhost:8080/@vite/client"></script>' . "\n    ";
-            echo '<script type="module" src="http://localhost:8080/src/main.tsx"></script>' . "\n    ";
+            
+            // Find JS files
+            $jsFiles = glob($assetsDir . '*.js');
+            if (!empty($jsFiles)) {
+                foreach ($jsFiles as $jsFile) {
+                    $jsFile = basename($jsFile);
+                    if (strpos($jsFile, 'index') !== false) {
+                        $entryFile = 'assets/' . $jsFile;
+                    } else {
+                        $imports[] = 'assets/' . $jsFile;
+                    }
+                }
+            }
         }
     }
     ?>
@@ -178,6 +198,9 @@ if (isset($_GET['api'])) {
         foreach ($imports as $importFile) {
             echo '<script type="module" src="/' . $importFile . '"></script>' . "\n    ";
         }
+    } else {
+        // Fallback script loading
+        echo '<script>console.log("No JS files found, checking if this is development mode...");</script>' . "\n    ";
     }
     ?>
     

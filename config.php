@@ -1,10 +1,17 @@
 <?php
 // Database configuration for Hostinger
 // Update these values with your Hostinger database details
-define('DB_HOST', 'localhost'); // Usually 'localhost' for Hostinger
-define('DB_NAME', 'u123456789_mistriadda'); // Your Hostinger database name
-define('DB_USER', 'u123456789_mistri'); // Your Hostinger database username
-define('DB_PASS', 'YourStrongPassword123!'); // Your database password
+// For Hostinger deployment - update these with your actual database details
+define('DB_HOST', 'localhost'); 
+define('DB_NAME', 'u123456789_mistriadda'); // Your actual Hostinger database name
+define('DB_USER', 'u123456789_mistri');     // Your actual Hostinger database username  
+define('DB_PASS', 'YourStrongPassword123!'); // Your actual database password
+
+// For local development (uncomment these and comment above for local testing)
+// define('DB_HOST', 'localhost');
+// define('DB_NAME', 'mistriadda_local');
+// define('DB_USER', 'root');
+// define('DB_PASS', '');
 
 // Alternative for local development
 // define('DB_HOST', 'localhost');

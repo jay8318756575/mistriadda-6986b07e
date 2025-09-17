@@ -70,6 +70,16 @@ try {
     } else {
         // Fallback to file storage
         $filename = PROFILE_DIR . $mistri_id . '.json';
+        
+        // Check if phone already exists in file storage
+        $files = glob(PROFILE_DIR . '*.json');
+        foreach ($files as $file) {
+            $existing_data = json_decode(file_get_contents($file), true);
+            if ($existing_data && $existing_data['phone'] === $profile_data['phone']) {
+                sendJSON(['error' => 'Phone number already exists'], 409);
+            }
+        }
+        
         if (file_put_contents($filename, json_encode($profile_data, JSON_PRETTY_PRINT))) {
             sendJSON([
                 'success' => true,
