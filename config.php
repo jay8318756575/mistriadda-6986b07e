@@ -110,6 +110,16 @@ function createTables() {
             FOREIGN KEY (mistri_id) REFERENCES mistris(id) ON DELETE CASCADE
         )");
         
+        // Create customers table
+        $pdo->exec("CREATE TABLE IF NOT EXISTS customers (
+            id VARCHAR(36) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            phone VARCHAR(20) NOT NULL UNIQUE,
+            location VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )");
+        
         // Create OTP table
         $pdo->exec("CREATE TABLE IF NOT EXISTS otp_verifications (
             id VARCHAR(36) PRIMARY KEY,
