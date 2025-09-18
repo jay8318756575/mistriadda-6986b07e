@@ -6,17 +6,18 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Orange theme design for Hostinger compatibility */
+    --background: 22 100% 52%; /* Orange background like screenshot */
+    --foreground: 0 0% 100%; /* White text on orange */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 0%; /* Black text on white cards */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 22 100% 52%; /* Orange primary */
+    --primary-foreground: 0 0% 100%; /* White text on orange */
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -99,5 +100,7 @@
 
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(135deg, #ff6b35, #f7931e); /* Orange gradient like screenshot */
+    min-height: 100vh;
   }
 }

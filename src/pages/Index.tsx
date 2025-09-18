@@ -20,7 +20,7 @@ import { Link } from 'react-router-dom';
 const Index = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [currentView, setCurrentView] = useState<'home' | 'search' | 'category'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'search' | 'category' | 'customer'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all cities');
@@ -266,11 +266,27 @@ const Index = () => {
   };
 
   const renderHomeView = () => (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <div className="text-center space-y-6 py-8">
-        <div className="relative">
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Top buttons exactly like screenshot */}
+        <div className="flex flex-col gap-4 mb-8">
+          <Button 
+            onClick={() => setCurrentView('customer')}
+            className="w-full py-4 text-lg font-bold bg-white/20 hover:bg-white/30 text-white border-none"
+          >
+            कस्टमर रजिस्टर करें
+          </Button>
+          <Button 
+            onClick={() => setShowVideoUpload(true)}
+            className="w-full py-4 text-lg font-bold bg-white/20 hover:bg-white/30 text-white border-none"
+          >
+            वीडियो अपलोड करें
+          </Button>
+        </div>
+
+        {/* Hero Section */}
+        <div className="text-center space-y-6 py-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             MistriAdda में आपका स्वागत है
           </h1>
           <div className="absolute -top-4 -right-4 animate-bounce">
@@ -401,37 +417,61 @@ const Index = () => {
         onSearch={handleSearch}
       />
       
-      <div>
-        <h2 className="text-3xl font-bold text-center mb-8">
-          <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-            मिस्त्री की श्रेणियां
-          </span>
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((category) => (
-            <CategoryCard
+        {/* Categories Section - Like Screenshot */}
+        <div className="space-y-6">
+          {categories.slice(0, 6).map((category) => (
+            <div 
               key={category.id}
-              category={category}
-              onClick={handleCategoryClick}
-              className="transform hover:scale-105 transition-all duration-300 hover:shadow-2xl"
-            />
+              onClick={() => handleCategoryClick(category.id)}
+              className="bg-white rounded-2xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-2xl text-white">
+                    {category.id === 'electrician' ? '⚡' : 
+                     category.id === 'plumber' ? '🔧' :
+                     category.id === 'painter' ? '🎨' :
+                     category.id === 'carpenter' ? '🔨' :
+                     category.id === 'mason' ? '🧱' :
+                     category.id === 'mechanic' ? '⚙️' :
+                     category.id === 'driver' ? '🚗' :
+                     category.id === 'cook' ? '👨‍🍳' :
+                     '🔧'}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">
+                    {category.nameHindi}
+                  </h3>
+                  <p className="text-gray-600">
+                    {`${category.nameHindi} की सभी सेवाएं`}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button 
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold"
+                >
+                  देखें
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
-      </div>
       
-      {/* CTA Section */}
-      <div className="text-center bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white p-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300">
-        <h3 className="text-3xl font-bold mb-4">
-          क्या आप मिस्त्री हैं?
-        </h3>
-        <p className="text-xl mb-8 opacity-90">
-          अपनी प्रोफाइल बनाएं और अधिक काम पाएं • फोटो और वीडियो के साथ
-        </p>
-        <Button 
-          onClick={() => setShowCreateDialog(true)}
-          className="bg-white text-orange-600 hover:bg-gray-100 text-xl px-12 py-4 rounded-full font-bold shadow-lg transform hover:scale-105 transition-all duration-200"
-        >
-          🚀 मिस्त्री के रूप में जुड़ें
+        {/* Join as Mistri CTA */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">
+            क्या आप मिस्त्री हैं?
+          </h3>
+          <p className="text-gray-600 mb-6">
+            अपनी प्रोफाइल बनाएं और अधिक काम पाएं
+          </p>
+          <Button 
+            onClick={() => setShowCreateDialog(true)}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-bold"
+          >
+            🚀 मिस्त्री के रूप में जुड़ें
         </Button>
       </div>
     </div>
@@ -552,6 +592,18 @@ const Index = () => {
         {currentView === 'home' && renderHomeView()}
         {currentView === 'search' && renderSearchResults()}
         {currentView === 'category' && renderCategoryView()}
+        {currentView === 'customer' && (
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">कस्टमर रजिस्ट्रेशन</h2>
+            <p className="text-gray-600 mb-4">यहाँ कस्टमर रजिस्ट्रेशन का फॉर्म होगा</p>
+            <Button 
+              onClick={() => setCurrentView('home')}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              वापस जाएं
+            </Button>
+          </div>
+        )}
       </main>
       
       <MistriProfileDialog
