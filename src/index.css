@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    /* Orange Theme for MistriAdda */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -15,8 +16,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary orange theme */
+    --primary: 20 91% 48%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -36,21 +38,19 @@
 
     --radius: 0.5rem;
 
+    /* Orange gradient backgrounds */
+    --gradient-primary: linear-gradient(135deg, hsl(20 91% 48%) 0%, hsl(20 91% 42%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(33 100% 96%) 0%, hsl(20 100% 96%) 100%);
+
+    /* Sidebar with orange theme */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 20 91% 48%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 20 91% 48%;
   }
 
   .dark {
@@ -99,5 +99,20 @@
 
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(20 91% 48%) 0%, hsl(20 91% 42%) 100%);
+    min-height: 100vh;
+  }
+  
+  /* Orange theme utility classes */
+  .bg-orange-gradient {
+    background: var(--gradient-primary);
+  }
+  
+  .text-orange-primary {
+    color: hsl(var(--primary));
+  }
+  
+  .border-orange-primary {
+    border-color: hsl(var(--primary));
   }
 }

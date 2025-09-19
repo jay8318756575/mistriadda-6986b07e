@@ -270,38 +270,38 @@ const Index = () => {
       {/* Hero Section */}
       <div className="text-center space-y-6 py-8">
         <div className="relative">
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            MistriAdda में आपका स्वागत है
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+            🔧 MistriAdda में आपका स्वागत है
           </h1>
           <div className="absolute -top-4 -right-4 animate-bounce">
-            <Star className="w-8 h-8 text-yellow-500" />
+            <Star className="w-8 h-8 text-yellow-300" />
           </div>
         </div>
-        <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-4xl mx-auto">
-          🔧 सभी प्रकार के मिस्त्री एक ही जगह • 🔍 आसान खोज • ✅ विश्वसनीय सेवा
+        <p className="text-xl md:text-2xl text-white/90 font-medium max-w-4xl mx-auto drop-shadow">
+          सभी प्रकार के मिस्त्री एक ही जगह • आसान खोज • विश्वसनीय सेवा
         </p>
         
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-6 rounded-xl shadow-lg hover:bg-white/30 transition-all">
             <Users className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">{allMistris.length}+</div>
-            <div className="text-sm">{t('mistri.count')}</div>
+            <div className="text-sm">मिस्त्री</div>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-6 rounded-xl shadow-lg hover:bg-white/30 transition-all">
             <MapPin className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">75+</div>
-            <div className="text-sm">{t('city.count')}</div>
+            <div className="text-sm">शहर</div>
           </div>
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-6 rounded-xl shadow-lg hover:bg-white/30 transition-all">
             <Award className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">14+</div>
-            <div className="text-sm">{t('category.count')}</div>
+            <div className="text-sm">श्रेणी</div>
           </div>
-          <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-6 rounded-xl shadow-lg hover:bg-white/30 transition-all">
             <Star className="w-8 h-8 mx-auto mb-2" />
             <div className="text-2xl font-bold">4.8★</div>
-            <div className="text-sm">{t('rating')}</div>
+            <div className="text-sm">रेटिंग</div>
           </div>
         </div>
       </div>

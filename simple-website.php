@@ -161,8 +161,11 @@ function getAllMistris() {
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             color: #333;
+            margin: 0;
+            padding: 0;
         }
         
         .container {

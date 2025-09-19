@@ -142,6 +142,8 @@ if (isset($_GET['api'])) {
         color: #333;
         background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         min-height: 100vh;
+        margin: 0;
+        padding: 0;
     }
     
     .container {
