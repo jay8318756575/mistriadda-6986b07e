@@ -128,6 +128,24 @@ if (isset($_GET['api'])) {
     }
     </script>
     
+    <!-- Import Tailwind CSS from CDN for Hostinger compatibility -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fff7ed',
+                            500: '#f97316',
+                            600: '#ea580c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
     <!-- Static CSS for better compatibility -->
     <style>
     * {
@@ -140,7 +158,7 @@ if (isset($_GET['api'])) {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         line-height: 1.6;
         color: #333;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
         min-height: 100vh;
         margin: 0;
         padding: 0;

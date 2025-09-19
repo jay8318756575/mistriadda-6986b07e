@@ -106,11 +106,14 @@ function copyDirectory(src, dest) {
 function createOptimizedIndexPHP() {
     const indexPHP = `<?php
 // Optimized index.php for Hostinger deployment
-// Serves React build or PHP fallback
+// Serves React build with CSS consistency
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// Set content type
+header('Content-Type: text/html; charset=UTF-8');
 
 // Check if this is an API request
 if (isset($_GET['api'])) {
@@ -125,11 +128,31 @@ if ($reactBuildExists && !isset($_GET['php'])) {
     // Serve React build
     $html = file_get_contents('index.html');
     
-    // Add PHP backend integration
-    $html = str_replace('<title>', '<title>', $html);
+    // Add Tailwind CDN for consistent styling
+    $tailwindCDN = '<script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: "#fff7ed",
+                            500: "#f97316", 
+                            600: "#ea580c",
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important; }
+        .bg-orange-gradient { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important; }
+    </style>';
     
-    // Ensure UTF-8 encoding
-    header('Content-Type: text/html; charset=UTF-8');
+    // Inject Tailwind before closing head tag
+    $html = str_replace('</head>', $tailwindCDN . '</head>', $html);
+    
     echo $html;
 } else {
     // Fallback to PHP version
