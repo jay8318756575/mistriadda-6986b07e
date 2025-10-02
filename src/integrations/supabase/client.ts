@@ -1,5 +1,11 @@
-// PHP API client for local backend
+// PHP API client - automatically detects if running on localhost or production
 const API_BASE = window.location.origin;
+
+// Enable console logging for debugging
+const DEBUG = true;
+const log = (...args: any[]) => {
+  if (DEBUG) console.log('[PHP Client]', ...args);
+};
 
 // Fallback to sample data when PHP backend is not available
 import { sampleMistris } from '@/data/sample-mistris';
@@ -29,202 +35,150 @@ export class PHPClient {
     }
   }
   async saveProfile(profileData: any) {
+    log('Saving profile...', profileData);
+    
     try {
       const response = await fetch(`${API_BASE}/save_profile.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData)
       });
-      const data = await response.json();
       
-      if (!isValidJSONResponse(data)) {
-        throw new Error('Invalid response from server');
+      log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      log('Profile saved successfully:', data);
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Profile save failed');
       }
       
       return data;
     } catch (error) {
-      console.error('Save profile failed:', error);
+      console.error('❌ Save profile failed:', error);
       
-      // Provide demo mode fallback - simulate successful profile creation
-      const demoProfile = {
-        id: 'demo_' + Date.now(),
-        name: profileData.name,
-        category: profileData.category,
-        location: profileData.location,
-        phone: profileData.phone,
-        experience_years: profileData.experience_years || 0,
-        rating: 4.5,
-        description: profileData.description || '',
-        profile_image: profileData.profile_image || '',
-        is_verified: false,
-        created_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage for demo mode persistence
-      const existingMistris = JSON.parse(localStorage.getItem(DEMO_MISTRIS_KEY) || '[]');
-      existingMistris.push(demoProfile);
-      localStorage.setItem(DEMO_MISTRIS_KEY, JSON.stringify(existingMistris));
-      
-      return { 
-        success: true, 
-        message: 'डेमो मोड में प्रोफाइल बनाई गई',
-        data: demoProfile
-      };
+      // Show error to user - don't silently fall back to demo mode
+      throw new Error('सर्वर से कनेक्ट नहीं हो पा रहा। कृपया बाद में कोशिश करें।');
     }
   }
 
   async sendOTP(phone: string, action: 'send' | 'verify', otp?: string) {
+    log('OTP operation:', action, 'for phone:', phone);
+    
     try {
       const response = await fetch(`${API_BASE}/send_otp.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, action, otp })
       });
-      const data = await response.json();
       
-      if (!isValidJSONResponse(data)) {
-        throw new Error('Invalid response from server');
+      log('OTP response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      log('OTP operation result:', data);
+      
+      if (!data.success) {
+        throw new Error(data.error || 'OTP operation failed');
       }
       
       return data;
     } catch (error) {
-      console.error('OTP operation failed:', error);
+      console.error('❌ OTP operation failed:', error);
       
-      // Provide demo mode fallback for OTP
+      // For demo purposes only - in production, this should fail
       if (action === 'send') {
+        console.warn('⚠️ Using demo OTP mode');
         return {
           success: true,
-          message: 'डेमो मोड में OTP भेजा गया',
-          otp: '123456', // Demo OTP
-          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+          message: 'डेमो मोड: कोई भी 6 अंक का OTP डालें',
+          otp: '123456'
         };
       } else if (action === 'verify') {
         // Accept any 6-digit OTP in demo mode
         if (otp && otp.length === 6) {
+          console.warn('⚠️ Demo mode: OTP verified');
           return {
             success: true,
             message: 'डेमो मोड में OTP सत्यापित',
             verified: true
           };
-        } else {
-          return {
-            success: false,
-            error: 'कृपया 6 अंकों का OTP डालें'
-          };
         }
       }
       
-      return { 
-        success: false, 
-        error: 'OTP सेवा में समस्या है। कृपया बाद में कोशिश करें।' 
-      };
+      throw new Error('सर्वर से कनेक्ट नहीं हो पा रहा। कृपया बाद में कोशिश करें।');
     }
   }
 
   async uploadVideo(formData: FormData) {
+    log('Uploading video...');
+    
     try {
-      // First check if mistri_id exists
-      const mistriId = formData.get('mistri_id');
-      if (mistriId) {
-        const mistrisResult = await this.getMistris();
-        if (mistrisResult.success && mistrisResult.data) {
-          const mistriExists = mistrisResult.data.some((m: any) => m.id === mistriId);
-          if (!mistriExists) {
-            return { 
-              success: false, 
-              error: 'मिस्त्री प्रोफाइल नहीं मिली। पहले अपनी प्रोफाइल बनाएं।' 
-            };
-          }
-        }
-      }
-      
-      const response = await fetch(`${API_BASE}/upload.php`, {
+      const response = await fetch(`${API_BASE}/upload_video.php`, {
         method: 'POST',
         body: formData
       });
-      const data = await response.json();
       
-      if (!isValidJSONResponse(data)) {
-        throw new Error('Invalid response from server');
+      log('Upload response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      log('Video uploaded successfully:', data);
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Video upload failed');
       }
       
       return data;
     } catch (error) {
-      console.error('Video upload failed:', error);
+      console.error('❌ Video upload failed:', error);
       
-      // Demo mode fallback for video upload
-      const videoFile = formData.get('video') as File;
-      const videoId = 'demo_video_' + Date.now();
-      
-      // Convert video file to base64 for persistent storage in demo mode
-      let videoUrl = 'demo_video.mp4';
-      if (videoFile) {
-        try {
-          const reader = new FileReader();
-          const base64Promise = new Promise<string>((resolve) => {
-            reader.onload = () => {
-              const base64String = reader.result as string;
-              resolve(base64String);
-            };
-          });
-          reader.readAsDataURL(videoFile);
-          videoUrl = await base64Promise;
-        } catch (error) {
-          console.error('Error converting video to base64:', error);
-          // Fallback to blob URL (temporary)
-          videoUrl = URL.createObjectURL(videoFile);
-        }
-      }
-      
-      const demoVideo = {
-        id: videoId,
-        title: formData.get('title'),
-        description: formData.get('description'),
-        mistri_id: formData.get('mistri_id'),
-        video_url: videoUrl,
-        views_count: 0,
-        likes_count: 0,
-        is_active: true,
-        created_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage for demo mode persistence
-      const existingVideos = JSON.parse(localStorage.getItem(DEMO_VIDEOS_KEY) || '[]');
-      existingVideos.push(demoVideo);
-      localStorage.setItem(DEMO_VIDEOS_KEY, JSON.stringify(existingVideos));
-      
-      return { 
-        success: true, 
-        message: 'डेमो मोड में वीडियो अपलोड हो गया',
-        data: demoVideo
-      };
+      // Show error to user - don't silently fall back to demo mode
+      throw new Error('सर्वर से कनेक्ट नहीं हो पा रहा। कृपया बाद में कोशिश करें।');
     }
   }
 
   async getMistris(filters?: { category?: string; location?: string; limit?: number }) {
+    log('Fetching mistris...', filters);
+    
     try {
       const params = new URLSearchParams();
       if (filters?.category) params.append('category', filters.category);
       if (filters?.location) params.append('location', filters.location);
       if (filters?.limit) params.append('limit', filters.limit.toString());
       
-      const response = await fetch(`${API_BASE}/api.php?endpoint=mistris&${params}`);
-      const data = await response.json();
+      const url = `${API_BASE}/api.php?endpoint=mistris${params.toString() ? '&' + params.toString() : ''}`;
+      log('Fetching from:', url);
       
-      // Check if we got valid JSON response
-      if (!isValidJSONResponse(data)) {
-        throw new Error('Invalid response from server');
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      log('Mistris fetched:', data);
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch mistris');
       }
       
       return data;
     } catch (error) {
-      console.error('PHP API failed, using sample data:', error);
+      console.warn('⚠️ PHP API failed, using fallback data:', error);
       
-      // Get demo mode data from localStorage
-      const demoMistris = JSON.parse(localStorage.getItem(DEMO_MISTRIS_KEY) || '[]');
-      
-      // Combine sample data with demo data
-      let filteredData = [...sampleMistris, ...demoMistris];
+      // Fallback to sample data for display purposes
+      let filteredData = [...sampleMistris];
       
       if (filters?.category && filters.category !== 'all') {
         filteredData = filteredData.filter(m => m.category === filters.category);
@@ -243,35 +197,35 @@ export class PHPClient {
   }
 
   async getVideos(filters?: { mistri_id?: string; limit?: number }) {
+    log('Fetching videos...', filters);
+    
     try {
       const params = new URLSearchParams();
       if (filters?.mistri_id) params.append('mistri_id', filters.mistri_id);
       if (filters?.limit) params.append('limit', filters.limit.toString());
       
-      const response = await fetch(`${API_BASE}/api.php?endpoint=videos&${params}`);
-      const data = await response.json();
+      const url = `${API_BASE}/api.php?endpoint=videos${params.toString() ? '&' + params.toString() : ''}`;
+      log('Fetching from:', url);
       
-      if (!isValidJSONResponse(data)) {
-        throw new Error('Invalid response from server');
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      log('Videos fetched:', data);
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch videos');
       }
       
       return data;
     } catch (error) {
-      console.error('PHP API failed for videos:', error);
+      console.warn('⚠️ PHP API failed for videos:', error);
       
-      // Get demo videos from localStorage
-      const demoVideos = JSON.parse(localStorage.getItem(DEMO_VIDEOS_KEY) || '[]');
-      
-      // Filter videos if mistri_id is provided
-      let filteredVideos = demoVideos;
-      if (filters?.mistri_id) {
-        filteredVideos = demoVideos.filter((v: any) => v.mistri_id === filters.mistri_id);
-      }
-      if (filters?.limit) {
-        filteredVideos = filteredVideos.slice(0, filters.limit);
-      }
-      
-      return { success: true, data: filteredVideos };
+      // Return empty array as fallback
+      return { success: true, data: [] };
     }
   }
 

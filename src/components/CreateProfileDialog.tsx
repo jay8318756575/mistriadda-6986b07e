@@ -155,31 +155,27 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     
     try {
       // Prepare data for insertion
-      const insertData = {
+      const profileData = {
         name: formData.name.trim(),
-        category: formData.category,
+        phone: formData.mobile.trim(),
         location: formData.location,
-        mobile: formData.mobile.trim(),
-        experience: parseInt(formData.experience),
-        rating: Number((4.5 + Math.random() * 0.5).toFixed(1)),
-        description: formData.description.trim() || null,
+        category: formData.category,
+        experience_years: parseInt(formData.experience),
+        description: formData.description.trim() || '',
+        profile_image: '',
         aadhar_number: formData.aadharNumber.trim(),
-        aadhar_address: formData.aadharAddress.trim(),
-        phone_verified: true, // Since OTP was verified
-        verification_status: 'pending' as const,
-        admin_approval_status: 'pending' as const
+        aadhar_address: formData.aadharAddress.trim()
       };
 
-      console.log('Data to be inserted:', insertData);
+      console.log('Sending profile data to backend:', profileData);
 
       // Save using PHP API
-      const result = await phpClient.saveProfile(insertData);
+      const result = await phpClient.saveProfile(profileData);
 
-      console.log('PHP API response:', result);
+      console.log('Backend response:', result);
 
       if (!result.success) {
-        console.error('Profile creation error:', result.error);
-        throw new Error(`प्रोफाइल बनाने में समस्या: ${result.error}`);
+        throw new Error(result.error || 'Profile creation failed');
       }
 
       if (result.data) {
@@ -189,14 +185,18 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
           name: result.data.name,
           category: result.data.category,
           location: result.data.location,
-          mobile: result.data.mobile,
-          experience: result.data.experience,
-          rating: result.data.rating,
+          mobile: result.data.phone,
+          experience: result.data.experience_years || parseInt(formData.experience),
+          rating: result.data.rating || 4.5,
           description: result.data.description
         };
 
-        console.log('=== PROFILE CREATED SUCCESSFULLY ===');
-        console.log('New profile:', newProfile);
+        console.log('✅ Profile created successfully:', newProfile);
+        
+        toast({
+          title: "सफलता! 🎉",
+          description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
+        });
         
         // Call the callback to add profile to the list
         onProfileCreated(newProfile);
@@ -207,7 +207,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         setTimeout(() => {
           onClose();
           resetForm();
-        }, 3000);
+        }, 2000);
       }
       
     } catch (error) {
@@ -225,6 +225,9 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         description: errorMessage,
         variant: "destructive"
       });
+      
+      // Go back to form step so user can try again
+      setStep('form');
     }
   };
 

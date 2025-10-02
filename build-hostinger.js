@@ -5,6 +5,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 console.log('🚀 Building MistriAdda for Hostinger deployment...\n');
+console.log('इससे website Hostinger पर upload के लिए तैयार होगी\n');
 
 try {
     // Step 1: Clean previous builds
@@ -37,20 +38,27 @@ try {
         'upload_video.php',
         'verify_otp.php',
         'api.php',
+        'auth.php',
+        'customer_register.php',
+        'driver_register.php',
         'get_data.php',
         'simple-website.php',
         'php-check.php',
+        'check_php.php',
         'database.sql'
     ];
 
+    let copiedCount = 0;
     phpFiles.forEach(file => {
         if (fs.existsSync(file)) {
             fs.copyFileSync(file, path.join('hostinger-build', file));
             console.log(`   ✅ Copied ${file}`);
+            copiedCount++;
         } else {
             console.log(`   ⚠️  Missing ${file}`);
         }
     });
+    console.log(`   📦 Total ${copiedCount} PHP files copied\n`);
 
     // Step 6: Copy main index.php (modified for React build)
     console.log('6️⃣ Creating optimized index.php...');
@@ -72,13 +80,15 @@ try {
         fs.copyFileSync('HOSTINGER-FINAL-SETUP.md', path.join('hostinger-build', 'SETUP-GUIDE.md'));
     }
 
-    console.log('\n✅ Build completed successfully!');
-    console.log('\n📦 Hostinger deployment package created in: hostinger-build/');
-    console.log('\n🚀 Next steps:');
-    console.log('   1. Update database credentials in hostinger-build/config.php');
-    console.log('   2. Upload all files from hostinger-build/ to your Hostinger public_html/');
-    console.log('   3. Visit your domain to test the website');
-    console.log('   4. Use php-check.php to verify environment');
+    console.log('\n✅ Build completed successfully! बिल्ड पूरा हुआ!');
+    console.log('\n📦 Hostinger deployment package: hostinger-build/');
+    console.log('\n🚀 अब Hostinger पर upload करने के लिए:');
+    console.log('   1. hostinger-build/ folder खोलें');
+    console.log('   2. सभी files select करें (folder को नहीं, अंदर की files को)');
+    console.log('   3. Hostinger File Manager में public_html/ में upload करें');
+    console.log('   4. config.php में database details भरें');
+    console.log('   5. अपनी website खोलें और test करें');
+    console.log('\n📚 Setup guide: HOSTINGER-QUICK-SETUP.md देखें');
 
 } catch (error) {
     console.error('❌ Build failed:', error.message);
