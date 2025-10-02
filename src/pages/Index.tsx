@@ -373,19 +373,22 @@ const Index = () => {
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium">📌 सूचना:</p>
-                <p className="text-sm text-blue-700 mt-1">
-                  PHP backend उपलब्ध नहीं होने के कारण वीडियो अपलोड फ़ीचर अस्थायी रूप से निष्क्रिय है।
-                </p>
-                <p className="text-sm text-blue-700 mt-1">
-                  आप अभी भी सैंपल डेटा देख सकते हैं और अन्य फ़ीचर का उपयोग कर सकते हैं।
-                </p>
-              </div>
-              <VideoUpload 
-                mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
-                onVideoUploaded={() => setShowVideoUpload(false)}
-              />
+              {phpBackendStatus === 'unavailable' ? (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">📌 सूचना:</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    PHP backend उपलब्ध नहीं होने के कारण वीडियो अपलोड फ़ीचर अस्थायी रूप से निष्क्रिय है।
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    आप अभी भी सैंपल डेटा देख सकते हैं और अन्य फ़ीचर का उपयोग कर सकते हैं।
+                  </p>
+                </div>
+              ) : (
+                <VideoUpload 
+                  mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
+                  onVideoUploaded={() => setShowVideoUpload(false)}
+                />
+              )}
             </div>
           )}
         </CardContent>
