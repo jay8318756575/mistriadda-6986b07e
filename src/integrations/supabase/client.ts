@@ -121,22 +121,27 @@ export class PHPClient {
     log('Uploading video...');
     
     try {
-      const response = await fetch(`${API_BASE}/upload_video.php`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      log('Upload response status:', response.status);
+      let response;
+      try {
+        response = await fetch(`${API_BASE}/upload_video.php`, {
+          method: 'POST',
+          body: formData
+        });
+      } catch (e) {
+        response = await fetch(`${API_BASE}/upload.php`, {
+          method: 'POST',
+          body: formData
+        });
+      }
       
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+        throw new Error(`सर्वर error: ${response.status}`);
       }
       
       const data = await response.json();
-      log('Video uploaded successfully:', data);
       
       if (!data.success) {
-        throw new Error(data.error || 'Video upload failed');
+        throw new Error(data.error || 'Upload failed');
       }
       
       return data;

@@ -42,6 +42,14 @@ const Header = ({ onCreateProfile }: HeaderProps) => {
               होम
             </Link>
             <Link 
+              to="/services" 
+              className={`text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                isActive('/services') ? 'text-orange-600' : ''
+              }`}
+            >
+              सेवाएं
+            </Link>
+            <Link 
               to="/videos" 
               className={`flex items-center space-x-1 text-gray-700 hover:text-orange-600 font-medium transition-colors ${
                 isActive('/videos') ? 'text-orange-600' : ''
@@ -49,6 +57,22 @@ const Header = ({ onCreateProfile }: HeaderProps) => {
             >
               <Video className="w-4 h-4" />
               <span>वीडियो</span>
+            </Link>
+            <Link 
+              to="/about" 
+              className={`text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                isActive('/about') ? 'text-orange-600' : ''
+              }`}
+            >
+              हमारे बारे में
+            </Link>
+            <Link 
+              to="/contact" 
+              className={`text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                isActive('/contact') ? 'text-orange-600' : ''
+              }`}
+            >
+              संपर्क करें
             </Link>
             <LanguageSelector />
             {onCreateProfile && (
@@ -89,6 +113,15 @@ const Header = ({ onCreateProfile }: HeaderProps) => {
                 होम
               </Link>
               <Link 
+                to="/services" 
+                className={`block text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                  isActive('/services') ? 'text-orange-600' : ''
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                सेवाएं
+              </Link>
+              <Link 
                 to="/videos" 
                 className={`flex items-center space-x-1 text-gray-700 hover:text-orange-600 font-medium transition-colors ${
                   isActive('/videos') ? 'text-orange-600' : ''
@@ -97,6 +130,24 @@ const Header = ({ onCreateProfile }: HeaderProps) => {
               >
                 <Video className="w-4 h-4" />
                 <span>वीडियो</span>
+              </Link>
+              <Link 
+                to="/about" 
+                className={`block text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                  isActive('/about') ? 'text-orange-600' : ''
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                हमारे बारे में
+              </Link>
+              <Link 
+                to="/contact" 
+                className={`block text-gray-700 hover:text-orange-600 font-medium transition-colors ${
+                  isActive('/contact') ? 'text-orange-600' : ''
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                संपर्क करें
               </Link>
               <div className="pt-2">
                 <LanguageSelector />
