@@ -20,7 +20,12 @@ try {
 
     // Build the React app
     console.log('📦 Building React app...');
-    execSync('npm run build', { stdio: 'inherit' });
+    try {
+        execSync('npm run build', { stdio: 'inherit' });
+    } catch (buildError) {
+        console.error('❌ React build failed. Make sure all dependencies are installed.');
+        throw buildError;
+    }
 
     // Copy PHP files to dist
     console.log('📋 Copying PHP files...');
@@ -99,9 +104,15 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
     // Create deployment info
     console.log('📄 Creating deployment info...');
+    let packageVersion = '1.0.0';
+    try {
+        packageVersion = require('./package.json').version || '1.0.0';
+    } catch (e) {
+        console.log('⚠️  Could not read package.json version, using default');
+    }
     const deploymentInfo = {
         buildDate: new Date().toISOString(),
-        version: require('./package.json').version || '1.0.0',
+        version: packageVersion,
         platform: 'Hostinger',
         type: 'Complete PHP + MySQL + React Website',
         features: [
