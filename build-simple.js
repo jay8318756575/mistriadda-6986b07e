@@ -20,8 +20,14 @@ try {
 
     // Step 2: Build React app
     console.log('📦 Step 2/5: Building React app...');
-    execSync('npm run build', { stdio: 'inherit' });
-    console.log('✅ React build complete\n');
+    try {
+        execSync('npm run build', { stdio: 'inherit' });
+        console.log('✅ React build complete\n');
+    } catch (buildError) {
+        console.error('❌ React build failed.');
+        console.error('Make sure dependencies are installed: npm install');
+        throw buildError;
+    }
 
     // Step 3: Copy PHP files
     console.log('📋 Step 3/5: Copying PHP files...');
