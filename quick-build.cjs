@@ -22,8 +22,10 @@ try {
     // Copy essential PHP files
     console.log('📋 Copying files...');
     const files = [
-        'index.php', 'config.php', 'save_profile.php', 'send_otp.php',
+        'config.php', 'save_profile.php', 'send_otp.php',
         'upload.php', 'upload_video.php', 'verify_otp.php', 
+        'api.php', 'auth.php', 'customer_register.php',
+        'driver_register.php', 'get_data.php',
         'database.sql', '.htaccess'
     ];
     
@@ -32,6 +34,29 @@ try {
             fs.copyFileSync(file, `dist/${file}`);
         }
     });
+
+    // Create optimized index.php for Hostinger
+    const indexPHP = `<?php
+// MistriAdda - Hostinger Deployment
+// Serves React build and handles backend APIs
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Handle API requests
+if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
+    require_once 'api.php';
+    exit;
+}
+
+// Serve React build directly
+if (file_exists('index.html')) {
+    readfile('index.html');
+} else {
+    echo "Build files not found.";
+}
+?>`;
+    fs.writeFileSync('dist/index.php', indexPHP);
 
     // Create uploads folders
     ['uploads', 'uploads/videos', 'uploads/profiles'].forEach(dir => {

@@ -29,10 +29,10 @@ try {
         throw buildError;
     }
 
-    // Step 3: Copy PHP files
+    // Copy PHP files
     console.log('📋 Step 3/5: Copying PHP files...');
     const phpFiles = [
-        'index.php', 'config.php', 'save_profile.php', 'send_otp.php',
+        'config.php', 'save_profile.php', 'send_otp.php',
         'upload.php', 'upload_video.php', 'api.php', 'auth.php', 
         'firebase_otp.php', 'verify_otp.php', 'driver_register.php',
         'customer_register.php', 'schema.sql', 'debug.php', 
@@ -47,6 +47,31 @@ try {
         }
     });
     console.log(`✅ Copied ${copiedCount} PHP files\n`);
+
+    // Create optimized index.php for Hostinger
+    console.log('📄 Creating index.php...');
+    const indexPHP = `<?php
+// MistriAdda - Hostinger Deployment
+// Serves React build and handles backend APIs
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Handle API requests
+if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
+    require_once 'api.php';
+    exit;
+}
+
+// Serve React build directly
+if (file_exists('index.html')) {
+    readfile('index.html');
+} else {
+    echo "Build files not found.";
+}
+?>`;
+    fs.writeFileSync('dist/index.php', indexPHP);
+    console.log('✅ Created index.php\n');
 
     // Step 4: Create upload directories
     console.log('📁 Step 4/5: Creating upload directories...');
