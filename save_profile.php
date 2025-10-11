@@ -1,10 +1,15 @@
 <?php
 require_once 'config.php';
 
-header('Content-Type: application/json');
+// Enable error logging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to user
+ini_set('log_errors', 1);
+
+header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendJSON(['error' => 'Only POST method allowed'], 405);
+    sendJSON(['success' => false, 'error' => 'Only POST method allowed'], 405);
 }
 
 try {
@@ -19,7 +24,7 @@ try {
     $required = ['name', 'phone', 'location', 'category'];
     foreach ($required as $field) {
         if (empty($input[$field])) {
-            sendJSON(['error' => "Field '$field' is required"], 400);
+            sendJSON(['success' => false, 'error' => "Field '$field' is required"], 400);
         }
     }
     
@@ -62,10 +67,11 @@ try {
                 'data' => $profile_data
             ]);
         } catch(PDOException $e) {
+            error_log('Database error in save_profile: ' . $e->getMessage());
             if ($e->getCode() == 23000) { // Duplicate entry
-                sendJSON(['error' => 'Phone number already exists'], 409);
+                sendJSON(['success' => false, 'error' => 'Phone number already exists'], 409);
             }
-            throw $e;
+            sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
         }
     } else {
         // Fallback to file storage
@@ -76,7 +82,7 @@ try {
         foreach ($files as $file) {
             $existing_data = json_decode(file_get_contents($file), true);
             if ($existing_data && $existing_data['phone'] === $profile_data['phone']) {
-                sendJSON(['error' => 'Phone number already exists'], 409);
+                sendJSON(['success' => false, 'error' => 'Phone number already exists'], 409);
             }
         }
         
@@ -88,12 +94,12 @@ try {
                 'data' => $profile_data
             ]);
         } else {
-            sendJSON(['error' => 'Failed to save profile'], 500);
+            sendJSON(['success' => false, 'error' => 'Failed to save profile to file'], 500);
         }
     }
     
 } catch(Exception $e) {
     error_log('Profile save error: ' . $e->getMessage());
-    sendJSON(['error' => 'Internal server error'], 500);
+    sendJSON(['success' => false, 'error' => 'Internal server error: ' . $e->getMessage()], 500);
 }
 ?>

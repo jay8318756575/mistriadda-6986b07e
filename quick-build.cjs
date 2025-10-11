@@ -20,13 +20,23 @@ try {
     execSync('npm run build', { stdio: 'inherit' });
 
     // Copy essential PHP files
-    console.log('📋 Copying files...');
+    console.log('📋 Copying PHP and config files...');
     const files = [
-        'config.php', 'save_profile.php', 'send_otp.php',
-        'upload.php', 'upload_video.php', 'verify_otp.php', 
-        'api.php', 'auth.php', 'customer_register.php',
-        'driver_register.php', 'get_data.php',
-        'database.sql', '.htaccess'
+        'config.php', 
+        'save_profile.php', 
+        'send_otp.php',
+        'verify_otp.php',
+        'upload.php', 
+        'upload_video.php',  
+        'api.php', 
+        'auth.php', 
+        'customer_register.php',
+        'driver_register.php', 
+        'get_data.php',
+        'firebase_otp.php',
+        'database.sql',
+        'schema.sql',
+        '.htaccess'
     ];
     
     files.forEach(file => {

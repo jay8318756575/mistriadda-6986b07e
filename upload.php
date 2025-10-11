@@ -1,16 +1,35 @@
 <?php
 require_once 'config.php';
 
-header('Content-Type: application/json');
+// Enable error logging
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendJSON(['error' => 'Only POST method allowed'], 405);
+    sendJSON(['success' => false, 'error' => 'Only POST method allowed'], 405);
 }
 
 try {
     // Check if file was uploaded
-    if (!isset($_FILES['video']) || $_FILES['video']['error'] !== UPLOAD_ERR_OK) {
-        sendJSON(['error' => 'No video file uploaded or upload error'], 400);
+    if (!isset($_FILES['video'])) {
+        sendJSON(['success' => false, 'error' => 'No video file provided'], 400);
+    }
+    
+    if ($_FILES['video']['error'] !== UPLOAD_ERR_OK) {
+        $upload_errors = [
+            UPLOAD_ERR_INI_SIZE => 'File too large (server limit)',
+            UPLOAD_ERR_FORM_SIZE => 'File too large (form limit)',
+            UPLOAD_ERR_PARTIAL => 'File partially uploaded',
+            UPLOAD_ERR_NO_FILE => 'No file uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'No temporary directory',
+            UPLOAD_ERR_CANT_WRITE => 'Cannot write to disk',
+            UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
+        ];
+        $error_msg = $upload_errors[$_FILES['video']['error']] ?? 'Unknown upload error';
+        sendJSON(['success' => false, 'error' => $error_msg], 400);
     }
     
     // Get form data
@@ -20,7 +39,7 @@ try {
     
     // Validate required fields
     if (empty($mistri_id) || empty($title)) {
-        sendJSON(['error' => 'Mistri ID and title are required'], 400);
+        sendJSON(['success' => false, 'error' => 'Mistri ID and title are required'], 400);
     }
     
     // Check if mistri exists
@@ -41,7 +60,7 @@ try {
     }
     
     if (!$mistri_exists) {
-        sendJSON(['error' => 'Mistri profile not found'], 404);
+        sendJSON(['success' => false, 'error' => 'Mistri profile not found'], 404);
     }
     
     $video_file = $_FILES['video'];
@@ -51,10 +70,13 @@ try {
     
     // No file size restrictions - allow videos of any length
     
-    // Validate file type
-    $allowed_types = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm'];
-    if (!in_array($file_type, $allowed_types)) {
-        sendJSON(['error' => 'Invalid file type. Only video files allowed'], 400);
+    // Validate file type - be more lenient with MIME types
+    $allowed_types = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+    $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+    $allowed_extensions = ['mp4', 'avi', 'mov', 'wmv', 'webm'];
+    
+    if (!in_array($file_type, $allowed_types) && !in_array($file_extension, $allowed_extensions)) {
+        sendJSON(['success' => false, 'error' => 'Invalid file type. Only video files (MP4, AVI, MOV, WMV, WEBM) allowed'], 400);
     }
     
     // Generate unique filename
@@ -65,7 +87,8 @@ try {
     
     // Move uploaded file
     if (!move_uploaded_file($video_file['tmp_name'], $upload_path)) {
-        sendJSON(['error' => 'Failed to upload video file'], 500);
+        error_log('Failed to move uploaded file from ' . $video_file['tmp_name'] . ' to ' . $upload_path);
+        sendJSON(['success' => false, 'error' => 'Failed to save video file. Check uploads folder permissions.'], 500);
     }
     
     // Create video record
@@ -96,16 +119,22 @@ try {
             ]);
         } catch(PDOException $e) {
             // Delete uploaded file on database error
-            unlink($upload_path);
-            throw $e;
+            if (file_exists($upload_path)) {
+                unlink($upload_path);
+            }
+            error_log('Database error in upload: ' . $e->getMessage());
+            sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
         }
     } else {
         // Fallback to file storage
         $video_record_file = VIDEO_DIR . $video_id . '_metadata.json';
         if (!file_put_contents($video_record_file, json_encode($video_data, JSON_PRETTY_PRINT))) {
             // Delete uploaded file on error
-            unlink($upload_path);
-            sendJSON(['error' => 'Failed to save video metadata'], 500);
+            if (file_exists($upload_path)) {
+                unlink($upload_path);
+            }
+            error_log('Failed to save video metadata to ' . $video_record_file);
+            sendJSON(['success' => false, 'error' => 'Failed to save video metadata'], 500);
         }
     }
     
@@ -118,6 +147,6 @@ try {
     
 } catch(Exception $e) {
     error_log('Video upload error: ' . $e->getMessage());
-    sendJSON(['error' => 'Internal server error'], 500);
+    sendJSON(['success' => false, 'error' => 'Internal server error: ' . $e->getMessage()], 500);
 }
 ?>

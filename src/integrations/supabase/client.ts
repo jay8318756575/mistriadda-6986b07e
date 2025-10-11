@@ -40,28 +40,40 @@ export class PHPClient {
     try {
       const response = await fetch(`${API_BASE}/save_profile.php`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(profileData)
       });
       
       log('Response status:', response.status);
       
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+      const text = await response.text();
+      log('Raw response:', text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('❌ Invalid JSON response:', text);
+        throw new Error('सर्वर से गलत जवाब मिला। कृपया फिर से कोशिश करें।');
       }
       
-      const data = await response.json();
-      log('Profile saved successfully:', data);
-      
-      if (!data.success) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Profile save failed');
       }
       
+      log('Profile saved successfully:', data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Save profile failed:', error);
       
-      // Show error to user - don't silently fall back to demo mode
+      // Show specific error message from server if available
+      if (error.message && error.message !== 'Failed to fetch') {
+        throw error;
+      }
+      
       throw new Error('सर्वर से कनेक्ट नहीं हो पा रहा। कृपया बाद में कोशिश करें।');
     }
   }
@@ -119,36 +131,47 @@ export class PHPClient {
 
   async uploadVideo(formData: FormData) {
     log('Uploading video...');
+    log('FormData contents:', {
+      mistri_id: formData.get('mistri_id'),
+      title: formData.get('title'),
+      description: formData.get('description'),
+      video: formData.get('video')
+    });
     
     try {
-      let response;
+      // Try upload.php first (simpler and more reliable)
+      let response = await fetch(`${API_BASE}/upload.php`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      log('Upload response status:', response.status);
+      
+      const text = await response.text();
+      log('Raw upload response:', text);
+      
+      let data;
       try {
-        response = await fetch(`${API_BASE}/upload_video.php`, {
-          method: 'POST',
-          body: formData
-        });
+        data = JSON.parse(text);
       } catch (e) {
-        response = await fetch(`${API_BASE}/upload.php`, {
-          method: 'POST',
-          body: formData
-        });
+        console.error('❌ Invalid JSON response from upload:', text);
+        throw new Error('सर्वर से गलत जवाब मिला। कृपया फिर से कोशिश करें।');
       }
       
-      if (!response.ok) {
-        throw new Error(`सर्वर error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (!data.success) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Upload failed');
       }
       
+      log('Video uploaded successfully:', data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Video upload failed:', error);
       
-      // Show error to user - don't silently fall back to demo mode
+      // Show specific error message from server if available
+      if (error.message && error.message !== 'Failed to fetch') {
+        throw error;
+      }
+      
       throw new Error('सर्वर से कनेक्ट नहीं हो पा रहा। कृपया बाद में कोशिश करें।');
     }
   }

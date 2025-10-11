@@ -15,7 +15,7 @@ switch ($endpoint) {
         handleCategoriesAPI();
         break;
     default:
-        sendJSON(['error' => 'Invalid endpoint'], 404);
+        sendJSON(['success' => false, 'error' => 'Invalid endpoint'], 404);
 }
 
 function handleMistrisAPI() {
@@ -50,7 +50,8 @@ function handleMistrisAPI() {
                 $stmt->execute($params);
                 $mistris = $stmt->fetchAll(PDO::FETCH_ASSOC);
             } catch(PDOException $e) {
-                sendJSON(['error' => 'Database error'], 500);
+                error_log('Database error in mistris API: ' . $e->getMessage());
+                sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
             }
         } else {
             // Fallback to file storage
@@ -69,7 +70,7 @@ function handleMistrisAPI() {
         
         sendJSON(['success' => true, 'data' => $mistris]);
     } else {
-        sendJSON(['error' => 'Method not allowed'], 405);
+        sendJSON(['success' => false, 'error' => 'Method not allowed'], 405);
     }
 }
 
@@ -99,7 +100,8 @@ function handleVideosAPI() {
                 $stmt->execute($params);
                 $videos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             } catch(PDOException $e) {
-                sendJSON(['error' => 'Database error'], 500);
+                error_log('Database error in videos API: ' . $e->getMessage());
+                sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
             }
         } else {
             // Fallback to file storage
@@ -124,7 +126,7 @@ function handleVideosAPI() {
         
         sendJSON(['success' => true, 'data' => $videos]);
     } else {
-        sendJSON(['error' => 'Method not allowed'], 405);
+        sendJSON(['success' => false, 'error' => 'Method not allowed'], 405);
     }
 }
 
@@ -144,7 +146,7 @@ function handleCategoriesAPI() {
         
         sendJSON(['success' => true, 'data' => $categories]);
     } else {
-        sendJSON(['error' => 'Method not allowed'], 405);
+        sendJSON(['success' => false, 'error' => 'Method not allowed'], 405);
     }
 }
 ?>

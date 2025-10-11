@@ -35,14 +35,16 @@ if (!file_exists(PROFILE_DIR)) {
     mkdir(PROFILE_DIR, 0755, true);
 }
 
-// CORS headers for API requests
+// CORS headers for API requests - Allow all origins and methods
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 
 // Helper function to connect to database
@@ -71,8 +73,8 @@ function generateUUID() {
 // Helper function to send JSON response
 function sendJSON($data, $status = 200) {
     http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
