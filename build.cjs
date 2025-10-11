@@ -7,6 +7,16 @@ const { execSync } = require('child_process');
 console.log('🚀 MistriAdda Build for Hostinger Starting...\n');
 
 try {
+    // Step 0: Check and install dependencies if needed
+    console.log('0️⃣ Checking dependencies...');
+    if (!fs.existsSync('node_modules') || !fs.existsSync('node_modules/.bin/vite')) {
+        console.log('   📦 Installing dependencies (यह कुछ समय ले सकता है)...');
+        execSync('npm install', { stdio: 'inherit' });
+        console.log('   ✅ Dependencies installed\n');
+    } else {
+        console.log('   ✅ Dependencies OK\n');
+    }
+
     // Step 1: Clean dist folder
     console.log('1️⃣ Cleaning old build...');
     if (fs.existsSync('dist')) {
