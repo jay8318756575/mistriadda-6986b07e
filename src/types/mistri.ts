@@ -3,7 +3,8 @@ export interface Mistri {
   name: string;
   category: string;
   location: string;
-  mobile: string;
+  phone?: string; // Phone number - used in newer code
+  mobile: string; // Phone number - used in older code (both refer to same value)
   experience: number;
   rating?: number;
   image?: string;

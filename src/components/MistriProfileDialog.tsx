@@ -193,7 +193,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         फोन नंबर
                       </label>
-                      <p className="text-gray-900 font-medium">{mistri.mobile}</p>
+                      <p className="text-gray-900 font-medium">{mistri.phone || mistri.mobile}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">

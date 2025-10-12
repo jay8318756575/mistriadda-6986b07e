@@ -104,7 +104,7 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
               <div className="relative group/btn flex-1">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl blur opacity-40 group-hover/btn:opacity-60 transition-opacity"></div>
                 <Button 
-                  onClick={() => window.location.href = `tel:${mistri.mobile}`}
+                  onClick={() => window.location.href = `tel:${mistri.phone || mistri.mobile}`}
                   className="relative w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 font-bold transform hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   <Phone className="w-4 h-4 mr-2" />

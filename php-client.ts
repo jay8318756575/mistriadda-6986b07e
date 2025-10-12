@@ -98,25 +98,8 @@ class PHPClient {
     });
   }
 
-  // Upload Video
-  async uploadVideo(videoData: {
-    mistri_id: string;
-    title: string;
-    description?: string;
-    category?: string;
-    video: File;
-  }): Promise<any> {
-    const formData = new FormData();
-    formData.append('mistri_id', videoData.mistri_id);
-    formData.append('title', videoData.title);
-    if (videoData.description) {
-      formData.append('description', videoData.description);
-    }
-    if (videoData.category) {
-      formData.append('category', videoData.category);
-    }
-    formData.append('video', videoData.video);
-
+  // Upload Video - accepts FormData directly
+  async uploadVideo(formData: FormData): Promise<any> {
     return await this.makeRequest('upload_video.php', formData, true);
   }
 
