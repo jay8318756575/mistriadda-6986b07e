@@ -139,13 +139,15 @@ export class PHPClient {
     });
     
     try {
-      // Try upload.php first (simpler and more reliable)
-      let response = await fetch(`${API_BASE}/upload.php`, {
+      // Try upload_video.php (main video upload endpoint)
+      let response = await fetch(`${API_BASE}/upload_video.php`, {
         method: 'POST',
         body: formData
+        // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
       });
       
       log('Upload response status:', response.status);
+      log('Upload response headers:', Object.fromEntries(response.headers.entries()));
       
       const text = await response.text();
       log('Raw upload response:', text);
@@ -199,6 +201,15 @@ export class PHPClient {
       
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch mistris');
+      }
+      
+      // Normalize phone/mobile field - ensure both exist
+      if (data.data && Array.isArray(data.data)) {
+        data.data = data.data.map((mistri: any) => ({
+          ...mistri,
+          phone: mistri.phone || mistri.mobile,
+          mobile: mistri.mobile || mistri.phone
+        }));
       }
       
       return data;

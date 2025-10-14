@@ -57,13 +57,26 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
         size: videoFile.size,
         type: videoFile.type
       });
+      console.log('Mistri ID:', mistriId);
       
       // Create form data for PHP upload
       const formData = new FormData();
       formData.append('video', videoFile);
       formData.append('mistri_id', mistriId);
       formData.append('title', title.trim());
-      formData.append('description', description.trim());
+      if (description.trim()) {
+        formData.append('description', description.trim());
+      }
+
+      // Log FormData contents
+      console.log('FormData contents:');
+      for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(pair[0] + ':', 'File -', pair[1].name, pair[1].size, 'bytes');
+        } else {
+          console.log(pair[0] + ':', pair[1]);
+        }
+      }
 
       console.log('Uploading video via PHP backend...');
 

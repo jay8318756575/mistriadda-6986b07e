@@ -30,7 +30,7 @@ function handleMistrisAPI() {
         $pdo = getDBConnection();
         if ($pdo) {
             try {
-                $sql = "SELECT * FROM mistris WHERE 1=1";
+                $sql = "SELECT id, name, phone, location, category, experience_years, description, profile_image, is_verified, rating, created_at FROM mistris WHERE 1=1";
                 $params = [];
                 
                 if ($category) {
@@ -49,6 +49,13 @@ function handleMistrisAPI() {
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute($params);
                 $mistris = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Normalize data - add mobile field as alias for phone
+                foreach ($mistris as &$mistri) {
+                    $mistri['mobile'] = $mistri['phone'];
+                    $mistri['experience'] = (int)$mistri['experience_years'];
+                }
+                
             } catch(PDOException $e) {
                 error_log('Database error in mistris API: ' . $e->getMessage());
                 sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
@@ -61,6 +68,9 @@ function handleMistrisAPI() {
                 if ($data) {
                     if ((!$category || $data['category'] === $category) && 
                         (!$location || strpos($data['location'], $location) !== false)) {
+                        // Normalize data
+                        $data['mobile'] = $data['phone'];
+                        $data['experience'] = (int)($data['experience_years'] ?? 0);
                         $mistris[] = $data;
                     }
                 }
