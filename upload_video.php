@@ -13,12 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    // Debug logging
+    error_log('POST data: ' . print_r($_POST, true));
+    error_log('FILES data: ' . print_r($_FILES, true));
+    error_log('Content-Type: ' . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+    
     // Check if file was uploaded
-    if (!isset($_FILES['video'])) {
-        sendJSON(['success' => false, 'error' => 'No video file provided'], 400);
+    if (!isset($_FILES['video']) && !isset($_FILES['file'])) {
+        sendJSON(['success' => false, 'error' => 'No video file provided. FILES: ' . json_encode(array_keys($_FILES))], 400);
     }
     
-    if ($_FILES['video']['error'] !== UPLOAD_ERR_OK) {
+    // Support both 'video' and 'file' field names
+    $video_field = isset($_FILES['video']) ? 'video' : 'file';
+    
+    if ($_FILES[$video_field]['error'] !== UPLOAD_ERR_OK) {
         $upload_errors = [
             UPLOAD_ERR_INI_SIZE => 'File too large (server limit)',
             UPLOAD_ERR_FORM_SIZE => 'File too large (form limit)',
@@ -28,7 +36,7 @@ try {
             UPLOAD_ERR_CANT_WRITE => 'Cannot write to disk',
             UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
         ];
-        $error_msg = $upload_errors[$_FILES['video']['error']] ?? 'Unknown upload error';
+        $error_msg = $upload_errors[$_FILES[$video_field]['error']] ?? 'Unknown upload error';
         sendJSON(['success' => false, 'error' => $error_msg], 400);
     }
     
@@ -68,10 +76,17 @@ try {
         sendJSON(['success' => false, 'error' => 'Mistri profile not found'], 404);
     }
     
-    $video_file = $_FILES['video'];
+    $video_file = $_FILES[$video_field];
     $file_size = $video_file['size'];
     $file_type = $video_file['type'];
     $file_name = $video_file['name'];
+    
+    error_log('Video file details: ' . json_encode([
+        'name' => $file_name,
+        'size' => $file_size,
+        'type' => $file_type,
+        'tmp_name' => $video_file['tmp_name']
+    ]));
     
     // Validate file size (max 500MB - increased for longer videos)
     if ($file_size > 500 * 1024 * 1024) {

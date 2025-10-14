@@ -130,27 +130,34 @@ export class PHPClient {
   }
 
   async uploadVideo(formData: FormData) {
-    log('Uploading video...');
-    log('FormData contents:', {
-      mistri_id: formData.get('mistri_id'),
-      title: formData.get('title'),
-      description: formData.get('description'),
-      video: formData.get('video')
-    });
+    log('📤 Uploading video to server...');
+    
+    // Log what we're sending
+    const videoFile = formData.get('video') as File;
+    log('Video file:', videoFile ? {
+      name: videoFile.name,
+      size: videoFile.size,
+      type: videoFile.type
+    } : 'NO FILE!');
+    log('Mistri ID:', formData.get('mistri_id'));
+    log('Title:', formData.get('title'));
+    log('Description:', formData.get('description'));
     
     try {
-      // Try upload_video.php (main video upload endpoint)
+      // Try upload_video.php first (main endpoint)
+      log('🔗 Calling:', `${API_BASE}/upload_video.php`);
+      
       let response = await fetch(`${API_BASE}/upload_video.php`, {
         method: 'POST',
-        body: formData
-        // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
+        body: formData,
+        // Important: Don't set Content-Type - browser auto-sets with boundary
       });
       
-      log('Upload response status:', response.status);
-      log('Upload response headers:', Object.fromEntries(response.headers.entries()));
+      log('📥 Response status:', response.status);
+      log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
       
       const text = await response.text();
-      log('Raw upload response:', text);
+      log('📥 Raw response:', text.substring(0, 500));
       
       let data;
       try {
