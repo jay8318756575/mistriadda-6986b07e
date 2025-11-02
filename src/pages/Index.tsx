@@ -88,8 +88,7 @@ const Index = () => {
             experience: item.experience,
             rating: item.rating,
             description: item.description,
-            aadhar_number: item.aadhar_number || undefined,
-            aadhar_address: item.aadhar_address || undefined,
+            address: item.address || undefined,
             verification_status: item.verification_status as 'pending' | 'verified' | 'rejected' | undefined,
             admin_approval_status: item.admin_approval_status as 'pending' | 'approved' | 'rejected' | undefined,
             phone_verified: item.phone_verified || undefined,
@@ -215,9 +214,9 @@ const Index = () => {
       const referenceAddress = getUserLocationReference();
       
       filtered = filtered.sort((a, b) => {
-        // Calculate proximity scores using Aadhar address first, then location
-        const addressA = a.aadhar_address || a.location;
-        const addressB = b.aadhar_address || b.location;
+        // Calculate proximity scores using address first, then location
+        const addressA = a.address || a.location;
+        const addressB = b.address || b.location;
         
         const similarityA = calculateAddressSimilarity(addressA, referenceAddress);
         const similarityB = calculateAddressSimilarity(addressB, referenceAddress);
@@ -241,7 +240,7 @@ const Index = () => {
     // Show toast about location-based suggestions
     toast({
       title: "स्थानीय मिस्त्री सुझाव",
-      description: "आधार कार्ड के पते के आधार पर नजदीकी मिस्त्री दिखाए जा रहे हैं",
+      description: "मिस्त्री के पते के आधार पर नजदीकी मिस्त्री दिखाए जा रहे हैं",
     });
   };
 
@@ -480,7 +479,7 @@ const Index = () => {
           {filteredMistris.map((mistri) => {
             // Calculate proximity score for display
             const referenceAddress = getUserLocationReference();
-            const mistriAddress = mistri.aadhar_address || mistri.location;
+            const mistriAddress = mistri.address || mistri.location;
             const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
             
             return (
@@ -529,7 +528,7 @@ const Index = () => {
             {filteredMistris.map((mistri) => {
               // Calculate proximity score for display
               const referenceAddress = getUserLocationReference();
-              const mistriAddress = mistri.aadhar_address || mistri.location;
+              const mistriAddress = mistri.address || mistri.location;
               const proximityScore = calculateAddressSimilarity(mistriAddress, referenceAddress);
               
               return (

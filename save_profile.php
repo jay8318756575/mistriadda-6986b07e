@@ -38,6 +38,7 @@ try {
         'experience_years' => isset($input['experience_years']) ? (int)$input['experience_years'] : 0,
         'description' => isset($input['description']) ? trim($input['description']) : '',
         'profile_image' => isset($input['profile_image']) ? trim($input['profile_image']) : '',
+        'address' => isset($input['address']) ? trim($input['address']) : '',
         'is_verified' => false,
         'created_at' => date('Y-m-d H:i:s')
     ];
@@ -46,7 +47,7 @@ try {
     $pdo = getDBConnection();
     if ($pdo) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO mistris (id, name, phone, location, category, experience_years, description, profile_image, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO mistris (id, name, phone, location, category, experience_years, description, profile_image, address, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $profile_data['id'],
                 $profile_data['name'],
@@ -56,6 +57,7 @@ try {
                 $profile_data['experience_years'],
                 $profile_data['description'],
                 $profile_data['profile_image'],
+                $profile_data['address'],
                 $profile_data['is_verified'],
                 $profile_data['created_at']
             ]);

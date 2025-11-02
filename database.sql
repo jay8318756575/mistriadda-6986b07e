@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS mistris (
     experience_years INT DEFAULT 0,
     description TEXT,
     profile_image VARCHAR(500),
+    address TEXT,
     hourly_rate DECIMAL(10,2) DEFAULT 0.00,
     is_verified BOOLEAN DEFAULT FALSE,
     is_available BOOLEAN DEFAULT TRUE,

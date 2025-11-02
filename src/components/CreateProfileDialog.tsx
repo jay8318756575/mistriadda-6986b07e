@@ -27,8 +27,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     mobile: '',
     experience: '',
     description: '',
-    aadharNumber: '',
-    aadharAddress: ''
+    address: ''
   });
   const [photo, setPhoto] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
@@ -163,8 +162,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         experience_years: parseInt(formData.experience),
         description: formData.description.trim() || '',
         profile_image: '',
-        aadhar_number: formData.aadharNumber.trim(),
-        aadhar_address: formData.aadharAddress.trim()
+        address: formData.address.trim()
       };
 
       console.log('Sending profile data to backend:', profileData);
@@ -265,14 +263,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       validationErrors.push("अनुभव 0 या अधिक होना चाहिए");
     }
     
-    if (!formData.aadharNumber?.trim()) {
-      validationErrors.push("कृपया आधार कार्ड नंबर भरें");
-    } else if (!/^\d{12}$/.test(formData.aadharNumber)) {
-      validationErrors.push("कृपया 12 अंकों का सही आधार कार्ड नंबर भरें");
-    }
-    
-    if (!formData.aadharAddress?.trim()) {
-      validationErrors.push("कृपया आधार कार्ड का पता भरें");
+    if (!formData.address?.trim()) {
+      validationErrors.push("कृपया अपना पूरा पता भरें");
     }
 
     if (validationErrors.length > 0) {
@@ -306,8 +298,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       mobile: '',
       experience: '',
       description: '',
-      aadharNumber: '',
-      aadharAddress: ''
+      address: ''
     });
     setPhoto(null);
     setVideo(null);
@@ -500,7 +491,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
       {/* ID Proof Upload */}
       <div>
-        <Label htmlFor="idProof" className="text-orange-800 font-semibold">पहचान प्रमाण (आधार कार्ड/PAN)</Label>
+        <Label htmlFor="idProof" className="text-orange-800 font-semibold">पहचान प्रमाण (वैकल्पिक)</Label>
         <div className="mt-2">
           <input
             id="idProof"
@@ -575,42 +566,20 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         </div>
       </div>
 
-      {/* Aadhar Number Field */}
+      {/* Address Field */}
       <div>
-        <Label htmlFor="aadharNumber" className="text-orange-800 font-semibold">आधार कार्ड नंबर *</Label>
-        <Input
-          id="aadharNumber"
-          type="text"
-          value={formData.aadharNumber}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, ''); // Only allow digits
-            if (value.length <= 12) {
-              handleInputChange('aadharNumber', value);
-            }
-          }}
-          placeholder="123456789012"
-          className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
-          maxLength={12}
-          required
-          disabled={isSubmitting}
-        />
-        <p className="text-xs text-gray-500 mt-1">12 अंकों का आधार कार्ड नंबर</p>
-      </div>
-
-      {/* Aadhar Address Field */}
-      <div>
-        <Label htmlFor="aadharAddress" className="text-orange-800 font-semibold">आधार कार्ड का पूरा पता *</Label>
+        <Label htmlFor="address" className="text-orange-800 font-semibold">आपका पूरा पता *</Label>
         <Textarea
-          id="aadharAddress"
-          value={formData.aadharAddress}
-          onChange={(e) => handleInputChange('aadharAddress', e.target.value)}
-          placeholder="आधार कार्ड में दिया गया पूरा पता भरें..."
+          id="address"
+          value={formData.address}
+          onChange={(e) => handleInputChange('address', e.target.value)}
+          placeholder="अपना पूरा पता भरें (मकान नंबर, गली, मोहल्ला, शहर, पिन कोड)"
           className="border-orange-300 focus:border-orange-500 bg-white shadow-sm"
           rows={3}
           required
           disabled={isSubmitting}
         />
-        <p className="text-xs text-gray-500 mt-1">आधार कार्ड में दिया गया वही पता भरें</p>
+        <p className="text-xs text-gray-500 mt-1">जितना विस्तार से भरेंगे, उतना आपको नजदीकी ग्राहक मिलेंगे</p>
       </div>
       
       <div>

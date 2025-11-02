@@ -94,6 +94,7 @@ function createTables() {
             experience_years INT DEFAULT 0,
             description TEXT,
             profile_image VARCHAR(255),
+            address TEXT,
             is_verified BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
