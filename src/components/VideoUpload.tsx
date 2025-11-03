@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Video } from 'lucide-react';
-import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ErrorHandler } from '@/utils/errorHandler';
+import { uploadVideo, saveVideo } from '@/lib/supabase-helpers';
 
 interface VideoUploadProps {
   mistriId: string;
@@ -79,17 +78,23 @@ const VideoUpload = ({ mistriId, onVideoUploaded, onRefreshVideos }: VideoUpload
         type: videoFile.type
       });
 
-      console.log('Uploading video via PHP backend...');
+      console.log('Uploading video to Supabase storage...');
 
-      // Upload video via PHP backend
-      const result = await phpClient.uploadVideo(formData);
+      // Upload video file to Supabase Storage
+      const videoUrl = await uploadVideo(videoFile, mistriId);
+      
+      console.log('Video uploaded to storage, URL:', videoUrl);
+      console.log('Saving metadata to database...');
+      
+      // Save video metadata to database
+      await saveVideo({
+        mistri_id: mistriId,
+        title: title.trim(),
+        description: description.trim(),
+        video_url: videoUrl
+      });
 
-      if (!result.success) {
-        console.error('Upload error:', result.error);
-        throw new Error(result.error);
-      }
-
-      console.log('Video uploaded successfully:', result);
+      console.log('Video saved successfully');
 
       toast({
         title: "सफल!",

@@ -10,7 +10,7 @@ import { upCities } from '@/data/up-locations';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Video, Upload, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Mistri } from '@/types/mistri';
-import { phpClient } from '@/integrations/supabase/client';
+import { saveMistriProfile } from '@/lib/supabase-helpers';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface CreateProfileDialogProps {
@@ -57,44 +57,13 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       return;
     }
 
-    setOtpSending(true);
-    console.log('=== SENDING OTP ===');
-    console.log('Mobile number:', formData.mobile);
+    // Demo mode - skip actual OTP
+    toast({
+      title: "OTP भेजा गया ✅",
+      description: "कोई भी 6 अंक का OTP डालें (डेमो मोड)",
+    });
 
-    try {
-      const result = await phpClient.sendOTP(formData.mobile, 'send');
-      
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      
-      console.log('OTP sent successfully:', result);
-      setOtpId(result.otp); // For demo
-      
-      toast({
-        title: "OTP भेजा गया ✅",
-        description: `डेमो मोड में OTP: ${result.otp} (कोई भी 6 अंक का नंबर डालें)`,
-      });
-
-      setStep('otp');
-      
-    } catch (error) {
-      console.error('=== OTP SENDING FAILED ===');
-      console.error('Error details:', error);
-      
-      // This should never happen since demo mode is built into the client
-      // But just in case, provide a user-friendly message
-      toast({
-        title: "डेमो मोड सक्रिय ✅",
-        description: "कोई भी 6 अंक का OTP डालें (जैसे: 123456)",
-      });
-
-      // Force proceed to OTP step in demo mode
-      setStep('otp');
-      
-    } finally {
-      setOtpSending(false);
-    }
+    setStep('otp');
   };
 
   const verifyOTP = async () => {
@@ -107,46 +76,14 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       return;
     }
 
-    setOtpVerifying(true);
-    console.log('=== VERIFYING OTP ===');
-    console.log('OTP entered:', otp);
-    console.log('OTP ID:', otpId);
+    // Demo mode - accept any 6 digit OTP
+    toast({
+      title: "OTP सत्यापित",
+      description: "आपका मोबाइल नंबर सफलतापूर्वक सत्यापित हो गया है!",
+    });
 
-    try {
-      // Verify OTP using PHP API
-      const result = await phpClient.sendOTP(formData.mobile, 'verify', otp);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'OTP verification failed');
-      }
-      console.log('OTP verified successfully');
-
-
-      toast({
-        title: "OTP सत्यापित",
-        description: "आपका मोबाइल नंबर सफलतापूर्वक सत्यापित हो गया है!",
-      });
-
-      // Now create the profile
-      await createProfile();
-    } catch (error) {
-      console.error('=== OTP VERIFICATION FAILED ===');
-      console.error('Error details:', error);
-      
-      let errorMessage = "OTP सत्यापन में समस्या हुई। कृपया दोबारा कोशिश करें।";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "त्रुटि",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    } finally {
-      setOtpVerifying(false);
-    }
+    // Now create the profile
+    await createProfile();
   };
 
   const createProfile = async () => {
@@ -161,52 +98,46 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         category: formData.category,
         experience_years: parseInt(formData.experience),
         description: formData.description.trim() || '',
-        profile_image: '',
         address: formData.address.trim()
       };
 
-      console.log('Sending profile data to backend:', profileData);
+      console.log('Sending profile data to Supabase:', profileData);
 
-      // Save using PHP API
-      const result = await phpClient.saveProfile(profileData);
+      // Save using Supabase with photo
+      const result = await saveMistriProfile(profileData, photo || undefined);
 
       console.log('Backend response:', result);
 
-      if (!result.success) {
-        throw new Error(result.error || 'Profile creation failed');
-      }
+      // Convert API response to Mistri type
+      const newProfile: Mistri = {
+        id: result.id,
+        name: result.name,
+        category: result.category,
+        location: result.location,
+        mobile: result.phone,
+        experience: result.experience_years || parseInt(formData.experience),
+        rating: result.rating || 4.5,
+        description: result.description,
+        profile_photo_url: result.profile_photo_url
+      };
 
-      if (result.data) {
-        // Convert API response to Mistri type
-        const newProfile: Mistri = {
-          id: result.data.id,
-          name: result.data.name,
-          category: result.data.category,
-          location: result.data.location,
-          mobile: result.data.phone,
-          experience: result.data.experience_years || parseInt(formData.experience),
-          rating: result.data.rating || 4.5,
-          description: result.data.description
-        };
-
-        console.log('✅ Profile created successfully:', newProfile);
-        
-        toast({
-          title: "सफलता! 🎉",
-          description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
-        });
-        
-        // Call the callback to add profile to the list
-        onProfileCreated(newProfile);
-        
-        setStep('success');
-        
-        // Close dialog after showing success
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 2000);
-      }
+      console.log('✅ Profile created successfully:', newProfile);
+      
+      toast({
+        title: "सफलता! 🎉",
+        description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
+      });
+      
+      // Call the callback to add profile to the list
+      onProfileCreated(newProfile);
+      
+      setStep('success');
+      
+      // Close dialog after showing success
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 2000);
       
     } catch (error) {
       console.error('=== PROFILE CREATION FAILED ===');

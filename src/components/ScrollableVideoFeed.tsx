@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Heart, MessageCircle, Share2, Volume2, VolumeX, ArrowUp, ArrowDown } from 'lucide-react';
-import { phpClient } from '@/integrations/supabase/client';
+import { getVideos } from '@/lib/supabase-helpers';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { hi } from 'date-fns/locale';
@@ -58,13 +58,9 @@ const ScrollableVideoFeed = ({ className = "" }: ScrollableVideoFeedProps) => {
   const fetchVideos = async () => {
     try {
       setIsLoading(true);
-      const result = await phpClient.getVideos();
+      const data = await getVideos();
       
-      if (result.success && result.data) {
-        setVideos(result.data);
-      } else {
-        console.error('Error fetching videos:', result.error);
-      }
+      setVideos(data);
     } catch (error) {
       console.error('Error in fetchVideos:', error);
       toast({

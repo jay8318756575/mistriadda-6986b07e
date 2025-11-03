@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Eye, Heart, Calendar, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { hi } from 'date-fns/locale';
-import { phpClient } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { MistriVideo } from './VideoCard';
 
