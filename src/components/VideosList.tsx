@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import VideoCard, { type MistriVideo } from './VideoCard';
 import VideoPlayerDialog from './VideoPlayerDialog';
-import { getVideos, getMistris } from '@/lib/supabase-helpers';
+import { phpClient } from '@/lib/php-client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Video } from 'lucide-react';
 
@@ -40,25 +40,33 @@ const VideosList = ({
       if (mistriId) filters.mistri_id = mistriId;
       if (limit) filters.limit = limit;
 
-      // Fetch videos via Supabase
-      const data = await getVideos(filters);
+      // Fetch videos via PHP API
+      const result = await phpClient.getVideos(filters);
 
-      console.log('Videos fetched:', data);
-      setVideos(data || []);
+      if (!result.success) {
+        console.error('Error fetching videos:', result.error);
+        toast({
+          title: "त्रुटि",
+          description: "वीडियो लोड करने में समस्या हुई",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      // If showMistriInfo is true, fetch mistri info separately
-      if (showMistriInfo && data && data.length > 0) {
-        const mistriIds = [...new Set(data.map(v => v.mistri_id))];
-        const mistrisData = await getMistris();
-        
-        const filteredMistris = mistrisData.filter(mistri => mistriIds.includes(mistri.id));
+      console.log('Videos fetched:', result.data);
+      setVideos(result.data || []);
+
+      // If showMistriInfo is true, mistri info is already included in PHP response
+      if (showMistriInfo && result.data && result.data.length > 0) {
         const mistrisMap = {};
-        filteredMistris.forEach(mistri => {
-          mistrisMap[mistri.id] = {
-            id: mistri.id,
-            name: mistri.name,
-            category: mistri.category
-          };
+        result.data.forEach(video => {
+          if (video.mistri_name) {
+            mistrisMap[video.mistri_id] = {
+              id: video.mistri_id,
+              name: video.mistri_name,
+              category: video.category
+            };
+          }
         });
         setMistris(mistrisMap);
       }

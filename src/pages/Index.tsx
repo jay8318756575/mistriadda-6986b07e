@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Star, Users, MapPin, Award, Video, Upload } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getMistris } from '@/lib/supabase-helpers';
+import { phpClient } from '@/lib/php-client';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorHandler } from '@/utils/errorHandler';
 import { Link } from 'react-router-dom';
@@ -30,48 +30,87 @@ const Index = () => {
   const [currentCategoryFilter, setCurrentCategoryFilter] = useState<string>('');
   const [allMistris, setAllMistris] = useState<Mistri[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [phpBackendStatus, setPHPBackendStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
 
-  // Fetch mistris on component mount
+  // Check PHP backend status and fetch mistris on component mount
   useEffect(() => {
-    fetchMistris();
+    checkBackendAndFetchData();
   }, []);
 
+  const checkBackendAndFetchData = async () => {
+    // Check PHP backend status first
+    const status = await phpClient.checkPHPStatus();
+    setPHPBackendStatus(status.success ? 'available' : 'unavailable');
+    
+    // Then fetch mistris
+    fetchMistris();
+  };
+
   const fetchMistris = async () => {
-    console.log('=== STARTING FETCH FROM SUPABASE ===');
+    console.log('=== STARTING FETCH FROM PHP API ===');
     
     try {
-      console.log('Fetching all mistris from Supabase...');
-      const data = await getMistris();
+      console.log('Fetching all mistris from PHP API...');
+      const result = await phpClient.getMistris();
 
-      console.log('Supabase query result:', data);
-      console.log('Number of records fetched:', data.length);
+      console.log('PHP API query result:', result);
 
-      // Convert API response to Mistri type
-      const mistris: Mistri[] = data.map((item: any) => {
-        console.log('Converting item:', item);
-        return {
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          location: item.location,
-          mobile: item.phone,
-          experience: item.experience_years,
-          rating: item.rating,
-          description: item.description,
-          address: item.address || undefined,
-          phone_verified: item.phone_verified || undefined,
-          profile_photo_url: item.profile_photo_url || undefined,
-          is_active: item.is_active || undefined,
-          longitude: item.longitude || undefined,
-          created_at: item.created_at || undefined,
-          updated_at: item.updated_at || undefined
-        };
-      });
+      if (!result.success) {
+        console.error('Error fetching mistris:', result.error);
+        console.log('Using fallback sample data due to API error');
+        
+        // Use sample data as fallback
+        const { sampleMistris } = await import('@/data/sample-mistris');
+        setAllMistris(sampleMistris);
+        setIsLoading(false);
+        
+        toast({
+          title: "डेटा लोड करने में समस्या",
+          description: result.error || 'मिस्त्री की जानकारी लोड नहीं हो सकी',
+          variant: "destructive"
+        });
+        return;
+      }
 
-      console.log('Converted mistris array:', mistris);
-      console.log('Setting mistris in state...');
-      setAllMistris(mistris);
-      console.log('Mistris set in state successfully');
+      if (result.data) {
+        console.log('Raw API data:', result.data);
+        console.log('Number of records fetched:', result.data.length);
+
+        // Convert API response to Mistri type
+        const mistris: Mistri[] = result.data.map((item: any) => {
+          console.log('Converting API item:', item);
+          return {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            location: item.location,
+            mobile: item.mobile,
+            experience: item.experience,
+            rating: item.rating,
+            description: item.description,
+            address: item.address || undefined,
+            verification_status: item.verification_status as 'pending' | 'verified' | 'rejected' | undefined,
+            admin_approval_status: item.admin_approval_status as 'pending' | 'approved' | 'rejected' | undefined,
+            phone_verified: item.phone_verified || undefined,
+            id_proof_url: item.id_proof_url || undefined,
+            profile_photo_url: item.profile_photo_url || undefined,
+            work_gallery: item.work_gallery || undefined,
+            is_active: item.is_active || undefined,
+            last_active: item.last_active || undefined,
+            latitude: item.latitude || undefined,
+            longitude: item.longitude || undefined,
+            created_at: item.created_at || undefined,
+            updated_at: item.updated_at || undefined
+          };
+        });
+
+        console.log('Converted mistris array:', mistris);
+        console.log('Setting mistris in state...');
+        setAllMistris(mistris);
+        console.log('Mistris set in state successfully');
+      } else {
+        console.log('No data returned from API (data is null/undefined)');
+      }
     } catch (fetchError) {
       console.error('Fetch mistris failed completely:', fetchError);
       
@@ -266,6 +305,22 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Backend Status Indicator */}
+      {phpBackendStatus !== 'checking' && (
+        <Card className={`border-2 ${phpBackendStatus === 'available' ? 'border-green-400 bg-green-50' : 'border-blue-400 bg-blue-50'} shadow-lg`}>
+          <CardContent className="py-3">
+            <div className="flex items-center space-x-3">
+              <div className={`w-3 h-3 rounded-full ${phpBackendStatus === 'available' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+               <span className={`text-sm font-medium ${phpBackendStatus === 'available' ? 'text-green-800' : 'text-blue-800'}`}>
+                 {phpBackendStatus === 'available' 
+                   ? '✅ Live डेटा - सभी फ़ीचर उपलब्ध हैं' 
+                   : '🎯 डेमो मोड - सैंपल डेटा के साथ सभी फ़ीचर देखें'}
+               </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Video Upload Section - New Addition */}
       <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-xl">
         <CardHeader className="pb-3">
@@ -317,10 +372,22 @@ const Index = () => {
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <VideoUpload 
-                mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
-                onVideoUploaded={() => setShowVideoUpload(false)}
-              />
+              {phpBackendStatus === 'unavailable' ? (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">📌 सूचना:</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    PHP backend उपलब्ध नहीं होने के कारण वीडियो अपलोड फ़ीचर अस्थायी रूप से निष्क्रिय है।
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    आप अभी भी सैंपल डेटा देख सकते हैं और अन्य फ़ीचर का उपयोग कर सकते हैं।
+                  </p>
+                </div>
+              ) : (
+                <VideoUpload 
+                  mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
+                  onVideoUploaded={() => setShowVideoUpload(false)}
+                />
+              )}
             </div>
           )}
         </CardContent>

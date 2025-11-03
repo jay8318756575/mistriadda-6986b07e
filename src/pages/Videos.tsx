@@ -5,7 +5,7 @@ import ShortsPlayer from '@/components/ShortsPlayer';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ArrowLeft } from 'lucide-react';
 import type { MistriVideo } from '@/components/VideoCard';
-import { getVideos, getMistris } from '@/lib/supabase-helpers';
+import { phpClient } from '@/lib/php-client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -31,26 +31,38 @@ const Videos = () => {
 
   const fetchVideos = async () => {
     try {
-      console.log('Fetching videos from Supabase...');
+      console.log('Fetching videos from PHP API...');
       
-      const videosData = await getVideos();
+      const videosResult = await phpClient.getVideos();
 
-      console.log('Videos fetched:', videosData);
-      setVideos(videosData || []);
+      if (!videosResult.success) {
+        console.error('Error fetching videos:', videosResult.error);
+        toast({
+          title: "त्रुटि",
+          description: "वीडियो लोड करने में समस्या हुई",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Videos fetched:', videosResult.data);
+      setVideos(videosResult.data || []);
 
       // Fetch mistri information
-      if (videosData && videosData.length > 0) {
-        const mistriIds = [...new Set(videosData.map(v => v.mistri_id))];
+      if (videosResult.data && videosResult.data.length > 0) {
+        const mistriIds = [...new Set(videosResult.data.map(v => v.mistri_id))];
         
-        const mistrisData = await getMistris();
+        const mistrisResult = await phpClient.getMistris();
 
-        const filteredMistris = mistrisData.filter(mistri => mistriIds.includes(mistri.id));
-        const mistrisMap = filteredMistris.reduce((acc, mistri) => {
-          acc[mistri.id] = { name: mistri.name, category: mistri.category };
-          return acc;
-        }, {} as Record<string, { name: string; category: string }>);
-        
-        setMistris(mistrisMap);
+        if (mistrisResult.success && mistrisResult.data) {
+          const filteredMistris = mistrisResult.data.filter(mistri => mistriIds.includes(mistri.id));
+          const mistrisMap = filteredMistris.reduce((acc, mistri) => {
+            acc[mistri.id] = { name: mistri.name, category: mistri.category };
+            return acc;
+          }, {} as Record<string, { name: string; category: string }>);
+          
+          setMistris(mistrisMap);
+        }
       }
 
     } catch (error) {
