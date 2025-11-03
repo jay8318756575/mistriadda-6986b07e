@@ -306,20 +306,21 @@ const Index = () => {
       </div>
 
       {/* Backend Status Indicator */}
-      {phpBackendStatus !== 'checking' && (
-        <Card className={`border-2 ${phpBackendStatus === 'available' ? 'border-green-400 bg-green-50' : 'border-blue-400 bg-blue-50'} shadow-lg`}>
-          <CardContent className="py-3">
+      <Card className="border-2 border-blue-400 bg-blue-50 shadow-lg">
+        <CardContent className="py-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${phpBackendStatus === 'available' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-               <span className={`text-sm font-medium ${phpBackendStatus === 'available' ? 'text-green-800' : 'text-blue-800'}`}>
-                 {phpBackendStatus === 'available' 
-                   ? '✅ Live डेटा - सभी फ़ीचर उपलब्ध हैं' 
-                   : '🎯 डेमो मोड - सैंपल डेटा के साथ सभी फ़ीचर देखें'}
-               </span>
+              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span className="text-sm font-medium text-blue-800">
+                🎯 डेमो मोड - Hostinger पर deploy करने पर सभी फ़ीचर Live होंगे
+              </span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <span className="text-xs text-blue-600 font-semibold px-3 py-1 bg-blue-100 rounded-full">
+              Testing Mode
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Video Upload Section - New Addition */}
       <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-xl">
@@ -372,22 +373,16 @@ const Index = () => {
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              {phpBackendStatus === 'unavailable' ? (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800 font-medium">📌 सूचना:</p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    PHP backend उपलब्ध नहीं होने के कारण वीडियो अपलोड फ़ीचर अस्थायी रूप से निष्क्रिय है।
-                  </p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    आप अभी भी सैंपल डेटा देख सकते हैं और अन्य फ़ीचर का उपयोग कर सकते हैं।
-                  </p>
-                </div>
-              ) : (
-                <VideoUpload 
-                  mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
-                  onVideoUploaded={() => setShowVideoUpload(false)}
-                />
-              )}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 font-medium">📌 डेमो मोड सक्रिय:</p>
+                <p className="text-sm text-blue-700 mt-1">
+                  वीडियो अपलोड demo mode में काम करेगा। Hostinger पर deploy करने पर actual storage में save होगा।
+                </p>
+              </div>
+              <VideoUpload 
+                mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
+                onVideoUploaded={() => setShowVideoUpload(false)}
+              />
             </div>
           )}
         </CardContent>

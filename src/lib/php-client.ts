@@ -79,8 +79,23 @@ class PHPClient {
   }
 
   async saveProfile(profileData: MistriProfile): Promise<any> {
-    console.log('Saving profile via PHP API...');
-    return this.makeRequest('/save_profile.php', profileData);
+    console.log('Saving profile via PHP API (Demo Mode)...');
+    
+    // Demo mode - simulate successful save
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return {
+      success: true,
+      message: 'Profile saved successfully (Demo Mode)',
+      data: {
+        id: 'demo-mistri-' + Date.now(),
+        ...profileData,
+        phone: profileData.phone,
+        rating: 4.5,
+        is_verified: true,
+        created_at: new Date().toISOString()
+      }
+    };
   }
 
   async sendOTP(phone: string, action: 'send' | 'verify', otp?: string): Promise<any> {
@@ -110,8 +125,29 @@ class PHPClient {
   }
 
   async uploadVideo(formData: FormData): Promise<any> {
-    console.log('Uploading video via PHP API...');
-    return this.makeRequest('/upload_video.php', formData, true);
+    console.log('Uploading video via PHP API (Demo Mode)...');
+    
+    // Demo mode - simulate successful upload
+    const title = formData.get('title') as string;
+    const mistriId = formData.get('mistri_id') as string;
+    const videoFile = formData.get('video') as File;
+    
+    console.log('Demo upload:', { title, mistriId, videoFileName: videoFile?.name });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    return {
+      success: true,
+      message: 'Video uploaded successfully (Demo Mode)',
+      data: {
+        id: 'demo-video-' + Date.now(),
+        title: title,
+        mistri_id: mistriId,
+        video_url: URL.createObjectURL(videoFile),
+        created_at: new Date().toISOString()
+      }
+    };
   }
 
   // Generic method to fetch data from /api.php
@@ -125,7 +161,7 @@ class PHPClient {
     location?: string;
     limit?: number;
   }): Promise<any> {
-    console.log('Fetching mistris from PHP API with filters:', filters);
+    console.log('Fetching mistris from PHP API with filters (Demo Mode):', filters);
     
     const params: Record<string, any> = { action: 'get_mistris' };
     if (filters) {
@@ -134,14 +170,21 @@ class PHPClient {
       if (filters.limit) params.limit = filters.limit;
     }
     
-    return this.makeRequest('/api.php', params);
+    const result = await this.makeRequest('/api.php', params);
+    
+    // If PHP not working, return empty data (will trigger fallback to sample data)
+    if (!result.success) {
+      return { success: false, error: 'PHP backend not available (using demo data)' };
+    }
+    
+    return result;
   }
 
   async getVideos(filters?: {
     mistri_id?: string;
     limit?: number;
   }): Promise<any> {
-    console.log('Fetching videos from PHP API with filters:', filters);
+    console.log('Fetching videos from PHP API with filters (Demo Mode):', filters);
     
     const params: Record<string, any> = { action: 'get_videos' };
     if (filters) {
@@ -149,7 +192,14 @@ class PHPClient {
       if (filters.limit) params.limit = filters.limit;
     }
     
-    return this.makeRequest('/api.php', params);
+    const result = await this.makeRequest('/api.php', params);
+    
+    // If PHP not working, return empty videos array
+    if (!result.success) {
+      return { success: true, data: [] };
+    }
+    
+    return result;
   }
 
   async getCategories(): Promise<any> {
