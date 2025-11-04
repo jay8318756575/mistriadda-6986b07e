@@ -83,8 +83,7 @@ class PHPClient {
   }
 
   async sendOTP(phone: string, action: 'send' | 'verify', otp?: string): Promise<any> {
-    const endpoint = action === 'send' ? '/send_otp.php' : '/verify_otp.php';
-    return this.makeRequest(endpoint, { phone, otp });
+    return this.makeRequest('/send_otp.php', { phone, action, otp });
   }
 
   async uploadVideo(formData: FormData): Promise<any> {
@@ -98,8 +97,43 @@ class PHPClient {
 
   // Generic method to fetch data from /api.php
   async getAPIData(endpoint: string, params?: Record<string, any>): Promise<any> {
-    const queryParams = params ? '?' + new URLSearchParams(params).toString() : '';
-    return this.makeRequest(`/api.php${queryParams}`, { endpoint, ...params });
+    try {
+      const queryParams = new URLSearchParams({ endpoint, ...params }).toString();
+      const url = `/api.php?${queryParams}`;
+      
+      console.log(`Fetching data from: ${url}`);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('Non-JSON response received:', contentType);
+        const text = await response.text();
+        console.log('Response text:', text);
+        
+        return {
+          success: false,
+          error: 'PHP backend not configured properly. Expected JSON response.',
+          raw_response: text
+        };
+      }
+
+      const result = await response.json();
+      console.log('Response data:', result);
+      
+      return result;
+    } catch (error) {
+      console.error('Request failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network request failed'
+      };
+    }
   }
 
   async getMistris(filters?: {
@@ -107,30 +141,30 @@ class PHPClient {
     location?: string;
     limit?: number;
   }): Promise<any> {
-    const params: Record<string, any> = { action: 'get_mistris' };
+    const params: Record<string, any> = {};
     if (filters) {
       if (filters.category) params.category = filters.category;
       if (filters.location) params.location = filters.location;
       if (filters.limit) params.limit = filters.limit;
     }
-    return this.makeRequest('/api.php', params);
+    return this.getAPIData('mistris', params);
   }
 
   async getVideos(filters?: {
     mistri_id?: string;
     limit?: number;
   }): Promise<any> {
-    const params: Record<string, any> = { action: 'get_videos' };
+    const params: Record<string, any> = {};
     if (filters) {
       if (filters.mistri_id) params.mistri_id = filters.mistri_id;
       if (filters.limit) params.limit = filters.limit;
     }
-    return this.makeRequest('/api.php', params);
+    return this.getAPIData('videos', params);
   }
 
   async getCategories(): Promise<any> {
     console.log('Fetching categories from PHP API...');
-    return this.makeRequest('/api.php', { action: 'get_categories' });
+    return this.getAPIData('categories');
   }
 
   async checkPHPStatus(): Promise<any> {
