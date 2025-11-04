@@ -73,7 +73,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
       toast({
         title: "OTP भेजा गया ✅",
-        description: `डेमो मोड में OTP: ${result.otp} (कोई भी 6 अंक का नंबर डालें)`,
+        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है`,
       });
 
       setStep('otp');
@@ -83,11 +83,10 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       console.error('Error details:', error);
       
       toast({
-        title: "डेमो मोड सक्रिय ✅",
-        description: "कोई भी 6 अंक का OTP डालें (जैसे: 123456)",
+        title: "त्रुटि",
+        description: "OTP भेजने में समस्या हुई। कृपया दोबारा कोशिश करें।",
+        variant: "destructive"
       });
-
-      setStep('otp');
       
     } finally {
       setOtpSending(false);

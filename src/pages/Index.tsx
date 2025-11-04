@@ -373,12 +373,6 @@ const Index = () => {
           
           {showVideoUpload && (
             <div className="mt-4 p-4 bg-white rounded-lg border">
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium">📌 डेमो मोड सक्रिय:</p>
-                <p className="text-sm text-blue-700 mt-1">
-                  वीडियो अपलोड demo mode में काम करेगा। Hostinger पर deploy करने पर actual storage में save होगा।
-                </p>
-              </div>
               <VideoUpload 
                 mistriId="f005a55f-be93-41b1-b183-e9ae639d27c8" 
                 onVideoUploaded={() => setShowVideoUpload(false)}

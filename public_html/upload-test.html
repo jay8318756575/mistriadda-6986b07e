@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistri Adda - Upload Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .upload-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background: #f8f9ff;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .file-input-label:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .file-name {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        @media (max-width: 600px) {
+            .upload-container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>📹 Mistri Adda</h1>
+        <p class="subtitle">Video & Photo Upload Test</p>
+        
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="uploadType">Upload Type *</label>
+                <select id="uploadType" name="uploadType" required>
+                    <option value="video">Video</option>
+                    <option value="photo">Photo</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="mistriIdGroup">
+                <label for="mistriId">Mistri ID *</label>
+                <input type="text" id="mistriId" name="mistriId" placeholder="Enter Mistri ID" required>
+            </div>
+            
+            <div class="form-group" id="titleGroup">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" placeholder="Enter video title" required>
+            </div>
+            
+            <div class="form-group" id="descriptionGroup">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="Enter description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Choose File *</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file" name="file" accept="video/*" required>
+                    <label for="file" class="file-input-label">
+                        📁 Click to select file
+                    </label>
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+            
+            <button type="submit">Upload</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <p>⏳ Uploading... Please wait</p>
+        </div>
+        
+        <div class="message" id="message"></div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('file');
+        const fileName = document.getElementById('fileName');
+        const message = document.getElementById('message');
+        const loading = document.getElementById('loading');
+        const uploadType = document.getElementById('uploadType');
+        const mistriIdGroup = document.getElementById('mistriIdGroup');
+        const titleGroup = document.getElementById('titleGroup');
+        const descriptionGroup = document.getElementById('descriptionGroup');
+        
+        // Update form based on upload type
+        uploadType.addEventListener('change', function() {
+            const isVideo = this.value === 'video';
+            mistriIdGroup.style.display = isVideo ? 'block' : 'none';
+            titleGroup.style.display = isVideo ? 'block' : 'none';
+            descriptionGroup.style.display = isVideo ? 'block' : 'none';
+            
+            fileInput.accept = isVideo ? 'video/*' : 'image/*';
+            
+            document.getElementById('mistriId').required = isVideo;
+            document.getElementById('title').required = isVideo;
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileName.textContent = '✓ ' + this.files[0].name;
+            } else {
+                fileName.textContent = '';
+            }
+        });
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            message.style.display = 'none';
+            message.className = 'message';
+            loading.classList.add('show');
+            
+            const formData = new FormData();
+            const type = document.getElementById('uploadType').value;
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('Please select a file', 'error');
+                loading.classList.remove('show');
+                return;
+            }
+            
+            formData.append('type', type);
+            
+            if (type === 'video') {
+                formData.append('video', file);
+                formData.append('mistri_id', document.getElementById('mistriId').value);
+                formData.append('title', document.getElementById('title').value);
+                formData.append('description', document.getElementById('description').value);
+            } else {
+                formData.append('photo', file);
+            }
+            
+            try {
+                const response = await fetch('upload.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(result.message || 'Upload successful! ✓', 'success');
+                    form.reset();
+                    fileName.textContent = '';
+                } else {
+                    showMessage(result.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'error');
+            } finally {
+                loading.classList.remove('show');
+            }
+        });
+        
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message ' + type;
+            message.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
