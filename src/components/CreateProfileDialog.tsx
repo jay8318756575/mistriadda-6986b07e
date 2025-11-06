@@ -146,6 +146,28 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     console.log('=== CREATING PROFILE ===');
     
     try {
+      let profileImageUrl = '';
+      
+      // Upload photo first if selected
+      if (photo) {
+        console.log('Uploading profile photo...');
+        const photoFormData = new FormData();
+        photoFormData.append('photo', photo);
+        
+        const photoResult = await phpClient.uploadPhoto(photoFormData);
+        
+        if (photoResult.success && photoResult.data) {
+          profileImageUrl = photoResult.data.url;
+          console.log('Photo uploaded successfully:', profileImageUrl);
+        } else {
+          console.error('Photo upload failed:', photoResult.error);
+          toast({
+            title: "चेतावनी",
+            description: "फोटो अपलोड नहीं हो सकी, लेकिन प्रोफाइल बन रही है",
+          });
+        }
+      }
+      
       // Prepare data for insertion
       const profileData = {
         name: formData.name.trim(),
@@ -154,7 +176,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         category: formData.category,
         experience_years: parseInt(formData.experience),
         description: formData.description.trim() || '',
-        profile_image: '',
+        profile_image: profileImageUrl,
         address: formData.address.trim()
       };
 
@@ -180,7 +202,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
           experience: result.data.experience_years || parseInt(formData.experience),
           rating: result.data.rating || 4.5,
           description: result.data.description,
-          profile_photo_url: result.data.profile_photo_url
+          profile_photo_url: result.data.profile_image || profileImageUrl
         };
 
         console.log('✅ Profile created successfully:', newProfile);
@@ -211,7 +233,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       }
       
       toast({
-        title: "त्रुटि",
+        title: "त्रुटi",
         description: errorMessage,
         variant: "destructive"
       });

@@ -50,10 +50,17 @@ function handleMistrisAPI() {
                 $stmt->execute($params);
                 $mistris = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 
-                // Normalize data - add mobile field as alias for phone
+                // Normalize data - add mobile field as alias for phone and fix profile photo path
                 foreach ($mistris as &$mistri) {
                     $mistri['mobile'] = $mistri['phone'];
                     $mistri['experience'] = (int)$mistri['experience_years'];
+                    // Ensure profile_image has proper path
+                    if (!empty($mistri['profile_image']) && strpos($mistri['profile_image'], 'http') !== 0) {
+                        // If not absolute URL, ensure it's relative path
+                        $mistri['profile_photo_url'] = $mistri['profile_image'];
+                    } else {
+                        $mistri['profile_photo_url'] = $mistri['profile_image'];
+                    }
                 }
                 
             } catch(PDOException $e) {
@@ -71,6 +78,7 @@ function handleMistrisAPI() {
                         // Normalize data
                         $data['mobile'] = $data['phone'];
                         $data['experience'] = (int)($data['experience_years'] ?? 0);
+                        $data['profile_photo_url'] = $data['profile_image'] ?? '';
                         $mistris[] = $data;
                     }
                 }

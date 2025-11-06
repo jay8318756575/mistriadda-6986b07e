@@ -87,12 +87,13 @@ class PHPClient {
   }
 
   async uploadVideo(formData: FormData): Promise<any> {
-    return this.makeRequest('/upload.php', formData, true);
+    formData.append('type', 'video');
+    return this.makeRequest('/upload_video.php', formData, true);
   }
 
   async uploadPhoto(formData: FormData): Promise<any> {
     formData.append('type', 'photo');
-    return this.makeRequest('/upload.php', formData, true);
+    return this.makeRequest('/upload_video.php', formData, true);
   }
 
   // Generic method to fetch data from /api.php
