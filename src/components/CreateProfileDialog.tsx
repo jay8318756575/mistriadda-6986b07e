@@ -150,22 +150,31 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       
       // Upload photo first if selected
       if (photo) {
-        console.log('Uploading profile photo...');
+        console.log('📸 Uploading profile photo...');
+        console.log('📸 Photo details:', {
+          name: photo.name,
+          size: photo.size,
+          type: photo.type
+        });
+        
         const photoFormData = new FormData();
         photoFormData.append('photo', photo);
         
         const photoResult = await phpClient.uploadPhoto(photoFormData);
+        console.log('📸 Photo upload result:', photoResult);
         
         if (photoResult.success && photoResult.data) {
           profileImageUrl = photoResult.data.url;
-          console.log('Photo uploaded successfully:', profileImageUrl);
+          console.log('✅ Photo uploaded successfully. URL:', profileImageUrl);
         } else {
-          console.error('Photo upload failed:', photoResult.error);
+          console.error('❌ Photo upload failed:', photoResult.error);
           toast({
             title: "चेतावनी",
             description: "फोटो अपलोड नहीं हो सकी, लेकिन प्रोफाइल बन रही है",
           });
         }
+      } else {
+        console.log('ℹ️ No photo selected for upload');
       }
       
       // Prepare data for insertion
@@ -180,12 +189,18 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         address: formData.address.trim()
       };
 
-      console.log('Sending profile data to backend:', profileData);
+      console.log('📝 Sending profile data to backend:', profileData);
+      console.log('🖼️ Profile image URL being saved:', profileImageUrl);
 
       // Save using PHP API
       const result = await phpClient.saveProfile(profileData);
 
-      console.log('Backend response:', result);
+      console.log('📦 Backend response:', result);
+      
+      if (result.data) {
+        console.log('📦 Profile data from backend:', result.data);
+        console.log('🖼️ Profile image from backend:', result.data.profile_image);
+      }
 
       if (!result.success) {
         throw new Error(result.error || 'Profile creation failed');
@@ -206,6 +221,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         };
 
         console.log('✅ Profile created successfully:', newProfile);
+        console.log('🖼️ Final profile photo URL:', newProfile.profile_photo_url);
         
         toast({
           title: "सफलता! 🎉",
@@ -233,7 +249,7 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       }
       
       toast({
-        title: "त्रुटi",
+        title: "त्रुटि",
         description: errorMessage,
         variant: "destructive"
       });

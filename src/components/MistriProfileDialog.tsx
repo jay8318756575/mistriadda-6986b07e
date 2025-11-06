@@ -71,8 +71,27 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3">
-            <div className="bg-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center">
-              <User className="w-6 h-6" />
+            <div className="relative bg-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center overflow-hidden border-4 border-orange-200 shadow-lg">
+              {mistri.profile_photo_url ? (
+                <img 
+                  src={mistri.profile_photo_url} 
+                  alt={mistri.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to initials if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const fallback = document.createElement('span');
+                      fallback.className = 'text-2xl font-bold';
+                      fallback.textContent = mistri.name.charAt(0);
+                      parent.appendChild(fallback);
+                    }
+                  }}
+                />
+              ) : (
+                <span className="text-2xl font-bold">{mistri.name.charAt(0)}</span>
+              )}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{mistri.name}</h2>
@@ -132,6 +151,32 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6">
+              {/* Profile Photo Section */}
+              {mistri.profile_photo_url && (
+                <Card className="bg-gradient-to-br from-orange-50 to-red-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <User className="w-5 h-5 text-orange-600" />
+                      <span>प्रोफाइल फोटो</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <div className="relative w-48 h-48 rounded-2xl overflow-hidden border-4 border-white shadow-2xl">
+                        <img 
+                          src={mistri.profile_photo_url} 
+                          alt={mistri.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mistri.name)}&size=200&background=ea580c&color=fff&bold=true`;
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Basic Info */}
               <Card>
                 <CardHeader>

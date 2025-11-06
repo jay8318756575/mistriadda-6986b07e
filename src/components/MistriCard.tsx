@@ -31,6 +31,10 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
                   src={mistri.profile_photo_url} 
                   alt={mistri.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to UI Avatar if image fails
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mistri.name)}&size=80&background=ea580c&color=fff&bold=true`;
+                  }}
                 />
               ) : (
                 <span className="text-3xl font-black text-white drop-shadow-lg">
