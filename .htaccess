@@ -15,12 +15,22 @@ php_flag file_uploads On
 # Temp directory for uploads
 php_value upload_tmp_dir /tmp
 
-# Serve existing files and directories
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
+# Direct access to PHP files (upload, OTP, etc.)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} \.php$
 RewriteRule ^ - [L]
 
-# SPA fallback to index.php for all other routes
+# Serve static files directly (uploads, images, videos)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(uploads|assets)/ - [L]
+
+# Route all PHP backend requests properly
+RewriteRule ^(upload_video|upload_photo|firebase_otp|send_otp|verify_otp|save_profile|api|auth|get_data|customer_register|driver_register)\.php$ $1.php [L,QSA]
+
+# React SPA routing - all other routes go to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [L]
 
 # CORS (adjust domains as needed)

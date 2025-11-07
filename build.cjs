@@ -57,29 +57,74 @@ try {
     });
     console.log('');
 
-    // Step 4: Create index.php (simple, no styling changes)
-    console.log('4️⃣ Creating index.php...');
+    // Step 4: Create proper index.php with PHP backend routing
+    console.log('4️⃣ Creating index.php with PHP backend support...');
     const indexPHP = `<?php
-// MistriAdda - Hostinger Deployment
+/**
+ * MistriAdda - Hostinger Deployment Entry Point
+ * यह file React app और PHP backend को connect करती है
+ */
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
 
-// Handle API routes
-if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
-    require_once 'api.php';
-    exit;
+// Get the request URI
+$request_uri = $_SERVER['REQUEST_URI'];
+$script_name = $_SERVER['SCRIPT_NAME'];
+
+// Remove query string
+$request_path = strtok($request_uri, '?');
+
+// Direct PHP file requests
+if (preg_match('/\\.(php)$/', $request_path)) {
+    // Let .htaccess handle PHP files
+    return false;
 }
 
-// Serve React build
+// API endpoint routing - ये सभी PHP files को directly access करेगा
+$api_routes = [
+    'upload_video.php',
+    'upload_photo.php', 
+    'firebase_otp.php',
+    'send_otp.php',
+    'verify_otp.php',
+    'save_profile.php',
+    'api.php',
+    'auth.php',
+    'get_data.php',
+    'customer_register.php',
+    'driver_register.php'
+];
+
+// Check if request is for an API file
+foreach ($api_routes as $api_file) {
+    if (strpos($request_path, '/' . $api_file) !== false) {
+        if (file_exists($api_file)) {
+            require_once $api_file;
+            exit;
+        }
+    }
+}
+
+// Static files (uploads, assets, etc.)
+if (preg_match('/\\.(jpg|jpeg|png|gif|css|js|ico|svg|woff|woff2|ttf|mp4|webm)$/', $request_path)) {
+    return false; // Let Apache serve static files
+}
+
+// Serve React app for all other routes (SPA routing)
 if (file_exists('index.html')) {
     readfile('index.html');
     exit;
 }
 
-echo "Error: Build files not found";
+// Error fallback
+http_response_code(404);
+echo "Error: Application files not found. Please upload the dist/ folder contents properly.";
 ?>`;
+    
     fs.writeFileSync(path.join('dist', 'index.php'), indexPHP);
-    console.log('   ✅ index.php created\n');
+    console.log('   ✅ index.php created with PHP backend routing\n');
 
     // Step 5: Create upload directories
     console.log('5️⃣ Creating upload directories...');
