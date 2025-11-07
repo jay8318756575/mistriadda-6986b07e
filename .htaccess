@@ -9,6 +9,12 @@ php_value max_input_time 900
 php_value memory_limit 1024M
 php_value max_file_uploads 20
 
+# Enable file uploads
+php_flag file_uploads On
+
+# Temp directory for uploads
+php_value upload_tmp_dir /tmp
+
 # Serve existing files and directories
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

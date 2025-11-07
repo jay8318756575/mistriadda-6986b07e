@@ -2,54 +2,119 @@
 require_once 'config.php';
 
 /**
- * Firebase OTP Integration
- * Note: This is a mock implementation. For production, you'll need:
- * 1. Firebase Admin SDK for PHP
- * 2. Valid Firebase project credentials
- * 3. Firebase Authentication setup
+ * SMS OTP Integration using MSG91 (भारत में काम करता है)
+ * Setup: 
+ * 1. MSG91 पर अकाउंट बनाएं (https://msg91.com)
+ * 2. Template ID और Auth Key लें
+ * 3. नीचे दिए गए constants में भरें
  */
 
-class FirebaseOTP {
-    private $apiKey;
-    private $projectId;
+// MSG91 Configuration - यहां अपनी details भरें
+define('MSG91_AUTH_KEY', 'YOUR_MSG91_AUTH_KEY_HERE'); // MSG91 से मिलेगी
+define('MSG91_TEMPLATE_ID', 'YOUR_TEMPLATE_ID_HERE'); // Template ID
+define('MSG91_SENDER_ID', 'MSTRAD'); // 6 characters max
+define('USE_REAL_SMS', false); // True करें जब MSG91 setup हो जाए
+
+class SMSOTP {
+    private $authKey;
+    private $templateId;
+    private $senderId;
+    private $useRealSMS;
     
     public function __construct() {
-        // In production, store these in environment variables
-        $this->apiKey = 'your-firebase-api-key';
-        $this->projectId = 'your-firebase-project-id';
+        $this->authKey = MSG91_AUTH_KEY;
+        $this->templateId = MSG91_TEMPLATE_ID;
+        $this->senderId = MSG91_SENDER_ID;
+        $this->useRealSMS = USE_REAL_SMS;
     }
     
     /**
-     * Send OTP via Firebase (Mock implementation)
-     * In production, use Firebase Admin SDK
+     * Send OTP via SMS (MSG91 या Mock)
      */
     public function sendOTP($phoneNumber) {
         try {
-            // Format phone number (ensure it starts with country code)
+            // Format phone number
             $formattedPhone = $this->formatPhoneNumber($phoneNumber);
             
-            // For demo purposes, generate a random OTP
+            // Generate OTP
             $otp = sprintf('%06d', mt_rand(100000, 999999));
             
-            // In production, use Firebase REST API or Admin SDK
-            $sessionInfo = $this->mockFirebaseRequest($formattedPhone, $otp);
+            // Send real SMS if enabled
+            if ($this->useRealSMS && !empty($this->authKey) && $this->authKey !== 'YOUR_MSG91_AUTH_KEY_HERE') {
+                $smsResult = $this->sendRealSMS($formattedPhone, $otp);
+                if (!$smsResult['success']) {
+                    throw new Exception('SMS भेजने में त्रुटि: ' . $smsResult['error']);
+                }
+                $sessionInfo = 'real_sms_' . time();
+            } else {
+                // Mock mode - just store OTP
+                $sessionInfo = 'mock_session_' . time();
+            }
             
             // Store OTP in database
             $this->storeOTP($phoneNumber, $otp, $sessionInfo);
             
-            return [
+            $response = [
                 'success' => true,
                 'sessionInfo' => $sessionInfo,
-                'message' => 'OTP sent successfully',
-                // For demo purposes only - remove in production
-                'debug_otp' => $otp
+                'message' => 'OTP sent successfully'
             ];
+            
+            // Show debug OTP only in mock mode
+            if (!$this->useRealSMS) {
+                $response['debug_otp'] = $otp;
+                $response['message'] = 'Demo Mode: OTP नीचे दिखाया गया है';
+            }
+            
+            return $response;
             
         } catch (Exception $e) {
             return [
                 'success' => false,
                 'error' => $e->getMessage()
             ];
+        }
+    }
+    
+    /**
+     * Send real SMS via MSG91
+     */
+    private function sendRealSMS($phone, $otp) {
+        try {
+            // MSG91 API endpoint
+            $url = 'https://control.msg91.com/api/v5/otp';
+            
+            // Remove +91 from phone for MSG91
+            $cleanPhone = str_replace(['+91', '+', ' ', '-'], '', $phone);
+            
+            $data = [
+                'template_id' => $this->templateId,
+                'mobile' => $cleanPhone,
+                'otp' => $otp,
+                'sender' => $this->senderId
+            ];
+            
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'authkey: ' . $this->authKey
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($httpCode === 200 || $httpCode === 201) {
+                return ['success' => true];
+            } else {
+                return ['success' => false, 'error' => 'SMS API error: ' . $response];
+            }
+            
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
         }
     }
     
@@ -122,43 +187,6 @@ class FirebaseOTP {
         return $phone;
     }
     
-    /**
-     * Mock Firebase API request (replace with actual Firebase call)
-     */
-    private function mockFirebaseRequest($phone, $otp) {
-        // This is a mock implementation
-        // In production, use Firebase REST API:
-        /*
-        $url = "https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=" . $this->apiKey;
-        $data = [
-            'phoneNumber' => $phone,
-            'recaptchaToken' => $recaptchaToken
-        ];
-        
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json']
-        ]);
-        
-        $response = curl_exec($curl);
-        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-        
-        if ($httpCode !== 200) {
-            throw new Exception('Firebase API error');
-        }
-        
-        $result = json_decode($response, true);
-        return $result['sessionInfo'];
-        */
-        
-        // Mock session info
-        return 'mock_session_' . time() . '_' . substr(md5($phone), 0, 8);
-    }
     
     /**
      * Store OTP in database
@@ -189,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $action = $_GET['action'] ?? $input['action'] ?? '';
     
-    $firebaseOTP = new FirebaseOTP();
+    $smsOTP = new SMSOTP();
     
     switch ($action) {
         case 'send':
@@ -197,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 sendJSON(['error' => 'Phone number is required'], 400);
             }
             
-            $result = $firebaseOTP->sendOTP($input['phone']);
+            $result = $smsOTP->sendOTP($input['phone']);
             
             if ($result['success']) {
                 sendJSON($result);
@@ -211,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 sendJSON(['error' => 'Phone number and OTP are required'], 400);
             }
             
-            $result = $firebaseOTP->verifyOTP(
+            $result = $smsOTP->verifyOTP(
                 $input['phone'],
                 $input['otp'],
                 $input['sessionInfo'] ?? null
