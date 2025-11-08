@@ -360,13 +360,12 @@ const Index = () => {
                 स्क्रॉल वीडियो फीड
               </Button>
             </Link>
-            <Link to="/videos" className="flex-1">
+            <Link to="/gallery" className="flex-1">
               <Button 
-                variant="outline" 
-                className="w-full border-2 border-purple-400 text-purple-600 hover:bg-purple-50 hover:border-purple-500"
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
               >
                 <Video className="w-4 h-4 mr-2" />
-                सभी वीडियो देखें
+                वीडियो गैलरी 🎥
               </Button>
             </Link>
           </div>

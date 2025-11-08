@@ -17,6 +17,7 @@ import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
 import Videos from "./pages/Videos";
 import VideoFeed from "./pages/VideoFeed";
+import Gallery from "./pages/Gallery";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerifyOTP from "./pages/VerifyOTP";
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/videos" element={<Videos />} />
             <Route path="/video-feed" element={<VideoFeed />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-otp" element={<VerifyOTP />} />

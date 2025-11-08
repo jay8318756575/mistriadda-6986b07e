@@ -132,25 +132,29 @@ const ShortsPlayer = ({ video, mistriName, mistriCategory, isActive }: ShortsPla
       <div className="absolute bottom-4 left-4 right-20 text-white">
         <div className="space-y-2">
           {mistriName && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold">M</span>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(mistriName)}&background=ea580c&color=fff&size=128`}
+                  alt={mistriName}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
-                <p className="font-semibold text-sm">{mistriName}</p>
+                <p className="font-bold text-sm">{mistriName}</p>
                 {mistriCategory && (
-                  <p className="text-xs text-gray-300">{mistriCategory}</p>
+                  <p className="text-xs text-gray-200">{mistriCategory}</p>
                 )}
               </div>
             </div>
           )}
           
-          <div>
+          <div className="bg-black/30 backdrop-blur-sm rounded-lg p-3">
             <h3 className="font-semibold text-sm mb-1">{video.title}</h3>
             {video.description && (
-              <p className="text-xs text-gray-300 line-clamp-2">{video.description}</p>
+              <p className="text-xs text-gray-200 line-clamp-2">{video.description}</p>
             )}
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-300 mt-1">
               {formatDate(video.created_at)} • {video.views_count} बार देखा गया
             </p>
           </div>
