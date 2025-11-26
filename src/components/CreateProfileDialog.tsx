@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { categories } from '@/data/categories';
-import { upCities } from '@/data/up-locations';
+import { indiaLocations } from '@/data/india-locations';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Video, Upload, Shield, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { Mistri } from '@/types/mistri';
@@ -23,6 +23,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    state: '',
+    city: '',
     location: '',
     mobile: '',
     experience: '',
@@ -276,7 +278,11 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       validationErrors.push("कृपया काम का प्रकार चुनें");
     }
     
-    if (!formData.location) {
+    if (!formData.state) {
+      validationErrors.push("कृपया अपना राज्य चुनें");
+    }
+    
+    if (!formData.city) {
       validationErrors.push("कृपया अपना शहर चुनें");
     }
     
@@ -323,6 +329,8 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
     setFormData({
       name: '',
       category: '',
+      state: '',
+      city: '',
       location: '',
       mobile: '',
       experience: '',
@@ -437,17 +445,44 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       </div>
       
       <div>
-        <Label htmlFor="location" className="text-orange-800 font-semibold">शहर *</Label>
+        <Label htmlFor="state" className="text-orange-800 font-semibold">राज्य *</Label>
         <Select 
-          value={formData.location} 
-          onValueChange={(value) => handleInputChange('location', value)}
+          value={formData.state} 
+          onValueChange={(value) => {
+            handleInputChange('state', value);
+            handleInputChange('city', ''); // Reset city when state changes
+            handleInputChange('location', '');
+          }}
           disabled={isSubmitting}
         >
           <SelectTrigger className="border-orange-300 focus:border-orange-500 bg-white shadow-sm">
-            <SelectValue placeholder="अपना शहर चुनें" />
+            <SelectValue placeholder="अपना राज्य चुनें" />
           </SelectTrigger>
           <SelectContent className="bg-white max-h-48 overflow-y-auto">
-            {upCities.map((city) => (
+            {indiaLocations.states.map((state) => (
+              <SelectItem key={state} value={state}>
+                {state}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div>
+        <Label htmlFor="city" className="text-orange-800 font-semibold">शहर *</Label>
+        <Select 
+          value={formData.city} 
+          onValueChange={(value) => {
+            handleInputChange('city', value);
+            handleInputChange('location', `${value}, ${formData.state}`);
+          }}
+          disabled={isSubmitting || !formData.state}
+        >
+          <SelectTrigger className="border-orange-300 focus:border-orange-500 bg-white shadow-sm">
+            <SelectValue placeholder={formData.state ? "अपना शहर चुनें" : "पहले राज्य चुनें"} />
+          </SelectTrigger>
+          <SelectContent className="bg-white max-h-48 overflow-y-auto">
+            {formData.state && indiaLocations.cities[formData.state]?.map((city) => (
               <SelectItem key={city} value={city}>
                 {city}
               </SelectItem>

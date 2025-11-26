@@ -17,12 +17,14 @@ import {
   Calendar,
   User,
   Upload,
-  Video
+  Video,
+  Edit
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { hi } from 'date-fns/locale';
 import type { Mistri } from '@/types/mistri';
 import VideoUpload from './VideoUpload';
+import EditProfileDialog from './EditProfileDialog';
 import { Link } from 'react-router-dom';
 
 interface MistriProfileDialogProps {
@@ -33,14 +35,21 @@ interface MistriProfileDialogProps {
 
 const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogProps) => {
   const [showVideoUpload, setShowVideoUpload] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [currentMistri, setCurrentMistri] = useState<Mistri | null>(mistri);
+
+  useEffect(() => {
+    setCurrentMistri(mistri);
+  }, [mistri]);
 
   useEffect(() => {
     if (!isOpen) {
       setShowVideoUpload(false);
+      setShowEditDialog(false);
     }
   }, [isOpen]);
 
-  if (!mistri) return null;
+  if (!currentMistri) return null;
 
   const formatJoinDate = (dateString: string) => {
     try {
@@ -301,6 +310,19 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
           </Tabs>
         </div>
       </DialogContent>
+
+      {/* Edit Profile Dialog */}
+      {showEditDialog && (
+        <EditProfileDialog
+          isOpen={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          mistri={currentMistri}
+          onProfileUpdated={(updatedProfile) => {
+            setCurrentMistri(updatedProfile);
+            setShowEditDialog(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };
