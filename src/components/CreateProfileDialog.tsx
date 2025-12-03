@@ -71,11 +71,13 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
       }
       
       console.log('OTP sent successfully:', result);
-      setOtpId(result.otp); // For demo
+      setOtpId(result.otp || result.debug_otp || ''); // For demo
       
       toast({
         title: "OTP भेजा गया ✅",
-        description: `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है`,
+        description: result.debug_otp 
+          ? `Demo OTP: ${result.debug_otp}` 
+          : `आपके मोबाइल नंबर ${formData.mobile} पर OTP भेजा गया है`,
       });
 
       setStep('otp');
