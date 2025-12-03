@@ -77,69 +77,68 @@ class PHPClient {
   
   async sendOTP(phone: string, action: 'send' | 'verify', otp?: string): Promise<any> {
     // Check if we're in demo/preview environment (no PHP backend)
-    const isDemo = window.location.hostname.includes('lovable') || 
-                   window.location.hostname === 'localhost';
+    const hostname = window.location.hostname;
+    const isDemo = hostname.includes('lovable') || 
+                   hostname.includes('localhost') ||
+                   hostname.includes('127.0.0.1') ||
+                   !hostname.includes('.'); // Local dev without domain
     
-    if (isDemo) {
-      // Demo mode - simulate OTP
-      if (action === 'send') {
-        const demoOtp = '123456';
-        localStorage.setItem(`demo_otp_${phone}`, demoOtp);
-        console.log('Demo OTP for', phone, ':', demoOtp);
+    console.log('OTP Request - hostname:', hostname, 'isDemo:', isDemo, 'action:', action);
+    
+    // Helper function for demo OTP
+    const demoSendOTP = () => {
+      const demoOtp = '123456';
+      localStorage.setItem(`demo_otp_${phone}`, demoOtp);
+      console.log('Demo OTP for', phone, ':', demoOtp);
+      return {
+        success: true,
+        message: 'Demo Mode: OTP भेजा गया',
+        otp: demoOtp,
+        debug_otp: demoOtp
+      };
+    };
+    
+    const demoVerifyOTP = () => {
+      const storedOtp = localStorage.getItem(`demo_otp_${phone}`);
+      if (otp === storedOtp || otp === '123456') {
+        localStorage.removeItem(`demo_otp_${phone}`);
         return {
           success: true,
-          message: 'Demo Mode: OTP भेजा गया',
-          otp: demoOtp, // Show OTP in demo mode
-          debug_otp: demoOtp
+          message: 'OTP सत्यापित',
+          phone_verified: true
         };
+      }
+      return {
+        success: false,
+        error: 'गलत OTP। Demo में 123456 का उपयोग करें'
+      };
+    };
+    
+    // Always use demo mode in preview environments
+    if (isDemo) {
+      if (action === 'send') {
+        return demoSendOTP();
       } else if (action === 'verify') {
-        const storedOtp = localStorage.getItem(`demo_otp_${phone}`);
-        if (otp === storedOtp || otp === '123456') {
-          localStorage.removeItem(`demo_otp_${phone}`);
-          return {
-            success: true,
-            message: 'OTP सत्यापित',
-            phone_verified: true
-          };
-        } else {
-          return {
-            success: false,
-            error: 'गलत OTP। Demo में 123456 का उपयोग करें'
-          };
-        }
+        return demoVerifyOTP();
       }
     }
     
-    // Production mode - use PHP backend
+    // Production mode - try PHP backend with fallback
     try {
       const result = await this.makeRequest(`/firebase_otp.php?action=${action}`, { phone, otp });
       
-      // If PHP returns non-JSON (source code), fallback to demo mode
-      if (!result.success && result.error?.includes('invalid response')) {
-        console.log('PHP not working, falling back to demo mode');
-        return this.sendOTP(phone, action, otp); // Will use demo mode on retry
+      // Check if PHP returned valid response
+      if (result.success) {
+        return result;
       }
       
-      return result;
+      // Fallback to demo on any error
+      console.log('PHP returned error, using demo fallback:', result.error);
+      return action === 'send' ? demoSendOTP() : demoVerifyOTP();
+      
     } catch (error) {
-      // Fallback to demo mode on error
-      console.log('PHP error, using demo mode');
-      if (action === 'send') {
-        const demoOtp = '123456';
-        localStorage.setItem(`demo_otp_${phone}`, demoOtp);
-        return {
-          success: true,
-          message: 'Demo Mode: OTP भेजा गया',
-          otp: demoOtp,
-          debug_otp: demoOtp
-        };
-      } else {
-        const storedOtp = localStorage.getItem(`demo_otp_${phone}`);
-        if (otp === storedOtp || otp === '123456') {
-          return { success: true, message: 'OTP सत्यापित', phone_verified: true };
-        }
-        return { success: false, error: 'गलत OTP' };
-      }
+      console.log('PHP error, using demo mode:', error);
+      return action === 'send' ? demoSendOTP() : demoVerifyOTP();
     }
   }
   
