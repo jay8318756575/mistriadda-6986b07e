@@ -31,6 +31,14 @@ class PHPClient {
     this.baseUrl = window.location.origin;
   }
   
+  private isDemo(): boolean {
+    const hostname = window.location.hostname;
+    return hostname.includes('lovable') || 
+           hostname.includes('localhost') ||
+           hostname.includes('127.0.0.1') ||
+           !hostname.includes('.');
+  }
+
   private async makeRequest(endpoint: string, data?: any, isFormData: boolean = false): Promise<any> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
@@ -72,6 +80,30 @@ class PHPClient {
   }
   
   async saveProfile(profileData: MistriProfile): Promise<any> {
+    // Demo mode - save to localStorage
+    if (this.isDemo()) {
+      const demoId = 'demo_' + Date.now();
+      const profile = {
+        id: demoId,
+        ...profileData,
+        rating: 4.5,
+        is_verified: false,
+        created_at: new Date().toISOString()
+      };
+      
+      // Save to localStorage
+      const existingProfiles = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
+      existingProfiles.push(profile);
+      localStorage.setItem('demo_profiles', JSON.stringify(existingProfiles));
+      
+      console.log('Demo: Profile saved to localStorage', profile);
+      return {
+        success: true,
+        data: profile,
+        message: 'Profile saved (Demo Mode)'
+      };
+    }
+    
     return this.makeRequest('/save_profile.php', profileData);
   }
   
@@ -143,20 +175,56 @@ class PHPClient {
   }
   
   async uploadVideo(formData: FormData): Promise<any> {
+    // Demo mode - simulate video upload
+    if (this.isDemo()) {
+      console.log('Demo: Video upload simulated');
+      return {
+        success: true,
+        data: { url: '/placeholder.svg', filename: 'demo_video.mp4' },
+        message: 'Video uploaded (Demo Mode)'
+      };
+    }
     return this.makeRequest('/upload.php', formData, true);
   }
 
   async uploadPhoto(formData: FormData): Promise<any> {
+    // Demo mode - simulate photo upload
+    if (this.isDemo()) {
+      console.log('Demo: Photo upload simulated');
+      return {
+        success: true,
+        data: { url: '/placeholder.svg', filename: 'demo_photo.jpg' },
+        message: 'Photo uploaded (Demo Mode)'
+      };
+    }
     return this.makeRequest('/upload.php', formData, true);
   }
 
   async uploadProfilePhoto(mistriId: string, formData: FormData): Promise<any> {
+    // Demo mode - simulate profile photo upload
+    if (this.isDemo()) {
+      console.log('Demo: Profile photo upload simulated');
+      return {
+        success: true,
+        data: { url: '/placeholder.svg', filename: 'demo_profile.jpg' },
+        message: 'Profile photo uploaded (Demo Mode)'
+      };
+    }
     formData.append('mistri_id', mistriId);
     formData.append('upload_type', 'profile');
     return this.makeRequest('/upload_profile.php', formData, true);
   }
 
   async uploadWorkPhoto(mistriId: string, formData: FormData): Promise<any> {
+    // Demo mode - simulate work photo upload
+    if (this.isDemo()) {
+      console.log('Demo: Work photo upload simulated');
+      return {
+        success: true,
+        data: { url: '/placeholder.svg', filename: 'demo_work.jpg' },
+        message: 'Work photo uploaded (Demo Mode)'
+      };
+    }
     formData.append('mistri_id', mistriId);
     formData.append('upload_type', 'work');
     return this.makeRequest('/upload_profile.php', formData, true);
