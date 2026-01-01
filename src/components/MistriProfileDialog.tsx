@@ -51,11 +51,13 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
 
   if (!currentMistri) return null;
 
+  const m = currentMistri;
+
   const formatJoinDate = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { 
-        addSuffix: true, 
-        locale: hi 
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: hi
       });
     } catch {
       return 'कुछ समय पहले';
@@ -67,8 +69,8 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < rating 
-            ? 'text-yellow-400 fill-current' 
+          i < rating
+            ? 'text-yellow-400 fill-current'
             : 'text-gray-300'
         }`}
       />
@@ -81,10 +83,10 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3">
             <div className="relative bg-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center overflow-hidden border-4 border-orange-200 shadow-lg">
-              {mistri.profile_photo_url ? (
-                <img 
-                  src={mistri.profile_photo_url} 
-                  alt={mistri.name}
+              {m.profile_photo_url ? (
+                <img
+                  src={m.profile_photo_url}
+                  alt={m.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     // Fallback to initials if image fails to load
@@ -93,18 +95,18 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                     if (parent) {
                       const fallback = document.createElement('span');
                       fallback.className = 'text-2xl font-bold';
-                      fallback.textContent = mistri.name.charAt(0);
+                      fallback.textContent = m.name.charAt(0);
                       parent.appendChild(fallback);
                     }
                   }}
                 />
               ) : (
-                <span className="text-2xl font-bold">{mistri.name.charAt(0)}</span>
+                <span className="text-2xl font-bold">{m.name.charAt(0)}</span>
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{mistri.name}</h2>
-              <p className="text-gray-600">{mistri.category}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{m.name}</h2>
+              <p className="text-gray-600">{m.category}</p>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -133,8 +135,8 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                   {showVideoUpload ? 'अपलोड छुपाएं' : 'नया वीडियो अपलोड करें'}
                 </Button>
                 <Link to="/videos" className="flex-1">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
                   >
                     <Video className="w-4 h-4 mr-2" />
@@ -142,11 +144,11 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                   </Button>
                 </Link>
               </div>
-              
+
               {showVideoUpload && (
                 <div className="mt-4 p-4 bg-white rounded-lg border">
-                  <VideoUpload 
-                    mistriId={mistri.id} 
+                  <VideoUpload
+                    mistriId={m.id}
                     onVideoUploaded={() => setShowVideoUpload(false)}
                   />
                 </div>
@@ -161,7 +163,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
 
             <TabsContent value="profile" className="space-y-6">
               {/* Profile Photo Section */}
-              {mistri.profile_photo_url && (
+              {m.profile_photo_url && (
                 <Card className="bg-gradient-to-br from-orange-50 to-red-50">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -172,12 +174,12 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                   <CardContent>
                     <div className="flex justify-center">
                       <div className="relative w-48 h-48 rounded-2xl overflow-hidden border-4 border-white shadow-2xl">
-                        <img 
-                          src={mistri.profile_photo_url} 
-                          alt={mistri.name}
+                        <img
+                          src={m.profile_photo_url}
+                          alt={m.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mistri.name)}&size=200&background=ea580c&color=fff&bold=true`;
+                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&size=200&background=ea580c&color=fff&bold=true`;
                           }}
                         />
                       </div>
@@ -200,21 +202,21 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         नाम
                       </label>
-                      <p className="text-gray-900 font-medium">{mistri.name}</p>
+                      <p className="text-gray-900 font-medium">{m.name}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         श्रेणी
                       </label>
                       <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                        {mistri.category}
+                        {m.category}
                       </Badge>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         अनुभव
                       </label>
-                      <p className="text-gray-900">{mistri.experience} साल</p>
+                      <p className="text-gray-900">{m.experience} साल</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -222,10 +224,10 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       </label>
                       <div className="flex items-center space-x-2">
                         <div className="flex">
-                          {getRatingStars(mistri.rating || 0)}
+                          {getRatingStars(m.rating || 0)}
                         </div>
                         <span className="text-sm text-gray-600">
-                          ({mistri.rating || 0}/5)
+                          ({m.rating || 0}/5)
                         </span>
                       </div>
                     </div>
@@ -247,7 +249,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         फोन नंबर
                       </label>
-                      <p className="text-gray-900 font-medium">{mistri.phone || mistri.mobile}</p>
+                      <p className="text-gray-900 font-medium">{m.phone || m.mobile}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -255,7 +257,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       </label>
                       <p className="text-gray-900 flex items-center">
                         <MapPin className="w-4 h-4 mr-1 text-gray-500" />
-                        {mistri.location}
+                        {m.location}
                       </p>
                     </div>
                   </div>
@@ -263,14 +265,14 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
               </Card>
 
               {/* Description */}
-              {mistri.description && (
+              {m.description && (
                 <Card>
                   <CardHeader>
                     <CardTitle>विवरण</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-700 leading-relaxed">
-                      {mistri.description}
+                      {m.description}
                     </p>
                   </CardContent>
                 </Card>
@@ -289,18 +291,18 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                       </label>
                       <p className="text-gray-900 flex items-center">
                         <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                        {formatJoinDate(mistri.created_at || new Date().toISOString())}
+                        {formatJoinDate(m.created_at || new Date().toISOString())}
                       </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         सत्यापन स्थिति
                       </label>
-                      <Badge 
-                        variant={mistri.phone_verified ? "default" : "secondary"}
-                        className={mistri.phone_verified ? "bg-green-600" : "bg-gray-500"}
+                      <Badge
+                        variant={m.phone_verified ? "default" : "secondary"}
+                        className={m.phone_verified ? "bg-green-600" : "bg-gray-500"}
                       >
-                        {mistri.phone_verified ? "सत्यापित" : "अस्सत्यापित"}
+                        {m.phone_verified ? "सत्यापित" : "अस्सत्यापित"}
                       </Badge>
                     </div>
                   </div>
@@ -316,13 +318,15 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
         <EditProfileDialog
           isOpen={showEditDialog}
           onClose={() => setShowEditDialog(false)}
-          mistri={currentMistri}
+          mistri={m}
           onProfileUpdated={(updatedProfile) => {
             setCurrentMistri(updatedProfile);
             setShowEditDialog(false);
           }}
         />
       )}
+    </Dialog>
+  );
     </Dialog>
   );
 };

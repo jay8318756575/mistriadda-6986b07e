@@ -28,7 +28,45 @@ try {
         }
     }
     
-    $mistri_id = generateUUID();
+    $is_update = !empty($input['id']);
+    $mistri_id = $is_update ? trim($input['id']) : generateUUID();
+
+    // Defaults
+    $created_at = date('Y-m-d H:i:s');
+    $is_verified = false;
+    $rating = null;
+
+    // Try database first
+    $pdo = getDBConnection();
+
+    // If update, try to preserve existing fields
+    if ($is_update) {
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("SELECT created_at, is_verified, rating FROM mistris WHERE id = ? LIMIT 1");
+                $stmt->execute([$mistri_id]);
+                $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($existing) {
+                    if (!empty($existing['created_at'])) $created_at = $existing['created_at'];
+                    $is_verified = (bool)($existing['is_verified'] ?? false);
+                    $rating = $existing['rating'] ?? null;
+                }
+            } catch(PDOException $e) {
+                // ignore
+            }
+        } else {
+            $existing_file = PROFILE_DIR . $mistri_id . '.json';
+            if (file_exists($existing_file)) {
+                $existing = json_decode(file_get_contents($existing_file), true);
+                if ($existing) {
+                    if (!empty($existing['created_at'])) $created_at = $existing['created_at'];
+                    $is_verified = (bool)($existing['is_verified'] ?? false);
+                    $rating = $existing['rating'] ?? null;
+                }
+            }
+        }
+    }
+
     $profile_data = [
         'id' => $mistri_id,
         'name' => trim($input['name']),
@@ -39,14 +77,36 @@ try {
         'description' => isset($input['description']) ? trim($input['description']) : '',
         'profile_image' => isset($input['profile_image']) ? trim($input['profile_image']) : '',
         'address' => isset($input['address']) ? trim($input['address']) : '',
-        'is_verified' => false,
-        'created_at' => date('Y-m-d H:i:s')
+        'is_verified' => $is_verified,
+        'rating' => $rating,
+        'created_at' => $created_at
     ];
-    
-    // Try database first
-    $pdo = getDBConnection();
+
     if ($pdo) {
         try {
+            if ($is_update) {
+                $stmt = $pdo->prepare("UPDATE mistris SET name = ?, phone = ?, location = ?, category = ?, experience_years = ?, description = ?, profile_image = ?, address = ? WHERE id = ?");
+                $stmt->execute([
+                    $profile_data['name'],
+                    $profile_data['phone'],
+                    $profile_data['location'],
+                    $profile_data['category'],
+                    $profile_data['experience_years'],
+                    $profile_data['description'],
+                    $profile_data['profile_image'],
+                    $profile_data['address'],
+                    $profile_data['id']
+                ]);
+
+                sendJSON([
+                    'success' => true,
+                    'message' => 'Profile updated successfully',
+                    'mistri_id' => $mistri_id,
+                    'data' => $profile_data
+                ]);
+            }
+
+            // Insert new
             $stmt = $pdo->prepare("INSERT INTO mistris (id, name, phone, location, category, experience_years, description, profile_image, address, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $profile_data['id'],
@@ -61,7 +121,7 @@ try {
                 $profile_data['is_verified'],
                 $profile_data['created_at']
             ]);
-            
+
             sendJSON([
                 'success' => true,
                 'message' => 'Profile saved successfully',
@@ -75,10 +135,12 @@ try {
             }
             sendJSON(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
         }
-    } else {
-        // Fallback to file storage
-        $filename = PROFILE_DIR . $mistri_id . '.json';
-        
+    }
+
+    // Fallback to file storage
+    $filename = PROFILE_DIR . $mistri_id . '.json';
+
+    if (!$is_update) {
         // Check if phone already exists in file storage
         $files = glob(PROFILE_DIR . '*.json');
         foreach ($files as $file) {
@@ -87,19 +149,19 @@ try {
                 sendJSON(['success' => false, 'error' => 'Phone number already exists'], 409);
             }
         }
-        
-        if (file_put_contents($filename, json_encode($profile_data, JSON_PRETTY_PRINT))) {
-            sendJSON([
-                'success' => true,
-                'message' => 'Profile saved successfully',
-                'mistri_id' => $mistri_id,
-                'data' => $profile_data
-            ]);
-        } else {
-            sendJSON(['success' => false, 'error' => 'Failed to save profile to file'], 500);
-        }
     }
-    
+
+    if (file_put_contents($filename, json_encode($profile_data, JSON_PRETTY_PRINT))) {
+        sendJSON([
+            'success' => true,
+            'message' => $is_update ? 'Profile updated successfully' : 'Profile saved successfully',
+            'mistri_id' => $mistri_id,
+            'data' => $profile_data
+        ]);
+    } else {
+        sendJSON(['success' => false, 'error' => $is_update ? 'Failed to update profile file' : 'Failed to save profile to file'], 500);
+    }
+
 } catch(Exception $e) {
     error_log('Profile save error: ' . $e->getMessage());
     sendJSON(['success' => false, 'error' => 'Internal server error: ' . $e->getMessage()], 500);
