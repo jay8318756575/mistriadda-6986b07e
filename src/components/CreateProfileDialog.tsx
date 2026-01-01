@@ -148,116 +148,110 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
 
   const createProfile = async () => {
     console.log('=== CREATING PROFILE ===');
-    
+
     try {
-      let profileImageUrl = '';
-      
-      // Upload photo first if selected
-      if (photo) {
-        console.log('📸 Uploading profile photo...');
-        console.log('📸 Photo details:', {
-          name: photo.name,
-          size: photo.size,
-          type: photo.type
-        });
-        
-        const photoFormData = new FormData();
-        photoFormData.append('photo', photo);
-        
-        const photoResult = await phpClient.uploadPhoto(photoFormData);
-        console.log('📸 Photo upload result:', photoResult);
-        
-        if (photoResult.success && photoResult.data) {
-          profileImageUrl = photoResult.data.url;
-          console.log('✅ Photo uploaded successfully. URL:', profileImageUrl);
-        } else {
-          console.error('❌ Photo upload failed:', photoResult.error);
-          toast({
-            title: "चेतावनी",
-            description: "फोटो अपलोड नहीं हो सकी, लेकिन प्रोफाइल बन रही है",
-          });
-        }
-      } else {
-        console.log('ℹ️ No photo selected for upload');
-      }
-      
-      // Prepare data for insertion
-      const profileData = {
+      // 1) Create profile first (so we get mistri_id)
+      const baseProfileData = {
         name: formData.name.trim(),
         phone: formData.mobile.trim(),
         location: formData.location,
         category: formData.category,
         experience_years: parseInt(formData.experience),
         description: formData.description.trim() || '',
-        profile_image: profileImageUrl,
+        profile_image: '',
         address: formData.address.trim()
       };
 
-      console.log('📝 Sending profile data to backend:', profileData);
-      console.log('🖼️ Profile image URL being saved:', profileImageUrl);
+      console.log('📝 Creating profile first:', baseProfileData);
+      const createResult = await phpClient.saveProfile(baseProfileData);
 
-      // Save using PHP API
-      const result = await phpClient.saveProfile(profileData);
+      console.log('📦 Create profile response:', createResult);
 
-      console.log('📦 Backend response:', result);
-      
-      if (result.data) {
-        console.log('📦 Profile data from backend:', result.data);
-        console.log('🖼️ Profile image from backend:', result.data.profile_image);
+      if (!createResult.success || !createResult.data?.id) {
+        throw new Error(createResult.error || 'Profile creation failed');
       }
 
-      if (!result.success) {
-        throw new Error(result.error || 'Profile creation failed');
+      const mistriId: string = createResult.data.id;
+      let profileImageUrl = createResult.data.profile_image || '';
+
+      // 2) Upload profile photo (if selected) against the created mistri_id
+      if (photo) {
+        console.log('📸 Uploading profile photo for mistri:', mistriId);
+        const photoFormData = new FormData();
+        photoFormData.append('photo', photo);
+
+        const photoResult = await phpClient.uploadProfilePhoto(mistriId, photoFormData);
+        console.log('📸 Profile photo upload result:', photoResult);
+
+        if (photoResult.success && photoResult.data?.url) {
+          profileImageUrl = photoResult.data.url;
+
+          // Persist latest profile_image in profile record as well
+          await phpClient.saveProfile({ ...baseProfileData, id: mistriId, profile_image: profileImageUrl });
+        } else {
+          toast({
+            title: "चेतावनी",
+            description: "फोटो अपलोड नहीं हो सकी, लेकिन प्रोफाइल बन गई है",
+          });
+        }
       }
 
-      if (result.data) {
-        // Convert API response to Mistri type
-        const newProfile: Mistri = {
-          id: result.data.id,
-          name: result.data.name,
-          category: result.data.category,
-          location: result.data.location,
-          mobile: result.data.phone,
-          experience: result.data.experience_years || parseInt(formData.experience),
-          rating: result.data.rating || 4.5,
-          description: result.data.description,
-          profile_photo_url: result.data.profile_image || profileImageUrl
-        };
-
-        console.log('✅ Profile created successfully:', newProfile);
-        console.log('🖼️ Final profile photo URL:', newProfile.profile_photo_url);
-        
-        toast({
-          title: "सफलता! 🎉",
-          description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
-        });
-        
-        onProfileCreated(newProfile);
-        
-        setStep('success');
-        
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 2000);
+      // 3) Upload work photos (if selected) - each file gets saved on server
+      if (workPhotos.length > 0) {
+        console.log('🛠️ Uploading work photos:', workPhotos.length);
+        for (const wp of workPhotos) {
+          const workFd = new FormData();
+          workFd.append('photo', wp);
+          try {
+            await phpClient.uploadWorkPhoto(mistriId, workFd);
+          } catch {
+            // ignore single photo failure
+          }
+        }
       }
-      
+
+      // Convert API response to Mistri type
+      const newProfile: Mistri = {
+        id: mistriId,
+        name: createResult.data.name,
+        category: createResult.data.category,
+        location: createResult.data.location,
+        mobile: createResult.data.phone,
+        experience: createResult.data.experience_years || parseInt(formData.experience),
+        rating: createResult.data.rating || 4.5,
+        description: createResult.data.description,
+        profile_photo_url: profileImageUrl,
+      };
+
+      toast({
+        title: "सफलता! 🎉",
+        description: "आपकी प्रोफाइल सफलतापूर्वक बन गई है!",
+      });
+
+      onProfileCreated(newProfile);
+      setStep('success');
+
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 2000);
+
     } catch (error) {
       console.error('=== PROFILE CREATION FAILED ===');
       console.error('Error details:', error);
-      
+
       let errorMessage = "प्रोफाइल बनाने में समस्या हुई। कृपया दोबारा कोशिश करें।";
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       toast({
         title: "त्रुटि",
         description: errorMessage,
         variant: "destructive"
       });
-      
+
       setStep('form');
     }
   };

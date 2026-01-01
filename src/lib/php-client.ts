@@ -79,31 +79,35 @@ class PHPClient {
     }
   }
   
-  async saveProfile(profileData: MistriProfile): Promise<any> {
+  async saveProfile(profileData: MistriProfile & { id?: string }): Promise<any> {
     // Demo mode - save to localStorage
     if (this.isDemo()) {
-      const demoId = 'demo_' + Date.now();
-      const profile = {
-        id: demoId,
-        ...profileData,
-        rating: 4.5,
-        is_verified: false,
-        created_at: new Date().toISOString()
-      };
-      
-      // Save to localStorage
       const existingProfiles = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
-      existingProfiles.push(profile);
-      localStorage.setItem('demo_profiles', JSON.stringify(existingProfiles));
-      
-      console.log('Demo: Profile saved to localStorage', profile);
+      const isUpdate = Boolean((profileData as any).id);
+
+      const id = (profileData as any).id || ('demo_' + Date.now());
+
+      const nextProfile = {
+        id,
+        ...profileData,
+        rating: (existingProfiles.find((p: any) => p.id === id)?.rating ?? 4.5),
+        is_verified: (existingProfiles.find((p: any) => p.id === id)?.is_verified ?? false),
+        created_at: (existingProfiles.find((p: any) => p.id === id)?.created_at ?? new Date().toISOString())
+      };
+
+      const next = isUpdate
+        ? existingProfiles.map((p: any) => (p.id === id ? nextProfile : p))
+        : [...existingProfiles, nextProfile];
+
+      localStorage.setItem('demo_profiles', JSON.stringify(next));
+
       return {
         success: true,
-        data: profile,
-        message: 'Profile saved (Demo Mode)'
+        data: nextProfile,
+        message: isUpdate ? 'Profile updated (Demo Mode)' : 'Profile saved (Demo Mode)'
       };
     }
-    
+
     return this.makeRequest('/save_profile.php', profileData);
   }
   
