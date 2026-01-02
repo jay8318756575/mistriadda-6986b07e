@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -18,7 +17,7 @@ import {
   User,
   Upload,
   Video,
-  Edit
+  Image as ImageIcon
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { hi } from 'date-fns/locale';
@@ -89,7 +88,6 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                   alt={m.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Fallback to initials if image fails to load
                     e.currentTarget.style.display = 'none';
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
@@ -112,7 +110,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Video Upload Section - Prominently displayed at top */}
+          {/* Video Upload Section */}
           <Card className="border-2 border-orange-200 bg-orange-50">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -183,6 +181,38 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                           }}
                         />
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Work Photos Gallery */}
+              {m.work_gallery && m.work_gallery.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <ImageIcon className="w-5 h-5 text-orange-600" />
+                      <span>काम की फोटो गैलरी ({m.work_gallery.length})</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {m.work_gallery.map((photo, index) => (
+                        <div 
+                          key={index} 
+                          className="relative aspect-square rounded-lg overflow-hidden border-2 border-orange-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
+                        >
+                          <img
+                            src={photo}
+                            alt={`${m.name} का काम ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -302,7 +332,7 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
                         variant={m.phone_verified ? "default" : "secondary"}
                         className={m.phone_verified ? "bg-green-600" : "bg-gray-500"}
                       >
-                        {m.phone_verified ? "सत्यापित" : "अस्सत्यापित"}
+                        {m.phone_verified ? "सत्यापित" : "असत्यापित"}
                       </Badge>
                     </div>
                   </div>
@@ -325,8 +355,6 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
           }}
         />
       )}
-    </Dialog>
-  );
     </Dialog>
   );
 };
