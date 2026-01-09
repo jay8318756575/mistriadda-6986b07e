@@ -26,9 +26,9 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
             <div className="relative w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-              {mistri.profile_photo_url ? (
+              {(mistri.profile_photo_url || mistri.image) ? (
                 <img 
-                  src={mistri.profile_photo_url} 
+                  src={mistri.profile_photo_url || mistri.image} 
                   alt={mistri.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
