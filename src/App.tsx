@@ -25,6 +25,7 @@ import VerifyOTP from "./pages/VerifyOTP";
 import Dashboard from "./pages/Dashboard";
 import DriverRegister from "./pages/DriverRegister";
 import CustomerRegister from "./pages/CustomerRegister";
+import Download from "./pages/Download";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver-register" element={<DriverRegister />} />
             <Route path="/customer-register" element={<CustomerRegister />} />
+            <Route path="/download" element={<Download />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
