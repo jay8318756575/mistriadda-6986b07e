@@ -26,6 +26,7 @@ import Dashboard from "./pages/Dashboard";
 import DriverRegister from "./pages/DriverRegister";
 import CustomerRegister from "./pages/CustomerRegister";
 import Download from "./pages/Download";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/driver-register" element={<DriverRegister />} />
             <Route path="/customer-register" element={<CustomerRegister />} />
             <Route path="/download" element={<Download />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

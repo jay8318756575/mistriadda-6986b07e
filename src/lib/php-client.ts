@@ -205,9 +205,45 @@ class PHPClient {
   }
 
   async uploadProfilePhoto(mistriId: string, formData: FormData): Promise<any> {
-    // Demo mode - simulate profile photo upload
+    // Demo mode - create a data URL from the file for localStorage
     if (this.isDemo()) {
-      console.log('Demo: Profile photo upload simulated');
+      console.log('Demo: Profile photo upload - creating data URL');
+      
+      // Get the file from FormData
+      const file = formData.get('photo') as File;
+      if (file && file instanceof File) {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            
+            // Update the profile in localStorage with the new photo
+            const existingProfiles = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
+            const updatedProfiles = existingProfiles.map((p: any) => {
+              if (p.id === mistriId) {
+                return { ...p, profile_photo_url: dataUrl, profile_image: dataUrl };
+              }
+              return p;
+            });
+            localStorage.setItem('demo_profiles', JSON.stringify(updatedProfiles));
+            
+            resolve({
+              success: true,
+              data: { url: dataUrl, filename: file.name },
+              message: 'Profile photo uploaded (Demo Mode)'
+            });
+          };
+          reader.onerror = () => {
+            resolve({
+              success: true,
+              data: { url: '/placeholder.svg', filename: 'demo_profile.jpg' },
+              message: 'Profile photo uploaded (Demo Mode - fallback)'
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      
       return {
         success: true,
         data: { url: '/placeholder.svg', filename: 'demo_profile.jpg' },
