@@ -12,7 +12,7 @@ interface MistriCardProps {
 
 const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) => {
   return (
-    <Card className="relative overflow-hidden hover:shadow-2xl transition-all duration-500 bg-white border-0 shadow-lg transform hover:scale-[1.02] group">
+    <Card className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 bg-white border-0 shadow-lg transform hover:scale-[1.02] group smooth-card active:scale-[0.98]">
       {/* Modern gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-red-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
@@ -106,7 +106,7 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
                 <Button 
                   variant="outline" 
                   onClick={() => onViewDetails(mistri)}
-                  className="relative w-full border-2 border-orange-400 text-orange-700 hover:text-white font-bold hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                  className="relative w-full border-2 border-orange-400 text-orange-700 hover:text-white font-bold hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 transform active:scale-95 transition-all duration-200 shadow-lg btn-press"
                 >
                   <Heart className="w-4 h-4 mr-2" />
                   विवरण देखें
@@ -115,13 +115,13 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
               
               <div className="relative group/btn flex-1">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl blur opacity-40 group-hover/btn:opacity-60 transition-opacity"></div>
-                <Button 
-                  onClick={() => window.location.href = `tel:${mistri.phone || mistri.mobile}`}
-                  className="relative w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 font-bold transform hover:scale-105 transition-all duration-300 shadow-lg"
+                <a 
+                  href={`tel:+91${(mistri.phone || mistri.mobile || '').replace(/\D/g, '')}`}
+                  className="relative w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 font-bold transform active:scale-95 transition-all duration-200 shadow-lg btn-press flex items-center justify-center gap-2 py-2 px-4 rounded-md text-white text-sm"
                 >
-                  <Phone className="w-4 h-4 mr-2" />
+                  <Phone className="w-4 h-4" />
                   📞 कॉल करें
-                </Button>
+                </a>
               </div>
             </div>
             

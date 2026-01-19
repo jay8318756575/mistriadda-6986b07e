@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import SearchBar from '@/components/SearchBar';
 import CategoryCard from '@/components/CategoryCard';
 import MistriCard from '@/components/MistriCard';
@@ -535,14 +536,16 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600">
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex flex-col">
       <Header onCreateProfile={() => setShowCreateDialog(true)} />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-grow animate-fade-in">
         {currentView === 'home' && renderHomeView()}
         {currentView === 'search' && renderSearchResults()}
         {currentView === 'category' && renderCategoryView()}
       </main>
+      
+      <Footer />
       
       <MistriProfileDialog
         mistri={selectedMistri}
