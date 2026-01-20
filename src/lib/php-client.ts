@@ -82,31 +82,39 @@ class PHPClient {
   async saveProfile(profileData: MistriProfile & { id?: string }): Promise<any> {
     // Demo mode - save to localStorage
     if (this.isDemo()) {
-      const existingProfiles = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
-      const isUpdate = Boolean((profileData as any).id);
-
+      const existingProfiles: any[] = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
       const id = (profileData as any).id || ('demo_' + Date.now());
+      const existing = existingProfiles.find((p: any) => p.id === id) || {};
 
-      const nextProfile = {
-        id,
-        ...profileData,
-        rating: (existingProfiles.find((p: any) => p.id === id)?.rating ?? 4.5),
-        is_verified: (existingProfiles.find((p: any) => p.id === id)?.is_verified ?? false),
-        created_at: (existingProfiles.find((p: any) => p.id === id)?.created_at ?? new Date().toISOString())
-      };
+      // Merge so we don't lose fields like profile_photo_url set during upload
+      const merged: any = { ...existing, ...profileData, id };
 
+      // Normalize / derive legacy fields used by UI
+      merged.mobile = merged.phone || merged.mobile || '';
+      merged.experience = Number(merged.experience_years ?? merged.experience ?? 0);
+
+      // Keep photo visible in UI (UI reads profile_photo_url)
+      merged.profile_photo_url = merged.profile_photo_url || merged.profile_image || '';
+
+      // Preserve meta fields
+      merged.rating = existing.rating ?? merged.rating ?? 4.5;
+      merged.is_verified = existing.is_verified ?? merged.is_verified ?? false;
+      merged.created_at = existing.created_at ?? merged.created_at ?? new Date().toISOString();
+
+      const isUpdate = Boolean(existing.id);
       const next = isUpdate
-        ? existingProfiles.map((p: any) => (p.id === id ? nextProfile : p))
-        : [...existingProfiles, nextProfile];
+        ? existingProfiles.map((p: any) => (p.id === id ? merged : p))
+        : [merged, ...existingProfiles];
 
       localStorage.setItem('demo_profiles', JSON.stringify(next));
 
       return {
         success: true,
-        data: nextProfile,
+        data: merged,
         message: isUpdate ? 'Profile updated (Demo Mode)' : 'Profile saved (Demo Mode)'
       };
     }
+
 
     return this.makeRequest('/save_profile.php', profileData);
   }
@@ -314,35 +322,82 @@ class PHPClient {
     location?: string;
     limit?: number;
   }): Promise<any> {
+    // Demo mode - read from localStorage instead of PHP API
+    if (this.isDemo()) {
+      const raw: any[] = JSON.parse(localStorage.getItem('demo_profiles') || '[]');
+
+      let data = raw.map((p: any) => ({
+        ...p,
+        mobile: p.mobile || p.phone || '',
+        experience: Number(p.experience ?? p.experience_years ?? 0),
+        profile_photo_url: p.profile_photo_url || p.profile_image || ''
+      }));
+
+      if (filters?.category) {
+        data = data.filter((p: any) => p.category === filters.category);
+      }
+      if (filters?.location) {
+        const q = filters.location.toLowerCase();
+        data = data.filter((p: any) => String(p.location || '').toLowerCase().includes(q));
+      }
+      if (filters?.limit) {
+        data = data.slice(0, filters.limit);
+      }
+
+      return { success: true, data };
+    }
+
     const params: Record<string, any> = {};
-    
+
     if (filters?.category) params.category = filters.category;
     if (filters?.location) params.location = filters.location;
     if (filters?.limit) params.limit = filters.limit;
-    
+
     return this.getAPIData('mistris', params);
   }
+
   
   async getVideos(filters?: {
     mistri_id?: string;
     limit?: number;
   }): Promise<any> {
+    // Demo mode - read from localStorage
+    if (this.isDemo()) {
+      const raw: any[] = JSON.parse(localStorage.getItem('demo_videos') || '[]');
+      let data = raw;
+
+      if (filters?.mistri_id) {
+        data = data.filter((v: any) => v.mistri_id === filters.mistri_id);
+      }
+      if (filters?.limit) {
+        data = data.slice(0, filters.limit);
+      }
+
+      return { success: true, data };
+    }
+
     const params: Record<string, any> = {};
-    
+
     if (filters?.mistri_id) params.mistri_id = filters.mistri_id;
     if (filters?.limit) params.limit = filters.limit;
-    
+
     return this.getAPIData('videos', params);
   }
+
   
   async getCategories(): Promise<any> {
     return this.getAPIData('categories');
   }
   
   async checkPHPStatus(): Promise<any> {
+    // In preview/local environments PHP isn't reliable, so treat as demo.
+    if (this.isDemo()) {
+      return { success: false, mode: 'demo' };
+    }
+
     try {
-      const response = await fetch('/debug.php');
-      return await response.json();
+      const response = await fetch('/debug.php', { method: 'GET' });
+      return { success: response.ok };
     } catch (error) {
       return {
         success: false,
@@ -350,6 +405,7 @@ class PHPClient {
       };
     }
   }
+
 }
 
 export const phpClient = new PHPClient();
