@@ -22,25 +22,37 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
       
       <div className="relative p-6">
         <div className="flex items-start space-x-5">
-          {/* Modern avatar */}
+          {/* Modern avatar - WhatsApp DP style */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
             <div className="relative w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-              {(mistri.profile_photo_url || mistri.image) ? (
-                <img 
-                  src={mistri.profile_photo_url || mistri.image} 
-                  alt={mistri.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to UI Avatar if image fails
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mistri.name)}&size=80&background=ea580c&color=fff&bold=true`;
-                  }}
-                />
-              ) : (
-                <span className="text-3xl font-black text-white drop-shadow-lg">
-                  {mistri.name.charAt(0)}
-                </span>
-              )}
+              {/* Priority: profile_photo_url > image > fallback letter */}
+              {(() => {
+                const photoUrl = mistri.profile_photo_url?.trim() || mistri.image?.trim();
+                if (photoUrl && photoUrl.length > 0) {
+                  return (
+                    <img 
+                      src={photoUrl} 
+                      alt={mistri.name}
+                      className="w-full h-full object-cover rounded-2xl"
+                      onError={(e) => {
+                        // Hide broken image and show fallback
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  );
+                }
+                return null;
+              })()}
+              {/* Fallback letter - hidden if image loads successfully */}
+              <span 
+                className="text-3xl font-black text-white drop-shadow-lg absolute inset-0 flex items-center justify-center"
+                style={{ display: (mistri.profile_photo_url?.trim() || mistri.image?.trim()) ? 'none' : 'flex' }}
+              >
+                {mistri.name.charAt(0).toUpperCase()}
+              </span>
               {/* Verified badge */}
               <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1.5 shadow-lg">
                 <Check className="w-3 h-3 text-white" />
