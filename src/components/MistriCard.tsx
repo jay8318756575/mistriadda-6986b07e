@@ -2,16 +2,39 @@
 import { Mistri } from '@/types/mistri';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Star, Calendar, Sparkles, Award, Shield, Heart, Check } from 'lucide-react';
+import { MapPin, Phone, Star, Calendar, Sparkles, Award, Shield, Heart, Check, Edit } from 'lucide-react';
+import { useState } from 'react';
+import EditProfileDialog from './EditProfileDialog';
 
 interface MistriCardProps {
   mistri: Mistri;
   onViewDetails: (mistri: Mistri) => void;
   proximityScore?: number; // New prop to show proximity indicator
+  allowEdit?: boolean; // Show edit button for mistri's own profile
+  onProfileUpdated?: (updatedMistri: Mistri) => void;
 }
 
-const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) => {
+const MistriCard = ({ mistri, onViewDetails, proximityScore, allowEdit = true, onProfileUpdated }: MistriCardProps) => {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [currentMistri, setCurrentMistri] = useState(mistri);
+
+  const handleProfileUpdate = (updatedMistri: Mistri) => {
+    setCurrentMistri(updatedMistri);
+    onProfileUpdated?.(updatedMistri);
+  };
+
+  // Get photo URL - prioritize profile_photo_url, then image
+  const photoUrl = currentMistri.profile_photo_url?.trim() || currentMistri.image?.trim();
+  const hasPhoto = photoUrl && photoUrl.length > 0;
+
   return (
+    <>
+    <EditProfileDialog
+      mistri={currentMistri}
+      isOpen={showEditDialog}
+      onClose={() => setShowEditDialog(false)}
+      onProfileUpdated={handleProfileUpdate}
+    />
     <Card className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 bg-white border-0 shadow-lg transform hover:scale-[1.02] group smooth-card active:scale-[0.98]">
       {/* Modern gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-red-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -26,50 +49,54 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
             <div className="relative w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-              {/* Priority: profile_photo_url > image > fallback letter */}
-              {(() => {
-                const photoUrl = mistri.profile_photo_url?.trim() || mistri.image?.trim();
-                if (photoUrl && photoUrl.length > 0) {
-                  return (
-                    <img 
-                      src={photoUrl} 
-                      alt={mistri.name}
-                      className="w-full h-full object-cover rounded-2xl"
-                      onError={(e) => {
-                        // Hide broken image and show fallback
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                      }}
-                    />
-                  );
-                }
-                return null;
-              })()}
-              {/* Fallback letter - hidden if image loads successfully */}
+              {/* Show photo if available, else show letter */}
+              {hasPhoto ? (
+                <img 
+                  src={photoUrl} 
+                  alt={currentMistri.name}
+                  className="w-full h-full object-cover rounded-2xl"
+                  onError={(e) => {
+                    // Hide broken image and show fallback
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              {/* Fallback letter - shown only if no photo */}
               <span 
                 className="text-3xl font-black text-white drop-shadow-lg absolute inset-0 flex items-center justify-center"
-                style={{ display: (mistri.profile_photo_url?.trim() || mistri.image?.trim()) ? 'none' : 'flex' }}
+                style={{ display: hasPhoto ? 'none' : 'flex' }}
               >
-                {mistri.name.charAt(0).toUpperCase()}
+                {currentMistri.name.charAt(0).toUpperCase()}
               </span>
               {/* Verified badge */}
               <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1.5 shadow-lg">
                 <Check className="w-3 h-3 text-white" />
               </div>
             </div>
+            {/* Edit button - only if allowEdit is true */}
+            {allowEdit && (
+              <button
+                onClick={() => setShowEditDialog(true)}
+                className="absolute -bottom-1 -right-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-1.5 shadow-lg hover:scale-110 transition-transform z-10"
+                title="प्रोफाइल एडिट करें"
+              >
+                <Edit className="w-3 h-3 text-white" />
+              </button>
+            )}
           </div>
           
           <div className="flex-1 space-y-4">
             {/* Name and rating */}
             <div className="flex items-center justify-between">
               <h3 className="font-black text-xl text-gray-800 group-hover:text-orange-700 transition-colors duration-300">
-                {mistri.name}
+                {currentMistri.name}
               </h3>
-              {mistri.rating && (
+              {currentMistri.rating && (
                 <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1.5 rounded-full shadow-lg">
                   <Star className="w-4 h-4 fill-white text-white" />
-                  <span className="text-sm font-bold text-white">{mistri.rating}</span>
+                  <span className="text-sm font-bold text-white">{currentMistri.rating}</span>
                 </div>
               )}
             </div>
@@ -79,18 +106,18 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
               <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2.5 rounded-xl shadow-lg">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <span className="text-orange-700 font-black capitalize text-lg">{mistri.category}</span>
+              <span className="text-orange-700 font-black capitalize text-lg">{currentMistri.category}</span>
             </div>
             
             {/* Info cards */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center space-x-2 bg-gray-50 rounded-xl p-3 border border-gray-100 hover:shadow-md transition-shadow">
                 <MapPin className="w-4 h-4 text-orange-600" />
-                <span className="text-gray-700 font-semibold text-sm">{mistri.location}</span>
+                <span className="text-gray-700 font-semibold text-sm">{currentMistri.location}</span>
               </div>
               <div className="flex items-center space-x-2 bg-gray-50 rounded-xl p-3 border border-gray-100 hover:shadow-md transition-shadow">
                 <Calendar className="w-4 h-4 text-blue-600" />
-                <span className="text-gray-700 font-semibold text-sm">{mistri.experience} वर्ष</span>
+                <span className="text-gray-700 font-semibold text-sm">{currentMistri.experience} वर्ष</span>
               </div>
             </div>
             
@@ -105,9 +132,9 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
             )}
             
             {/* Description */}
-            {mistri.description && (
+            {currentMistri.description && (
               <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border border-orange-100">
-                <p className="text-sm text-gray-700 font-medium leading-relaxed">{mistri.description}</p>
+                <p className="text-sm text-gray-700 font-medium leading-relaxed">{currentMistri.description}</p>
               </div>
             )}
             
@@ -117,7 +144,7 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl blur opacity-30 group-hover/btn:opacity-50 transition-opacity"></div>
                 <Button 
                   variant="outline" 
-                  onClick={() => onViewDetails(mistri)}
+                  onClick={() => onViewDetails(currentMistri)}
                   className="relative w-full border-2 border-orange-400 text-orange-700 hover:text-white font-bold hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 transform active:scale-95 transition-all duration-200 shadow-lg btn-press"
                 >
                   <Heart className="w-4 h-4 mr-2" />
@@ -128,7 +155,7 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
               <div className="relative group/btn flex-1">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl blur opacity-40 group-hover/btn:opacity-60 transition-opacity"></div>
                 <a 
-                  href={`tel:+91${(mistri.phone || mistri.mobile || '').replace(/\D/g, '')}`}
+                  href={`tel:+91${(currentMistri.phone || currentMistri.mobile || '').replace(/\D/g, '')}`}
                   className="relative w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 font-bold transform active:scale-95 transition-all duration-200 shadow-lg btn-press flex items-center justify-center gap-2 py-2 px-4 rounded-md text-white text-sm"
                 >
                   <Phone className="w-4 h-4" />
@@ -162,6 +189,7 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore }: MistriCardProps) 
         </div>
       </div>
     </Card>
+    </>
   );
 };
 
