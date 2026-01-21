@@ -82,9 +82,10 @@ const MistriProfileDialog = ({ mistri, isOpen, onClose }: MistriProfileDialogPro
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3">
             <div className="relative bg-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center overflow-hidden border-4 border-orange-200 shadow-lg">
-              {m.profile_photo_url ? (
+              {/* Support profile_photo_url, profile_image (from Hostinger), and image */}
+              {(m.profile_photo_url || (m as any).profile_image || m.image) ? (
                 <img
-                  src={m.profile_photo_url}
+                  src={m.profile_photo_url || (m as any).profile_image || m.image}
                   alt={m.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {

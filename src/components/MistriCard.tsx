@@ -23,8 +23,10 @@ const MistriCard = ({ mistri, onViewDetails, proximityScore, allowEdit = true, o
     onProfileUpdated?.(updatedMistri);
   };
 
-  // Get photo URL - prioritize profile_photo_url, then image
-  const photoUrl = currentMistri.profile_photo_url?.trim() || currentMistri.image?.trim();
+  // Get photo URL - prioritize profile_photo_url, then profile_image (from Hostinger DB), then image
+  const photoUrl = currentMistri.profile_photo_url?.trim() || 
+                   (currentMistri as any).profile_image?.trim() || 
+                   currentMistri.image?.trim();
   const hasPhoto = photoUrl && photoUrl.length > 0;
 
   return (

@@ -306,22 +306,7 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Backend Status Indicator */}
-      <Card className="border-2 border-blue-400 bg-blue-50 shadow-lg">
-        <CardContent className="py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-sm font-medium text-blue-800">
-                🎯 डेमो मोड - Hostinger पर deploy करने पर सभी फ़ीचर Live होंगे
-              </span>
-            </div>
-            <span className="text-xs text-blue-600 font-semibold px-3 py-1 bg-blue-100 rounded-full">
-              Testing Mode
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Backend Status Indicator - Removed as per user request */}
 
       {/* Video Upload Section - New Addition */}
       <Card className="border-2 border-gradient-to-r from-purple-400 to-pink-400 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 shadow-xl">
