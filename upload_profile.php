@@ -60,11 +60,18 @@ try {
         sendJSON(['success' => false, 'error' => 'Invalid photo format. Only JPG, PNG, GIF, WEBP allowed'], 400);
     }
     
-    // Determine upload directory
-    if ($upload_type === 'work') {
-        $upload_dir = UPLOAD_DIR . 'work/';
-    } else {
-        $upload_dir = UPLOAD_DIR . 'profile/';
+    // Determine upload directory based on upload type
+    switch ($upload_type) {
+        case 'work':
+            $upload_dir = UPLOAD_DIR . 'work/';
+            break;
+        case 'id_proof':
+            $upload_dir = UPLOAD_DIR . 'id_proof/';
+            break;
+        case 'profile':
+        default:
+            $upload_dir = UPLOAD_DIR . 'profile/';
+            break;
     }
     
     // Create directory if not exists
