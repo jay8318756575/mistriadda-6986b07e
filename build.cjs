@@ -36,6 +36,7 @@ try {
         'save_profile.php',
         'send_otp.php',
         'upload.php',
+        'upload_profile.php',
         'upload_video.php',
         'verify_otp.php',
         'api.php',
@@ -84,7 +85,9 @@ if (preg_match('/\\.(php)$/', $request_path)) {
 
 // API endpoint routing - ये सभी PHP files को directly access करेगा
 $api_routes = [
+     'upload_profile.php',
     'upload_video.php',
+     'upload.php',
     'upload_photo.php', 
     'firebase_otp.php',
     'send_otp.php',
@@ -128,7 +131,18 @@ echo "Error: Application files not found. Please upload the dist/ folder content
 
     // Step 5: Create upload directories
     console.log('5️⃣ Creating upload directories...');
-    const dirs = ['uploads', 'uploads/videos', 'uploads/profiles'];
+    const dirs = [
+        'uploads',
+        'uploads/videos',
+        // legacy folders
+        'uploads/profiles',
+        // folders used by upload_profile.php
+        'uploads/profile',
+        'uploads/work',
+        'uploads/id_proof',
+        // folder used by upload_video.php when uploading photos
+        'uploads/photos'
+    ];
     dirs.forEach(dir => {
         fs.mkdirSync(path.join('dist', dir), { recursive: true });
         console.log(`   ✅ ${dir}`);
