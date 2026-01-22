@@ -277,6 +277,47 @@ class PHPClient {
     formData.append('upload_type', 'work');
     return this.makeRequest('/upload_profile.php', formData, true);
   }
+
+  async uploadIdProof(mistriId: string, formData: FormData): Promise<any> {
+    // Demo mode - simulate ID proof upload
+    if (this.isDemo()) {
+      console.log('Demo: ID Proof upload simulated');
+      return {
+        success: true,
+        data: { url: '/placeholder.svg', filename: 'demo_id.jpg' },
+        message: 'ID Proof uploaded (Demo Mode)'
+      };
+    }
+    formData.append('mistri_id', mistriId);
+    formData.append('upload_type', 'id_proof');
+    return this.makeRequest('/upload_profile.php', formData, true);
+  }
+
+  async uploadWorkVideo(mistriId: string, formData: FormData): Promise<any> {
+    // Demo mode - simulate video upload
+    if (this.isDemo()) {
+      console.log('Demo: Work video upload simulated');
+      const existingVideos = JSON.parse(localStorage.getItem('demo_videos') || '[]');
+      const newVideo = {
+        id: 'demo_video_' + Date.now(),
+        mistri_id: mistriId,
+        title: formData.get('title') || 'Demo Video',
+        description: formData.get('description') || '',
+        url: '/placeholder.svg',
+        created_at: new Date().toISOString()
+      };
+      existingVideos.push(newVideo);
+      localStorage.setItem('demo_videos', JSON.stringify(existingVideos));
+      return {
+        success: true,
+        data: newVideo,
+        message: 'Video uploaded (Demo Mode)'
+      };
+    }
+    formData.append('mistri_id', mistriId);
+    formData.append('upload_type', 'video');
+    return this.makeRequest('/upload_video.php', formData, true);
+  }
   
   // Generic API data fetcher
   async getAPIData(endpoint: string, params?: Record<string, any>): Promise<any> {

@@ -196,7 +196,20 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
         }
       }
 
-      // 3) Upload work photos (if selected) - each file gets saved on server
+      // 3) Upload ID Proof (if selected)
+      if (idProof) {
+        console.log('🆔 Uploading ID proof for mistri:', mistriId);
+        const idFormData = new FormData();
+        idFormData.append('photo', idProof);
+        try {
+          const idResult = await phpClient.uploadIdProof(mistriId, idFormData);
+          console.log('🆔 ID Proof upload result:', idResult);
+        } catch (err) {
+          console.warn('ID proof upload failed:', err);
+        }
+      }
+
+      // 4) Upload work photos (if selected) - each file gets saved on server
       if (workPhotos.length > 0) {
         console.log('🛠️ Uploading work photos:', workPhotos.length);
         for (const wp of workPhotos) {
@@ -207,6 +220,21 @@ const CreateProfileDialog = ({ isOpen, onClose, onProfileCreated }: CreateProfil
           } catch {
             // ignore single photo failure
           }
+        }
+      }
+
+      // 5) Upload work video (if selected)
+      if (video) {
+        console.log('🎬 Uploading work video for mistri:', mistriId);
+        const videoFormData = new FormData();
+        videoFormData.append('video', video);
+        videoFormData.append('title', `${formData.name} का काम`);
+        videoFormData.append('description', formData.description || '');
+        try {
+          const videoResult = await phpClient.uploadWorkVideo(mistriId, videoFormData);
+          console.log('🎬 Work video upload result:', videoResult);
+        } catch (err) {
+          console.warn('Video upload failed:', err);
         }
       }
 
