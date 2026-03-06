@@ -14,6 +14,19 @@ import ElectricianService from "./pages/ElectricianService";
 import PlumberService from "./pages/PlumberService";
 import CarpenterService from "./pages/CarpenterService";
 import PainterService from "./pages/PainterService";
+import MasonService from "./pages/MasonService";
+import MechanicService from "./pages/MechanicService";
+import WelderService from "./pages/WelderService";
+import GardenerService from "./pages/GardenerService";
+import CleanerService from "./pages/CleanerService";
+import DriverService from "./pages/DriverService";
+import SecurityService from "./pages/SecurityService";
+import CookService from "./pages/CookService";
+import PropertyService from "./pages/PropertyService";
+import KabadiService from "./pages/KabadiService";
+import PopCeilingService from "./pages/PopCeilingService";
+import GypsumBoardService from "./pages/GypsumBoardService";
+import JunctionSealingService from "./pages/JunctionSealingService";
 import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
 import Videos from "./pages/Videos";
@@ -47,6 +60,19 @@ const App = () => (
             <Route path="/plumber-service" element={<PlumberService />} />
             <Route path="/carpenter-service" element={<CarpenterService />} />
             <Route path="/painter-service" element={<PainterService />} />
+            <Route path="/mason-service" element={<MasonService />} />
+            <Route path="/mechanic-service" element={<MechanicService />} />
+            <Route path="/welder-service" element={<WelderService />} />
+            <Route path="/gardener-service" element={<GardenerService />} />
+            <Route path="/cleaner-service" element={<CleanerService />} />
+            <Route path="/driver-service" element={<DriverService />} />
+            <Route path="/security-service" element={<SecurityService />} />
+            <Route path="/cook-service" element={<CookService />} />
+            <Route path="/property-service" element={<PropertyService />} />
+            <Route path="/kabadi-service" element={<KabadiService />} />
+            <Route path="/pop-ceiling-service" element={<PopCeilingService />} />
+            <Route path="/gypsum-board-service" element={<GypsumBoardService />} />
+            <Route path="/junction-sealing-service" element={<JunctionSealingService />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/videos" element={<Videos />} />
@@ -60,7 +86,6 @@ const App = () => (
             <Route path="/customer-register" element={<CustomerRegister />} />
             <Route path="/download" element={<Download />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
           <InstallPrompt />
