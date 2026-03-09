@@ -1,8 +1,29 @@
 import { Helmet } from 'react-helmet';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { categories } from '@/data/categories';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
+
+const categoryToSlug: Record<string, string> = {
+  electrician: 'electrician-service',
+  plumber: 'plumber-service',
+  painter: 'painter-service',
+  carpenter: 'carpenter-service',
+  mason: 'mason-service',
+  mechanic: 'mechanic-service',
+  welder: 'welder-service',
+  gardener: 'gardener-service',
+  cleaner: 'cleaner-service',
+  driver: 'driver-service',
+  security: 'security-service',
+  cook: 'cook-service',
+  property: 'property-service',
+  kabadi: 'kabadi-service',
+  'pop-ceiling': 'pop-ceiling-service',
+  'gypsum-board': 'gypsum-board-service',
+  'junction-sealing': 'junction-sealing-service',
+};
 
 const Services = () => {
   return (
@@ -11,7 +32,7 @@ const Services = () => {
         <title>हमारी सेवाएं - MistriAdda | सभी प्रकार के मिस्त्री और होम सर्विसेज</title>
         <meta name="description" content="MistriAdda पर उपलब्ध सभी सेवाएं - प्लंबर, इलेक्ट्रिशियन, कारपेंटर, पेंटर, मैकेनिक, AC रिपेयर, क्लीनिंग और अन्य होम सर्विसेज। अपनी जरूरत की सेवा चुनें।" />
         <meta name="keywords" content="home services, plumber service, electrician service, carpenter service, painter service, mechanic service, AC repair, cleaning service, मिस्त्री सेवाएं" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href="https://mistriadda.com/services" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
@@ -28,7 +49,7 @@ const Services = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {categories.map((category) => (
-              <Link to="/" key={category.id}>
+              <Link to={`/${categoryToSlug[category.id] || ''}`} key={category.id}>
                 <Card className="hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer h-full">
                   <CardContent className="p-6 text-center">
                     <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
@@ -36,9 +57,9 @@ const Services = () => {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{category.nameHindi}</h3>
                     <p className="text-gray-600 text-sm mb-4">{category.name}</p>
-                    <button className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all">
+                    <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all inline-block">
                       देखें
-                    </button>
+                    </span>
                   </CardContent>
                 </Card>
               </Link>
@@ -99,6 +120,8 @@ const Services = () => {
             </div>
           </div>
         </main>
+
+        <Footer />
       </div>
     </>
   );
